@@ -1,12 +1,16 @@
 """
 Endpoints de la API para manejar pagos con PayPal.
+ACTUALIZADO: Ahora usa autenticación real de Firebase.
 """
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 import logging
-from typing import Dict, Any
+import os
+from typing import Dict, Any, Optional
 
 from app.services.payments.paypal_service import paypal_service
+from app.models.schemas import AuthenticatedUser
+from app.core.dependencies import get_current_user, get_current_verified_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/payments", tags=["payments"])
@@ -14,30 +18,35 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 @router.post("/paypal/create-order")
 async def create_paypal_order(
     amount: float,
-    currency: str = "EUR", 
-    description: str = "Suscripción TuCitaSegura",
-    user_id: str = None
+    user: AuthenticatedUser = Depends(get_current_verified_user),
+    currency: str = "EUR",
+    description: str = "Suscripción TuCitaSegura"
 ):
     """
     Crea una orden de pago en PayPal.
-    
+
+    AUTENTICACIÓN REQUERIDA:
+    - Token de Firebase válido
+    - Email verificado
+
     Args:
         amount: Monto del pago (ej: 9.99)
         currency: Moneda (EUR por defecto)
         description: Descripción del producto/servicio
-        user_id: ID del usuario para tracking
-    
+
     Returns:
         URL de aprobación de PayPal y ID de la orden
     """
     try:
-        # Crear la orden en PayPal
+        # Crear la orden en PayPal con el user_id autenticado
         order = await paypal_service.create_order(
             amount=amount,
             currency=currency,
             description=description,
-            custom_id=user_id
+            custom_id=user.uid  # Usar UID autenticado
         )
+
+        logger.info(f"PayPal order created for user {user.uid}: amount={amount} {currency}")
         
         # Encontrar el link de aprobación
         approval_url = None
@@ -61,23 +70,30 @@ async def create_paypal_order(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/paypal/capture-order/{order_id}")
-async def capture_paypal_order(order_id: str):
+async def capture_paypal_order(
+    order_id: str,
+    user: AuthenticatedUser = Depends(get_current_verified_user)
+):
     """
     Captura una orden de pago de PayPal después de que el usuario haya aprobado el pago.
-    
+
+    AUTENTICACIÓN REQUERIDA:
+    - Token de Firebase válido
+    - Email verificado
+
     Args:
         order_id: ID de la orden de PayPal a capturar
-    
+
     Returns:
         Detalles del pago capturado
     """
     try:
         capture_result = await paypal_service.capture_order(order_id)
-        
+
         # Extraer información importante del pago
         payment_status = capture_result["status"]
         purchase_units = capture_result.get("purchase_units", [])
-        
+
         if purchase_units:
             capture = purchase_units[0].get("payments", {}).get("captures", [{}])[0]
             amount = capture.get("amount", {}).get("value")
@@ -87,7 +103,12 @@ async def capture_paypal_order(order_id: str):
             amount = None
             currency = None
             capture_id = None
-        
+
+        logger.info(
+            f"PayPal order captured by user {user.uid}: "
+            f"order_id={order_id}, amount={amount} {currency}, status={payment_status}"
+        )
+
         return JSONResponse({
             "success": True,
             "status": payment_status,
@@ -95,6 +116,7 @@ async def capture_paypal_order(order_id: str):
             "capture_id": capture_id,
             "amount": amount,
             "currency": currency,
+            "user_id": user.uid,  # Incluir para tracking
             "details": capture_result
         })
         
@@ -103,13 +125,19 @@ async def capture_paypal_order(order_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/paypal/order/{order_id}")
-async def get_paypal_order_details(order_id: str):
+async def get_paypal_order_details(
+    order_id: str,
+    user: AuthenticatedUser = Depends(get_current_user)
+):
     """
     Obtiene los detalles de una orden específica de PayPal.
-    
+
+    AUTENTICACIÓN REQUERIDA:
+    - Token de Firebase válido
+
     Args:
         order_id: ID de la orden de PayPal
-    
+
     Returns:
         Detalles completos de la orden
     """
