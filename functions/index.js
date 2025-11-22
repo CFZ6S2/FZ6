@@ -7,7 +7,7 @@ const axios = require('axios');
 admin.initializeApp();
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
-  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://fz6-production.up.railway.app';
+  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
   const url = base + req.originalUrl;
   try {
     const headers = { ...req.headers };

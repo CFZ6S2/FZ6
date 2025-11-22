@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "language": "Deutsch",
+    "code": "de",
+    "flag": "🇩🇪"
+  },
+
+  "common": {
+    "welcome": "Willkommen",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "search": "Suchen",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+
+  "nav": {
+    "home": "Startseite",
+    "search": "Suchen",
+    "messages": "Nachrichten",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "help": "Hilfe",
+    "logout": "Abmelden",
+    "explore": "Entdecken"
+  },
+
+  "home": {
+    "title": "SicherDates",
+    "subtitle": "Finden Sie Ihre perfekte Verbindung mit Sicherheit, Transparenz und Respekt",
+    "cta": "Jetzt Starten",
+    "exploreUsers": "Benutzer Erkunden",
+    "learnMore": "Mehr Erfahren",
+    "backendStatus": {
+      "checking": "Überprüfung...",
+      "connected": "Backend Verbunden",
+      "disconnected": "Backend Getrennt"
+    },
+    "features": {
+      "title": "Funktionen",
+      "secure": {
+        "title": "100% Sicher",
+        "description": "Identitätsprüfung, transparenter Ruf und garantierter Datenschutz"
+      },
+      "search": {
+        "title": "Erweiterte Suche",
+        "description": "Intelligente Filter nach Alter, Stadt, Reputation und mehr, um Ihr ideales Match zu finden"
+      },
+      "reputation": {
+        "title": "Reputationssystem",
+        "description": "Bronze-, Silber-, Gold- und Platin-Abzeichen basierend auf Verhalten und Feedback"
+      }
+    },
+    "stats": {
+      "title": "Plattform-Statistiken",
+      "users": "Aktive Benutzer",
+      "matches": "Erfolgreiche Matches",
+      "satisfaction": "Zufriedenheit"
+    },
+    "howItWorks": {
+      "title": "Wie es funktioniert?",
+      "step1": {
+        "title": "Registrieren",
+        "description": "Erstellen Sie Ihr Profil und verifizieren Sie Ihre E-Mail"
+      },
+      "step2": {
+        "title": "Erkunden",
+        "description": "Suchen Sie Benutzer mit erweiterten Filtern"
+      },
+      "step3": {
+        "title": "Verbinden",
+        "description": "Senden Sie Date-Anfragen"
+      },
+      "step4": {
+        "title": "Treffen",
+        "description": "Planen Sie sichere Dates"
+      }
+    },
+    "cta2": {
+      "title": "Bereit, Ihr perfektes Match zu finden?",
+      "description": "Treten Sie Tausenden von Menschen bei, die bereits ihre besondere Verbindung gefunden haben",
+      "button": "Jetzt Starten"
+    },
+    "footer": {
+      "tagline": "Finden Sie authentische Verbindungen mit Sicherheit und Respekt",
+      "copyright": "© 2025 SicherDates. Alle Rechte vorbehalten."
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "remember": "Angemeldet bleiben",
+      "forgot": "Passwort vergessen?",
+      "submit": "Einloggen",
+      "noAccount": "Kein Konto?",
+      "registerLink": "Hier registrieren"
+    },
+    "register": {
+      "title": "Konto Erstellen",
+      "name": "Vollständiger Name",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "age": "Alter",
+      "gender": "Geschlecht",
+      "city": "Stadt",
+      "terms": "Ich akzeptiere die Nutzungsbedingungen",
+      "privacy": "Ich akzeptiere die Datenschutzrichtlinie",
+      "submit": "Registrieren",
+      "hasAccount": "Sie haben bereits ein Konto?",
+      "loginLink": "Anmelden"
+    },
+    "verify": {
+      "title": "Verifizieren Sie Ihre E-Mail",
+      "message": "Wir haben Ihnen eine Verifizierungs-E-Mail gesendet",
+      "resend": "E-Mail erneut senden"
+    }
+  },
+
+  "profile": {
+    "title": "Mein Profil",
+    "edit": "Profil Bearbeiten",
+    "photos": "Fotos",
+    "about": "Über mich",
+    "interests": "Interessen",
+    "preferences": "Vorlieben",
+    "verification": "Verifizierung",
+    "badges": "Erfolge",
+    "settings": "Einstellungen",
+    "stats": {
+      "matches": "Matches",
+      "likes": "Likes",
+      "visits": "Besuche",
+      "rating": "Bewertung"
+    },
+    "info": {
+      "name": "Name",
+      "age": "Alter",
+      "gender": "Geschlecht",
+      "city": "Stadt",
+      "bio": "Biografie"
+    }
+  },
+
+  "search": {
+    "title": "Benutzer Suchen",
+    "filters": "Filter",
+    "age": "Alter",
+    "ageRange": "Altersbereich",
+    "location": "Standort",
+    "gender": "Geschlecht",
+    "interests": "Interessen",
+    "verified": "Nur Verifizierte",
+    "online": "Nur Online",
+    "distance": "Entfernung (km)",
+    "results": "{{count}} Ergebnisse gefunden",
+    "noResults": "Keine Benutzer gefunden",
+    "apply": "Filter anwenden",
+    "clear": "Filter löschen"
+  },
+
+  "chat": {
+    "title": "Nachrichten",
+    "conversations": "Unterhaltungen",
+    "typeMessage": "Schreiben Sie eine Nachricht...",
+    "send": "Senden",
+    "online": "Online",
+    "offline": "Offline",
+    "typing": "schreibt...",
+    "emptyState": "Sie haben noch keine Unterhaltungen",
+    "newChat": "Neuer Chat",
+    "block": "Blockieren",
+    "report": "Melden"
+  },
+
+  "membership": {
+    "title": "Premium-Mitgliedschaft",
+    "subtitle": "Alle Funktionen freischalten",
+    "current": "Ihr aktueller Plan",
+    "upgrade": "Plan upgraden",
+    "changePlan": "Plan ändern",
+    "cancel": "Abo kündigen",
+    "plans": {
+      "free": {
+        "name": "Kostenlos",
+        "price": "0€/Monat",
+        "description": "Perfekt zum Starten",
+        "features": [
+          "Basis-Profil",
+          "5 Likes pro Tag",
+          "Begrenzte Nachrichten",
+          "Matches ansehen"
+        ]
+      },
+      "monthly": {
+        "name": "Premium Monatlich",
+        "price": "29,99€/Monat",
+        "description": "Maximale Flexibilität",
+        "features": [
+          "Unbegrenzte Likes",
+          "Unbegrenzte Nachrichten",
+          "Sehen Sie, wer Sie mag",
+          "Erweiterte Filter",
+          "Keine Werbung",
+          "Premium-Abzeichen"
+        ]
+      },
+      "quarterly": {
+        "name": "Premium Vierteljährlich",
+        "price": "24,99€/Monat",
+        "total": "74,97€ alle 3 Monate",
+        "savings": "Sparen Sie 17%",
+        "description": "Bestes Preis-Leistungs-Verhältnis",
+        "features": [
+          "Alles vom Monatsplan",
+          "Priority-Support",
+          "VIP-Events",
+          "3 Monate Zugang"
+        ]
+      },
+      "annual": {
+        "name": "Premium Jährlich",
+        "price": "19,99€/Monat",
+        "total": "239,88€/Jahr",
+        "savings": "Sparen Sie 33%",
+        "description": "Maximale Ersparnis",
+        "features": [
+          "Alles vom Quartalsplan",
+          "Gold Premium-Abzeichen",
+          "Concierge-Service",
+          "12 Monate Zugang"
+        ]
+      }
+    },
+    "select": "Plan auswählen",
+    "currentPlan": "Aktueller Plan"
+  },
+
+  "insurance": {
+    "title": "Anti-Ghosting-Versicherung",
+    "subtitle": "120€ Schutz gegen abgesagte Dates",
+    "description": "Wenn Ihr Date nicht erscheint, erhalten Sie automatisch eine Entschädigung",
+    "price": "120€ Kaution (nicht berechnet)",
+    "howItWorks": "Wie es funktioniert",
+    "activate": "Versicherung aktivieren",
+    "status": {
+      "active": "Versicherung aktiv",
+      "inactive": "Keine Versicherung",
+      "hold": "Kaution aktiv"
+    }
+  },
+
+  "events": {
+    "title": "VIP-Events",
+    "upcoming": "Bevorstehende Events",
+    "past": "Vergangene Events",
+    "details": "Event-Details",
+    "attendees": "Teilnehmer",
+    "register": "Registrieren",
+    "registered": "Bereits registriert",
+    "premiumOnly": "Nur für Premium-Benutzer"
+  },
+
+  "settings": {
+    "title": "Einstellungen",
+    "account": "Konto",
+    "privacy": "Datenschutz",
+    "notifications": "Benachrichtigungen",
+    "security": "Sicherheit",
+    "language": "Sprache",
+    "preferences": "Vorlieben",
+    "deleteAccount": "Konto löschen",
+    "logout": "Abmelden"
+  },
+
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "markRead": "Als gelesen markieren",
+    "markAllRead": "Alle als gelesen markieren",
+    "empty": "Sie haben keine Benachrichtigungen",
+    "types": {
+      "match": "Neues Match",
+      "message": "Neue Nachricht",
+      "like": "Jemand mag Sie",
+      "visit": "Jemand hat Ihr Profil besucht",
+      "event": "Neues VIP-Event"
+    }
+  },
+
+  "help": {
+    "title": "Hilfe-Center",
+    "faq": "FAQ",
+    "contact": "Support Kontaktieren",
+    "guides": "Anleitungen",
+    "safety": "Sicherheitstipps"
+  },
+
+  "errors": {
+    "networkError": "Verbindungsfehler. Bitte überprüfen Sie Ihre Internetverbindung.",
+    "authError": "Authentifizierungsfehler. Bitte melden Sie sich erneut an.",
+    "invalidEmail": "Ungültige E-Mail",
+    "invalidPassword": "Das Passwort muss mindestens 6 Zeichen lang sein",
+    "passwordMismatch": "Die Passwörter stimmen nicht überein",
+    "requiredField": "Dieses Feld ist erforderlich",
+    "generic": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "serverError": "Serverfehler"
+  },
+
+  "success": {
+    "profileUpdated": "Profil erfolgreich aktualisiert",
+    "messageSent": "Nachricht gesendet",
+    "matchCreated": "Neues Match!",
+    "subscriptionUpdated": "Abonnement aktualisiert",
+    "saved": "Erfolgreich gespeichert",
+    "deleted": "Erfolgreich gelöscht",
+    "registered": "Registrierung erfolgreich",
+    "loginSuccess": "Erfolgreich angemeldet"
+  },
+
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "email": "Ungültige E-Mail",
+    "minLength": "Mindestens {{min}} Zeichen",
+    "maxLength": "Maximal {{max}} Zeichen",
+    "passwordStrength": "Das Passwort muss Buchstaben und Zahlen enthalten",
+    "ageBetween": "Das Alter muss zwischen {{min}} und {{max}} Jahren liegen"
+  }
+}

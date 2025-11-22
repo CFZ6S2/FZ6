@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "language": "English",
+    "code": "en",
+    "flag": "🇬🇧"
+  },
+
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "register": "Sign Up",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No"
+  },
+
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "messages": "Messages",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "logout": "Logout",
+    "explore": "Explore"
+  },
+
+  "home": {
+    "title": "SafeDate",
+    "subtitle": "Find your perfect match with security, transparency and respect",
+    "cta": "Get Started",
+    "exploreUsers": "Explore Users",
+    "learnMore": "Learn More",
+    "backendStatus": {
+      "checking": "Checking...",
+      "connected": "Backend Connected",
+      "disconnected": "Backend Disconnected"
+    },
+    "features": {
+      "title": "Features",
+      "secure": {
+        "title": "100% Secure",
+        "description": "Identity verification, transparent reputation and guaranteed data protection"
+      },
+      "search": {
+        "title": "Advanced Search",
+        "description": "Smart filters by age, city, reputation and more to find your ideal match"
+      },
+      "reputation": {
+        "title": "Reputation System",
+        "description": "Bronze, Silver, Gold and Platinum badges based on behavior and feedback"
+      }
+    },
+    "stats": {
+      "title": "Platform Statistics",
+      "users": "Active Users",
+      "matches": "Successful Matches",
+      "satisfaction": "Satisfaction"
+    },
+    "howItWorks": {
+      "title": "How It Works?",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your profile and verify your email"
+      },
+      "step2": {
+        "title": "Explore",
+        "description": "Search users with advanced filters"
+      },
+      "step3": {
+        "title": "Connect",
+        "description": "Send date requests"
+      },
+      "step4": {
+        "title": "Meet",
+        "description": "Schedule safe dates"
+      }
+    },
+    "cta2": {
+      "title": "Ready to find your perfect match?",
+      "description": "Join thousands of people who already found their special connection",
+      "button": "Get Started Now"
+    },
+    "footer": {
+      "tagline": "Find authentic connections with security and respect",
+      "copyright": "© 2025 SafeDate. All rights reserved."
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Login",
+      "email": "Email address",
+      "password": "Password",
+      "remember": "Remember me",
+      "forgot": "Forgot your password?",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up here"
+    },
+    "register": {
+      "title": "Create Account",
+      "name": "Full name",
+      "email": "Email address",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "age": "Age",
+      "gender": "Gender",
+      "city": "City",
+      "terms": "I accept the terms and conditions",
+      "privacy": "I accept the privacy policy",
+      "submit": "Sign Up",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in"
+    },
+    "verify": {
+      "title": "Verify your email",
+      "message": "We've sent you a verification email",
+      "resend": "Resend email"
+    }
+  },
+
+  "profile": {
+    "title": "My Profile",
+    "edit": "Edit Profile",
+    "photos": "Photos",
+    "about": "About me",
+    "interests": "Interests",
+    "preferences": "Preferences",
+    "verification": "Verification",
+    "badges": "Achievements",
+    "settings": "Settings",
+    "stats": {
+      "matches": "Matches",
+      "likes": "Likes",
+      "visits": "Visits",
+      "rating": "Rating"
+    },
+    "info": {
+      "name": "Name",
+      "age": "Age",
+      "gender": "Gender",
+      "city": "City",
+      "bio": "Bio"
+    }
+  },
+
+  "search": {
+    "title": "Search Users",
+    "filters": "Filters",
+    "age": "Age",
+    "ageRange": "Age range",
+    "location": "Location",
+    "gender": "Gender",
+    "interests": "Interests",
+    "verified": "Verified only",
+    "online": "Online only",
+    "distance": "Distance (km)",
+    "results": "{{count}} results found",
+    "noResults": "No users found",
+    "apply": "Apply filters",
+    "clear": "Clear filters"
+  },
+
+  "chat": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "online": "Online",
+    "offline": "Offline",
+    "typing": "typing...",
+    "emptyState": "You don't have any conversations yet",
+    "newChat": "New chat",
+    "block": "Block",
+    "report": "Report"
+  },
+
+  "membership": {
+    "title": "Premium Membership",
+    "subtitle": "Unlock all features",
+    "current": "Your current plan",
+    "upgrade": "Upgrade plan",
+    "changePlan": "Change plan",
+    "cancel": "Cancel subscription",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "€0/month",
+        "description": "Perfect to get started",
+        "features": [
+          "Basic profile",
+          "5 likes per day",
+          "Limited messages",
+          "View matches"
+        ]
+      },
+      "monthly": {
+        "name": "Premium Monthly",
+        "price": "€29.99/month",
+        "description": "Maximum flexibility",
+        "features": [
+          "Unlimited likes",
+          "Unlimited messages",
+          "See who liked you",
+          "Advanced filters",
+          "No ads",
+          "Premium badge"
+        ]
+      },
+      "quarterly": {
+        "name": "Premium Quarterly",
+        "price": "€24.99/month",
+        "total": "€74.97 every 3 months",
+        "savings": "Save 17%",
+        "description": "Best value",
+        "features": [
+          "Everything in monthly plan",
+          "Priority support",
+          "VIP events",
+          "3 months access"
+        ]
+      },
+      "annual": {
+        "name": "Premium Annual",
+        "price": "€19.99/month",
+        "total": "€239.88/year",
+        "savings": "Save 33%",
+        "description": "Maximum savings",
+        "features": [
+          "Everything in quarterly plan",
+          "Gold Premium badge",
+          "Concierge service",
+          "12 months access"
+        ]
+      }
+    },
+    "select": "Select plan",
+    "currentPlan": "Current plan"
+  },
+
+  "insurance": {
+    "title": "Anti-Ghosting Insurance",
+    "subtitle": "€120 protection against canceled dates",
+    "description": "If your date doesn't show up, you receive automatic compensation",
+    "price": "€120 hold (not charged)",
+    "howItWorks": "How it works",
+    "activate": "Activate insurance",
+    "status": {
+      "active": "Insurance active",
+      "inactive": "No insurance",
+      "hold": "Hold active"
+    }
+  },
+
+  "events": {
+    "title": "VIP Events",
+    "upcoming": "Upcoming events",
+    "past": "Past events",
+    "details": "Event details",
+    "attendees": "Attendees",
+    "register": "Register",
+    "registered": "Already registered",
+    "premiumOnly": "Premium users only"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "privacy": "Privacy",
+    "notifications": "Notifications",
+    "security": "Security",
+    "language": "Language",
+    "preferences": "Preferences",
+    "deleteAccount": "Delete account",
+    "logout": "Logout"
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "markRead": "Mark as read",
+    "markAllRead": "Mark all as read",
+    "empty": "You have no notifications",
+    "types": {
+      "match": "New match",
+      "message": "New message",
+      "like": "Someone likes you",
+      "visit": "Someone visited your profile",
+      "event": "New VIP event"
+    }
+  },
+
+  "help": {
+    "title": "Help Center",
+    "faq": "FAQ",
+    "contact": "Contact Support",
+    "guides": "Guides",
+    "safety": "Safety Tips"
+  },
+
+  "errors": {
+    "networkError": "Connection error. Please check your internet.",
+    "authError": "Authentication error. Please sign in again.",
+    "invalidEmail": "Invalid email",
+    "invalidPassword": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords don't match",
+    "requiredField": "This field is required",
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error"
+  },
+
+  "success": {
+    "profileUpdated": "Profile updated successfully",
+    "messageSent": "Message sent",
+    "matchCreated": "New match!",
+    "subscriptionUpdated": "Subscription updated",
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "registered": "Registration successful",
+    "loginSuccess": "Logged in successfully"
+  },
+
+  "validation": {
+    "required": "This field is required",
+    "email": "Invalid email",
+    "minLength": "Minimum {{min}} characters",
+    "maxLength": "Maximum {{max}} characters",
+    "passwordStrength": "Password must contain letters and numbers",
+    "ageBetween": "Age must be between {{min}} and {{max}} years"
+  }
+}
