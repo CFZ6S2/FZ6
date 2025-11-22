@@ -82,8 +82,8 @@ class LanguageSelector {
 
     // Determinar si es móvil para usar fondo sólido
     const isMobile = this.containerId.includes('mobile');
-    const bgClass = isMobile ? 'bg-slate-800' : 'language-selector-glass';
-    const dropdownBgClass = isMobile ? 'bg-slate-800 border-2 border-slate-700' : 'language-selector-glass';
+    const bgClass = isMobile ? 'bg-black' : 'language-selector-glass';
+    const dropdownBgClass = isMobile ? 'bg-black border-2 border-slate-700' : 'language-selector-glass';
 
     const html = `
       <style>
