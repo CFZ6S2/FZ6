@@ -86,6 +86,52 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8000"
     ]
 
+    @validator("SECRET_KEY")
+    def validate_secret_key(cls, v):
+        """
+        Validate that SECRET_KEY is strong and not a default value.
+        Prevents using weak or example keys in production.
+        """
+        if not v:
+            raise ValueError("SECRET_KEY must be set")
+
+        # Check for forbidden default values
+        forbidden_values = [
+            "your-secret-key",
+            "change-this",
+            "example",
+            "secret",
+            "password",
+            "12345",
+            "test",
+            "demo",
+            "changeme"
+        ]
+
+        v_lower = v.lower()
+        for forbidden in forbidden_values:
+            if forbidden in v_lower:
+                raise ValueError(
+                    f"SECRET_KEY contains forbidden value '{forbidden}'. "
+                    "Generate a secure key with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+                )
+
+        # Check minimum length
+        if len(v) < 32:
+            raise ValueError(
+                f"SECRET_KEY must be at least 32 characters long (got {len(v)}). "
+                "Generate a secure key with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+
+        # Check entropy (basic check - should have mix of characters)
+        if v.isalnum() or v.isalpha() or v.isdigit():
+            raise ValueError(
+                "SECRET_KEY is too simple. Must contain a mix of characters. "
+                "Generate a secure key with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+            )
+
+        return v
+
     @validator("CORS_ORIGINS", pre=True)
     def parse_cors_origins(cls, v):
         """Parse CORS origins from comma-separated string"""
