@@ -91,14 +91,16 @@
     <nav class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between" role="navigation" aria-label="Principal">
       <a href="/" class="flex items-center gap-2" aria-current="page">
         <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
-        <span class="font-bold text-xl">TuCitaSegura</span>
+        <span class="font-bold text-xl" data-i18n="home.title">TuCitaSegura</span>
       </a>
       <div class="flex items-center gap-4">
-        <div id="backend-status-badge" aria-live="polite" class="px-2 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200">Comprobando...</div>
-        <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold">
+        <div id="backend-status-badge" aria-live="polite" class="px-2 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200" data-i18n="home.backendStatus.checking">Comprobando...</div>
+        <!-- Language Selector -->
+        <div id="language-selector-container"></div>
+        <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold" data-i18n="common.login">
           Iniciar Sesión
         </a>
-        <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-2 rounded-lg font-semibold transition">
+        <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-2 rounded-lg font-semibold transition" data-i18n="common.register">
           Registrarse
         </a>
       </div>
@@ -114,18 +116,18 @@
         <div class="mb-8 float-animation inline-block">
           <i class="fas fa-heart-circle-check text-blue-400 text-8xl" aria-hidden="true"></i>
         </div>
-        <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" data-i18n="home.title">
           TuCitaSegura
         </h1>
-        <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto">
+        <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto" data-i18n="home.subtitle">
           Encuentra tu conexión perfecta con seguridad, transparencia y respeto
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a href="/webapp/buscar-usuarios.html" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
-            <i class="fas fa-search mr-2" aria-hidden="true"></i>Explorar Usuarios
+            <i class="fas fa-search mr-2" aria-hidden="true"></i><span data-i18n="home.exploreUsers">Explorar Usuarios</span>
           </a>
           <a href="#features" class="glass px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
-            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>Saber Más
+            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i><span data-i18n="home.learnMore">Saber Más</span>
           </a>
         </div>
       </div>
@@ -136,8 +138,8 @@
           <div class="text-5xl mb-4">
             <i class="fas fa-shield-heart text-blue-400" aria-hidden="true"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-3">100% Seguro</h3>
-          <p class="text-slate-300">
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.secure.title">100% Seguro</h3>
+          <p class="text-slate-300" data-i18n="home.features.secure.description">
             Verificación de identidad, reputación transparente y protección de datos garantizada
           </p>
         </div>
@@ -146,8 +148,8 @@
           <div class="text-5xl mb-4">
             <i class="fas fa-search-plus text-purple-400" aria-hidden="true"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-3">Búsqueda Avanzada</h3>
-          <p class="text-slate-300">
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.search.title">Búsqueda Avanzada</h3>
+          <p class="text-slate-300" data-i18n="home.features.search.description">
             Filtros inteligentes por edad, ciudad, reputación y más para encontrar tu match ideal
           </p>
         </div>
@@ -156,8 +158,8 @@
           <div class="text-5xl mb-4">
             <i class="fas fa-star text-yellow-400" aria-hidden="true"></i>
           </div>
-          <h3 class="text-2xl font-bold mb-3">Sistema de Reputación</h3>
-          <p class="text-slate-300">
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.reputation.title">Sistema de Reputación</h3>
+          <p class="text-slate-300" data-i18n="home.features.reputation.description">
             Badges de Bronce, Plata, Oro y Platino basados en comportamiento y feedback
           </p>
         </div>
@@ -265,6 +267,24 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+  <!-- i18n System -->
+  <script type="module" src="/webapp/i18n/i18n.js"></script>
+  <script>
+    // Inicializar i18n cuando el DOM esté listo
+    (async function() {
+      // Esperar a que i18n esté disponible
+      while (typeof window.i18n === 'undefined') {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Inicializar i18n
+      await window.i18n.init();
+
+      console.log('[App] i18n initialized with language:', window.i18n.getCurrentLanguage());
+    })();
+  </script>
+  <script type="module" src="/webapp/js/language-selector.js"></script>
 
   <!-- Backend Integration Script -->
   <script type="module">

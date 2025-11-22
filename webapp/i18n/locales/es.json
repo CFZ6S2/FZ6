@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "language": "Español",
+    "code": "es",
+    "flag": "🇪🇸"
+  },
+
+  "common": {
+    "welcome": "Bienvenido",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "close": "Cerrar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "yes": "Sí",
+    "no": "No"
+  },
+
+  "nav": {
+    "home": "Inicio",
+    "search": "Buscar",
+    "messages": "Mensajes",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "help": "Ayuda",
+    "logout": "Salir",
+    "explore": "Explorar"
+  },
+
+  "home": {
+    "title": "TuCitaSegura",
+    "subtitle": "Encuentra tu conexión perfecta con seguridad, transparencia y respeto",
+    "cta": "Comenzar Ahora",
+    "exploreUsers": "Explorar Usuarios",
+    "learnMore": "Saber Más",
+    "backendStatus": {
+      "checking": "Comprobando...",
+      "connected": "Backend Conectado",
+      "disconnected": "Backend Desconectado"
+    },
+    "features": {
+      "title": "Características",
+      "secure": {
+        "title": "100% Seguro",
+        "description": "Verificación de identidad, reputación transparente y protección de datos garantizada"
+      },
+      "search": {
+        "title": "Búsqueda Avanzada",
+        "description": "Filtros inteligentes por edad, ciudad, reputación y más para encontrar tu match ideal"
+      },
+      "reputation": {
+        "title": "Sistema de Reputación",
+        "description": "Badges de Bronce, Plata, Oro y Platino basados en comportamiento y feedback"
+      }
+    },
+    "stats": {
+      "title": "Estadísticas de la Plataforma",
+      "users": "Usuarios Activos",
+      "matches": "Matches Exitosos",
+      "satisfaction": "Satisfacción"
+    },
+    "howItWorks": {
+      "title": "¿Cómo Funciona?",
+      "step1": {
+        "title": "Regístrate",
+        "description": "Crea tu perfil y verifica tu email"
+      },
+      "step2": {
+        "title": "Explora",
+        "description": "Busca usuarios con filtros avanzados"
+      },
+      "step3": {
+        "title": "Conecta",
+        "description": "Envía solicitudes de cita"
+      },
+      "step4": {
+        "title": "Conoce",
+        "description": "Agenda citas seguras"
+      }
+    },
+    "cta2": {
+      "title": "¿Listo para encontrar tu match perfecto?",
+      "description": "Únete a miles de personas que ya encontraron su conexión especial",
+      "button": "Comenzar Ahora"
+    },
+    "footer": {
+      "tagline": "Encuentra conexiones auténticas con seguridad y respeto",
+      "copyright": "© 2025 TuCitaSegura. Todos los derechos reservados."
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "remember": "Recordarme",
+      "forgot": "¿Olvidaste tu contraseña?",
+      "submit": "Entrar",
+      "noAccount": "¿No tienes cuenta?",
+      "registerLink": "Regístrate aquí"
+    },
+    "register": {
+      "title": "Crear Cuenta",
+      "name": "Nombre completo",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "age": "Edad",
+      "gender": "Género",
+      "city": "Ciudad",
+      "terms": "Acepto los términos y condiciones",
+      "privacy": "Acepto la política de privacidad",
+      "submit": "Registrarse",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "loginLink": "Inicia sesión"
+    },
+    "verify": {
+      "title": "Verifica tu email",
+      "message": "Te hemos enviado un correo de verificación",
+      "resend": "Reenviar email"
+    }
+  },
+
+  "profile": {
+    "title": "Mi Perfil",
+    "edit": "Editar Perfil",
+    "photos": "Fotos",
+    "about": "Sobre mí",
+    "interests": "Intereses",
+    "preferences": "Preferencias",
+    "verification": "Verificación",
+    "badges": "Logros",
+    "settings": "Configuración",
+    "stats": {
+      "matches": "Matches",
+      "likes": "Me gusta",
+      "visits": "Visitas",
+      "rating": "Valoración"
+    },
+    "info": {
+      "name": "Nombre",
+      "age": "Edad",
+      "gender": "Género",
+      "city": "Ciudad",
+      "bio": "Biografía"
+    }
+  },
+
+  "search": {
+    "title": "Buscar Usuarios",
+    "filters": "Filtros",
+    "age": "Edad",
+    "ageRange": "Rango de edad",
+    "location": "Ubicación",
+    "gender": "Género",
+    "interests": "Intereses",
+    "verified": "Solo verificados",
+    "online": "Solo en línea",
+    "distance": "Distancia (km)",
+    "results": "{{count}} resultados encontrados",
+    "noResults": "No se encontraron usuarios",
+    "apply": "Aplicar filtros",
+    "clear": "Limpiar filtros"
+  },
+
+  "chat": {
+    "title": "Mensajes",
+    "conversations": "Conversaciones",
+    "typeMessage": "Escribe un mensaje...",
+    "send": "Enviar",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "typing": "escribiendo...",
+    "emptyState": "No tienes conversaciones aún",
+    "newChat": "Nuevo chat",
+    "block": "Bloquear",
+    "report": "Reportar"
+  },
+
+  "membership": {
+    "title": "Membresía Premium",
+    "subtitle": "Desbloquea todas las funciones",
+    "current": "Tu plan actual",
+    "upgrade": "Mejorar plan",
+    "changePlan": "Cambiar plan",
+    "cancel": "Cancelar suscripción",
+    "plans": {
+      "free": {
+        "name": "Gratis",
+        "price": "€0/mes",
+        "description": "Perfecto para empezar",
+        "features": [
+          "Perfil básico",
+          "5 likes por día",
+          "Mensajes limitados",
+          "Ver matches"
+        ]
+      },
+      "monthly": {
+        "name": "Premium Mensual",
+        "price": "€29.99/mes",
+        "description": "Flexibilidad máxima",
+        "features": [
+          "Likes ilimitados",
+          "Mensajes ilimitados",
+          "Ver quién te dio like",
+          "Filtros avanzados",
+          "Sin anuncios",
+          "Badge Premium"
+        ]
+      },
+      "quarterly": {
+        "name": "Premium Trimestral",
+        "price": "€24.99/mes",
+        "total": "€74.97 cada 3 meses",
+        "savings": "Ahorra 17%",
+        "description": "Mejor valor",
+        "features": [
+          "Todo del plan mensual",
+          "Soporte prioritario",
+          "Eventos VIP",
+          "3 meses de acceso"
+        ]
+      },
+      "annual": {
+        "name": "Premium Anual",
+        "price": "€19.99/mes",
+        "total": "€239.88/año",
+        "savings": "Ahorra 33%",
+        "description": "Máximo ahorro",
+        "features": [
+          "Todo del plan trimestral",
+          "Badge Premium Oro",
+          "Concierge service",
+          "12 meses de acceso"
+        ]
+      }
+    },
+    "select": "Seleccionar plan",
+    "currentPlan": "Plan actual"
+  },
+
+  "insurance": {
+    "title": "Seguro Anti-Plantón",
+    "subtitle": "Protección de €120 contra citas canceladas",
+    "description": "Si tu cita no se presenta, recibes una compensación automática",
+    "price": "€120 retención (no cobro)",
+    "howItWorks": "Cómo funciona",
+    "activate": "Activar seguro",
+    "status": {
+      "active": "Seguro activo",
+      "inactive": "Sin seguro",
+      "hold": "Retención activa"
+    }
+  },
+
+  "events": {
+    "title": "Eventos VIP",
+    "upcoming": "Próximos eventos",
+    "past": "Eventos pasados",
+    "details": "Detalles del evento",
+    "attendees": "Asistentes",
+    "register": "Registrarse",
+    "registered": "Ya registrado",
+    "premiumOnly": "Solo para usuarios Premium"
+  },
+
+  "settings": {
+    "title": "Configuración",
+    "account": "Cuenta",
+    "privacy": "Privacidad",
+    "notifications": "Notificaciones",
+    "security": "Seguridad",
+    "language": "Idioma",
+    "preferences": "Preferencias",
+    "deleteAccount": "Eliminar cuenta",
+    "logout": "Cerrar sesión"
+  },
+
+  "notifications": {
+    "title": "Notificaciones",
+    "markRead": "Marcar como leído",
+    "markAllRead": "Marcar todo como leído",
+    "empty": "No tienes notificaciones",
+    "types": {
+      "match": "Nuevo match",
+      "message": "Nuevo mensaje",
+      "like": "Le gustas a alguien",
+      "visit": "Alguien visitó tu perfil",
+      "event": "Nuevo evento VIP"
+    }
+  },
+
+  "help": {
+    "title": "Centro de Ayuda",
+    "faq": "Preguntas Frecuentes",
+    "contact": "Contactar Soporte",
+    "guides": "Guías",
+    "safety": "Consejos de Seguridad"
+  },
+
+  "errors": {
+    "networkError": "Error de conexión. Por favor, verifica tu internet.",
+    "authError": "Error de autenticación. Por favor, inicia sesión nuevamente.",
+    "invalidEmail": "Email inválido",
+    "invalidPassword": "La contraseña debe tener al menos 6 caracteres",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "requiredField": "Este campo es obligatorio",
+    "generic": "Algo salió mal. Por favor, intenta de nuevo.",
+    "notFound": "No encontrado",
+    "unauthorized": "No autorizado",
+    "serverError": "Error del servidor"
+  },
+
+  "success": {
+    "profileUpdated": "Perfil actualizado correctamente",
+    "messageSent": "Mensaje enviado",
+    "matchCreated": "¡Nuevo match!",
+    "subscriptionUpdated": "Suscripción actualizada",
+    "saved": "Guardado correctamente",
+    "deleted": "Eliminado correctamente",
+    "registered": "Registro exitoso",
+    "loginSuccess": "Sesión iniciada"
+  },
+
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "email": "Email inválido",
+    "minLength": "Mínimo {{min}} caracteres",
+    "maxLength": "Máximo {{max}} caracteres",
+    "passwordStrength": "La contraseña debe contener letras y números",
+    "ageBetween": "La edad debe estar entre {{min}} y {{max}} años"
+  }
+}
