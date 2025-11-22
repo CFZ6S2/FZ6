@@ -1,10 +1,22 @@
 # Railway-specific FastAPI deployment
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import logging
 from datetime import datetime
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# Security Headers Middleware
+try:
+    from app.middleware.security_headers import SecurityHeadersMiddleware, get_security_headers_summary
+except Exception as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import SecurityHeadersMiddleware: {e}")
+    SecurityHeadersMiddleware = None
+    get_security_headers_summary = None
 try:
     import firebase_admin
     from firebase_admin import credentials
@@ -35,7 +47,14 @@ except Exception:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Configure rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="TuCitaSegura Railway")
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configuración de CORS para producción
 environment = os.getenv("ENVIRONMENT", "development")
@@ -77,6 +96,13 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=3600  # Cache pre-flight requests for 1 hour
 )
+
+# Add Security Headers Middleware
+if SecurityHeadersMiddleware:
+    app.add_middleware(SecurityHeadersMiddleware, environment=environment)
+    logger.info("Security Headers Middleware added")
+else:
+    logger.warning("Security Headers Middleware not available")
 
 # Incluir routers de la API
 if payments_router:
@@ -122,7 +148,8 @@ if firebase_admin and not firebase_admin._apps:
 
 @app.get("/", response_model=HealthCheck if HealthCheck else None)
 @app.get("/health", response_model=HealthCheck if HealthCheck else None)
-async def health_check():
+@limiter.limit("60/minute")
+async def health_check(request: Request):
     try:
         firebase_connected = bool(firebase_admin._apps) if firebase_admin else False
     except Exception:
@@ -149,13 +176,30 @@ async def health_options():
     return JSONResponse({"message": "CORS pre-flight approved"})
 
 @app.get("/debug")
-async def debug():
+@limiter.limit("10/minute")
+async def debug(request: Request):
     logger.info("Debug endpoint accessed")
+    security_headers = get_security_headers_summary() if get_security_headers_summary else None
     return JSONResponse({
         "env_vars": {k: v for k, v in os.environ.items() if not k.startswith('RAILWAY')},
         "cwd": os.getcwd(),
         "port": os.getenv("PORT", "8000"),
-        "python_version": "3.11"
+        "python_version": "3.11",
+        "security_headers": security_headers
+    })
+
+@app.get("/security-info")
+@limiter.limit("30/minute")
+async def security_info(request: Request):
+    """Get information about active security features."""
+    logger.info("Security info endpoint accessed")
+    security_headers = get_security_headers_summary() if get_security_headers_summary else None
+    return JSONResponse({
+        "environment": environment,
+        "security_headers": security_headers,
+        "cors_origins": cors_origins if environment != "production" else ["[HIDDEN FOR SECURITY]"],
+        "rate_limiting": "enabled",
+        "firebase_auth": "enabled" if firebase_admin and firebase_admin._apps else "disabled"
     })
 
 @app.options("/debug")

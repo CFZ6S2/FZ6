@@ -1,9 +1,11 @@
 """
 Pydantic schemas for API requests and responses
+SECURITY: Input sanitization to prevent XSS attacks
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, validator
+from app.utils.sanitization import sanitize_html, sanitize_phone_number, sanitize_url
 
 
 # ========== User Models ==========
@@ -39,6 +41,31 @@ class UserBase(BaseModel):
     gender: str = Field(..., pattern="^(masculino|femenino|otro)$")
     birth_date: str  # YYYY-MM-DD
 
+    @validator('birth_date')
+    def validate_age_18_plus(cls, v):
+        """Validate that user is at least 18 years old"""
+        if not v:
+            raise ValueError("birth_date is required")
+
+        try:
+            # Parse birth date (YYYY-MM-DD format)
+            birth_date = datetime.fromisoformat(v.replace('Z', '+00:00').split('T')[0])
+        except (ValueError, AttributeError):
+            raise ValueError("birth_date must be in YYYY-MM-DD format")
+
+        # Calculate age
+        today = datetime.now()
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+        if age < 18:
+            raise ValueError("You must be at least 18 years old to register")
+
+        # Prevent unrealistic ages (e.g., 150 years old)
+        if age > 120:
+            raise ValueError("Invalid birth date")
+
+        return v
+
 
 class UserProfile(UserBase):
     """Complete user profile"""
@@ -53,6 +80,16 @@ class UserProfile(UserBase):
     has_anti_ghosting_insurance: bool = False
     reputation: str = "BRONCE"
     created_at: Optional[datetime] = None
+
+    @validator('bio', 'city', 'profession')
+    def sanitize_text_fields(cls, v):
+        """Sanitize text fields to prevent XSS"""
+        return sanitize_html(v) if v else v
+
+    @validator('photo_url')
+    def sanitize_photo_url(cls, v):
+        """Sanitize URL to prevent XSS"""
+        return sanitize_url(v) if v else v
 
 
 # ========== Recommendation Models ==========
@@ -166,6 +203,11 @@ class MessageModerationRequest(BaseModel):
     timestamp: Optional[datetime] = None
     relationship_context: Optional[Dict[str, Any]] = None  # Contexto de la relación entre usuarios
 
+    @validator('message_text')
+    def sanitize_message(cls, v):
+        """Sanitize message text to prevent XSS"""
+        return sanitize_html(v) if v else v
+
 
 class MessageModerationResult(BaseModel):
     """Message moderation result"""
@@ -254,6 +296,11 @@ class VIPEventCreate(BaseModel):
     dresscode: Optional[str] = None
     requirements: Optional[str] = None
 
+    @validator('title', 'description', 'city', 'address', 'dresscode', 'requirements')
+    def sanitize_text_fields(cls, v):
+        """Sanitize text fields to prevent XSS"""
+        return sanitize_html(v) if v else v
+
     @validator('max_age')
     def validate_age_range(cls, v, values):
         if 'min_age' in values and v < values['min_age']:
@@ -267,6 +314,11 @@ class VIPEventApplication(BaseModel):
     user_id: str
     motivation: str = Field(..., min_length=50, max_length=500)
     availability_confirmed: bool = True
+
+    @validator('motivation')
+    def sanitize_motivation(cls, v):
+        """Sanitize motivation field to prevent XSS"""
+        return sanitize_html(v) if v else v
 
 
 class VIPEventTicketRequest(BaseModel):
@@ -432,6 +484,16 @@ class EmergencyPhoneBase(BaseModel):
     is_primary: bool = False
     label: str = Field(default="Teléfono personal", max_length=50)
     notes: Optional[str] = Field(default=None, max_length=200)
+
+    @validator('phone_number')
+    def sanitize_phone(cls, v):
+        """Sanitize phone number to prevent XSS"""
+        return sanitize_phone_number(v) if v else v
+
+    @validator('label', 'notes')
+    def sanitize_text(cls, v):
+        """Sanitize text fields to prevent XSS"""
+        return sanitize_html(v) if v else v
 
 
 class EmergencyPhoneCreate(EmergencyPhoneBase):

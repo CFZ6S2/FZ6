@@ -1,22 +1,32 @@
 """
 Endpoints de la API para manejar pagos con PayPal.
 ACTUALIZADO: Ahora usa autenticación real de Firebase.
+PROTECCIÓN: Rate limiting implementado en todos los endpoints.
 """
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 import logging
 import os
 from typing import Dict, Any, Optional
+from datetime import datetime
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.services.payments.paypal_service import paypal_service
+from app.services.firestore.subscription_service import subscription_service
+from app.services.email.email_service import email_service
 from app.models.schemas import AuthenticatedUser
 from app.core.dependencies import get_current_user, get_current_verified_user
+from firebase_admin import auth
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/payments", tags=["payments"])
+limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/paypal/create-order")
+@limiter.limit("10/minute")
 async def create_paypal_order(
+    request: Request,
     amount: float,
     user: AuthenticatedUser = Depends(get_current_verified_user),
     currency: str = "EUR",
@@ -70,7 +80,9 @@ async def create_paypal_order(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/paypal/capture-order/{order_id}")
+@limiter.limit("10/minute")
 async def capture_paypal_order(
+    request: Request,
     order_id: str,
     user: AuthenticatedUser = Depends(get_current_verified_user)
 ):
@@ -125,7 +137,9 @@ async def capture_paypal_order(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/paypal/order/{order_id}")
+@limiter.limit("20/minute")
 async def get_paypal_order_details(
+    request: Request,
     order_id: str,
     user: AuthenticatedUser = Depends(get_current_user)
 ):
@@ -186,24 +200,115 @@ async def handle_paypal_webhook(request: Request):
             resource = event.get("resource", {})
             capture_id = resource.get("id")
             order_id = resource.get("supplementary_data", {}).get("related_ids", {}).get("order_id")
-            amount = resource.get("amount", {}).get("value")
-            
-            logger.info(f"Pago completado: {capture_id}, orden: {order_id}, monto: {amount}")
-            
-            # TODO: Implementar lógica de negocio aquí
-            # - Actualizar estado de suscripción del usuario
-            # - Enviar email de confirmación
-            # - Registrar el pago en la base de datos
-            
+            amount_data = resource.get("amount", {})
+            amount = amount_data.get("value")
+            currency = amount_data.get("currency_code", "EUR")
+            custom_id = resource.get("custom_id")  # Este es el user_id que pasamos en create_order
+
+            logger.info(f"Pago completado: {capture_id}, orden: {order_id}, monto: {amount} {currency}")
+
+            if custom_id:
+                try:
+                    # 1. Obtener información del usuario
+                    user = auth.get_user(custom_id)
+                    user_email = user.email
+
+                    # 2. Crear/actualizar suscripción en Firestore
+                    payment_data = {
+                        "capture_id": capture_id,
+                        "order_id": order_id,
+                        "amount": amount,
+                        "currency": currency
+                    }
+
+                    subscription_data = await subscription_service.create_subscription(
+                        user_id=custom_id,
+                        payment_data=payment_data,
+                        plan_type="premium",
+                        duration_months=1
+                    )
+
+                    logger.info(f"Suscripción creada para usuario {custom_id}: {subscription_data['id']}")
+
+                    # 3. Actualizar custom claims en Firebase Auth
+                    await subscription_service.update_custom_claims(
+                        user_id=custom_id,
+                        has_active_subscription=True
+                    )
+
+                    logger.info(f"Custom claims actualizados para usuario {custom_id}")
+
+                    # 4. Enviar email de confirmación
+                    if user_email:
+                        email_sent = await email_service.send_payment_confirmation(
+                            user_email=user_email,
+                            payment_data=payment_data,
+                            subscription_data=subscription_data
+                        )
+
+                        if email_sent:
+                            logger.info(f"Email de confirmación enviado a {user_email}")
+                        else:
+                            logger.warning(f"No se pudo enviar email de confirmación a {user_email}")
+
+                    logger.info(f"Procesamiento completo de pago para usuario {custom_id}")
+
+                except Exception as e:
+                    logger.error(f"Error procesando pago para usuario {custom_id}: {e}")
+                    # No lanzar excepción para no rechazar el webhook
+                    # PayPal reintentará si falla
+            else:
+                logger.warning(f"Webhook recibido sin custom_id (user_id). Capture: {capture_id}")
+
         elif event_type == "PAYMENT.CAPTURE.DENIED":
             # Pago rechazado
             resource = event.get("resource", {})
-            logger.warning(f"Pago rechazado: {resource}")
-            
+            custom_id = resource.get("custom_id")
+            logger.warning(f"Pago rechazado para usuario {custom_id}: {resource}")
+
+            # Aquí podrías enviar un email al usuario notificando el rechazo
+
         elif event_type == "PAYMENT.CAPTURE.REFUNDED":
             # Reembolso procesado
             resource = event.get("resource", {})
-            logger.info(f"Reembolso procesado: {resource}")
+            custom_id = resource.get("custom_id")
+            refund_amount = resource.get("amount", {}).get("value")
+            refund_id = resource.get("id")
+
+            logger.info(f"Reembolso procesado para usuario {custom_id}: {refund_amount}")
+
+            if custom_id:
+                try:
+                    # 1. Cancelar suscripción
+                    refund_data = {
+                        "refund_id": refund_id,
+                        "amount": refund_amount,
+                        "refunded_at": datetime.now()
+                    }
+
+                    await subscription_service.cancel_subscription(
+                        user_id=custom_id,
+                        refund_data=refund_data
+                    )
+
+                    # 2. Actualizar custom claims
+                    await subscription_service.update_custom_claims(
+                        user_id=custom_id,
+                        has_active_subscription=False
+                    )
+
+                    # 3. Enviar email de notificación
+                    user = auth.get_user(custom_id)
+                    if user.email:
+                        await email_service.send_subscription_cancelled(
+                            user_email=user.email,
+                            refund_data=refund_data
+                        )
+
+                    logger.info(f"Suscripción cancelada por reembolso para usuario {custom_id}")
+
+                except Exception as e:
+                    logger.error(f"Error procesando reembolso para usuario {custom_id}: {e}")
         
         return JSONResponse({"status": "processed"})
         
@@ -212,7 +317,8 @@ async def handle_paypal_webhook(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/config")
-async def get_payment_config():
+@limiter.limit("30/minute")
+async def get_payment_config(request: Request):
     """
     Obtiene la configuración de pagos para el frontend.
     
