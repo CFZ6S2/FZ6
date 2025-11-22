@@ -1,11 +1,14 @@
 """
 Endpoints para gestión de teléfonos de emergencia.
 ACTUALIZADO: Ahora usa autenticación real de Firebase en lugar de mocks.
+PROTECCIÓN: Rate limiting implementado en todos los endpoints.
 """
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 import logging
 from typing import List, Optional
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.models.schemas import (
     EmergencyPhoneCreate,
@@ -25,9 +28,11 @@ from app.services.firestore.emergency_phones_service import emergency_phone_serv
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/emergency", tags=["emergency-phones"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/phones", response_model=EmergencyPhoneResponse)
+@limiter.limit("15/minute")
 async def create_emergency_phone(
     phone_data: EmergencyPhoneCreate,
     request: Request,
@@ -92,7 +97,9 @@ async def create_emergency_phone(
 
 
 @router.get("/phones", response_model=EmergencyPhoneListResponse)
+@limiter.limit("30/minute")
 async def get_emergency_phones(
+    request: Request,
     user: AuthenticatedUser = Depends(get_current_user),
     user_id: Optional[str] = None,
     page: int = 1,
@@ -145,7 +152,9 @@ async def get_emergency_phones(
 
 
 @router.get("/phones/{phone_id}", response_model=EmergencyPhoneResponse)
+@limiter.limit("40/minute")
 async def get_emergency_phone(
+    request: Request,
     phone_id: str,
     user: AuthenticatedUser = Depends(get_current_user)
 ):
@@ -183,7 +192,9 @@ async def get_emergency_phone(
 
 
 @router.put("/phones/{phone_id}", response_model=EmergencyPhoneResponse)
+@limiter.limit("20/minute")
 async def update_emergency_phone(
+    request: Request,
     phone_id: str,
     phone_data: EmergencyPhoneUpdate,
     user: AuthenticatedUser = Depends(get_current_user)
@@ -233,7 +244,9 @@ async def update_emergency_phone(
 
 
 @router.delete("/phones/{phone_id}", response_model=SuccessResponse)
+@limiter.limit("15/minute")
 async def delete_emergency_phone(
+    request: Request,
     phone_id: str,
     user: AuthenticatedUser = Depends(get_current_user)
 ):
@@ -279,7 +292,9 @@ async def delete_emergency_phone(
 
 
 @router.post("/phones/{phone_id}/verify", response_model=EmergencyPhoneResponse)
+@limiter.limit("10/minute")
 async def verify_emergency_phone(
+    request: Request,
     phone_id: str,
     admin: AuthenticatedUser = Depends(get_current_admin)
 ):
@@ -331,6 +346,7 @@ async def verify_emergency_phone(
 
 
 @router.post("/recaptcha/verify", response_model=SuccessResponse)
+@limiter.limit("20/minute")
 async def verify_recaptcha(
     request: Request,
     user: AuthenticatedUser = Depends(get_current_user)
