@@ -80,6 +80,11 @@ class LanguageSelector {
     const toggleId = `language-toggle-${this.containerId}`;
     const dropdownId = `language-dropdown-${this.containerId}`;
 
+    // Determinar si es móvil para usar fondo sólido
+    const isMobile = this.containerId.includes('mobile');
+    const bgClass = isMobile ? 'bg-slate-800' : 'language-selector-glass';
+    const dropdownBgClass = isMobile ? 'bg-slate-800 border-2 border-slate-700' : 'language-selector-glass';
+
     const html = `
       <style>
         .language-selector-glass {
@@ -180,7 +185,7 @@ class LanguageSelector {
       <div class="relative language-selector">
         <button
           id="${toggleId}"
-          class="language-toggle-btn language-selector-glass flex items-center gap-2 px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-200"
+          class="language-toggle-btn ${bgClass} flex items-center gap-2 px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-200"
           aria-label="Select language"
           aria-haspopup="true"
           aria-expanded="${this.isOpen}"
@@ -192,7 +197,7 @@ class LanguageSelector {
 
         <div
           id="${dropdownId}"
-          class="${this.isOpen ? 'language-dropdown-open' : 'hidden'} absolute right-0 mt-3 w-64 language-selector-glass rounded-2xl shadow-2xl z-50 overflow-hidden"
+          class="${this.isOpen ? 'language-dropdown-open' : 'hidden'} absolute right-0 mt-3 w-64 ${dropdownBgClass} rounded-2xl shadow-2xl z-50 overflow-hidden"
           role="menu"
           aria-orientation="vertical"
         >
