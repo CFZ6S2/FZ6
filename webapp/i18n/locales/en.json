@@ -40,8 +40,10 @@
   "home": {
     "title": "SafeDate",
     "subtitle": "Find your perfect match with security, transparency and respect",
-    "cta": "Get Started",
-    "exploreUsers": "Explore Users",
+    "cta": {
+      "register": "Sign Up Free",
+      "start": "Get Started"
+    },
     "learnMore": "Learn More",
     "backendStatus": {
       "checking": "Checking...",
