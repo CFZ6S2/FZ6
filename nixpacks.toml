@@ -3,7 +3,8 @@ nixPkgs = ['python311', 'python311Packages.pip', 'python311Packages.virtualenv']
 
 [phases.install]
 cmds = [
-  'virtualenv /app/venv',
+  'virtualenv --python=python3.11 /app/venv',
+  '/app/venv/bin/pip install --upgrade pip',
   '/app/venv/bin/pip install -r backend/requirements.txt'
 ]
 
