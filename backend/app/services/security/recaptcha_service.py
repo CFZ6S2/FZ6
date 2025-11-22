@@ -1,5 +1,6 @@
 """
 Servicio para validación de reCAPTCHA.
+SECURITY: HTTP timeouts para evitar bloqueos indefinidos.
 """
 import os
 import logging
@@ -9,9 +10,12 @@ from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+# HTTP timeout configuration (in seconds)
+RECAPTCHA_TIMEOUT = 10.0  # 10 seconds for Google reCAPTCHA API
+
 class RecaptchaService:
     """Servicio para validar tokens de reCAPTCHA."""
-    
+
     def __init__(self):
         self.settings = get_settings()
         self.secret_key = os.getenv("RECAPTCHA_SECRET_KEY")
@@ -47,17 +51,20 @@ class RecaptchaService:
             data["remoteip"] = remote_ip
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=RECAPTCHA_TIMEOUT) as client:
                 response = await client.post(self.verify_url, data=data)
                 response.raise_for_status()
-                
+
                 result = response.json()
-                
+
                 if not result.get("success"):
                     logger.warning(f"reCAPTCHA verification failed: {result.get('error-codes', [])}")
-                
+
                 return result
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout verifying reCAPTCHA: {e}")
+            return {"success": False, "error": "recaptcha_timeout"}
         except httpx.HTTPError as e:
             logger.error(f"Error verifying reCAPTCHA: {e}")
             return {"success": False, "error": "recaptcha_service_unavailable"}
