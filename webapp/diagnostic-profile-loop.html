@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic - Profile Loop Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .diagnostic-panel {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .log-entry {
+      padding: 8px;
+      margin: 4px 0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-info { background: #e3f2fd; color: #1976d2; }
+    .log-error { background: #ffebee; color: #d32f2f; }
+    .log-warning { background: #fff3e0; color: #f57c00; }
+    .log-success { background: #e8f5e8; color: #388e3c; }
+    .counter {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1976d2;
+    }
+    .test-button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover { background: #1565c0; }
+    .error-highlight {
+      background: #ffebee;
+      border: 2px solid #d32f2f;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Profile Infinite Loop Diagnostic Tool</h1>
+  
+  <div class="diagnostic-panel">
+    <h2>📊 Loop Detection Monitor</h2>
+    <div>
+      <strong>Auth State Changes:</strong> <span id="authCounter" class="counter">0</span>
+    </div>
+    <div>
+      <strong>Profile Loads:</strong> <span id="profileCounter" class="counter">0</span>
+    </div>
+    <div>
+      <strong>DOM Elements Missing:</strong> <span id="missingElementsCounter" class="counter">0</span>
+    </div>
+    <div>
+      <strong>Total Loops Detected:</strong> <span id="loopCounter" class="counter">0</span>
+    </div>
+  </div>
+
+  <div class="diagnostic-panel">
+    <h2>🧪 Quick Tests</h2>
+    <button class="test-button" onclick="testMissingElements()">Test Missing DOM Elements</button>
+    <button class="test-button" onclick="testAuthSimulation()">Simulate Auth State Change</button>
+    <button class="test-button" onclick="testProfileLoad()">Test Profile Load Function</button>
+    <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+  </div>
+
+  <div class="diagnostic-panel">
+    <h2>📋 Missing Elements Report</h2>
+    <div id="missingElementsReport"></div>
+  </div>
+
+  <div class="diagnostic-panel">
+    <h2>📝 Diagnostic Log</h2>
+    <div id="diagnosticLog" style="max-height: 400px; overflow-y: auto;"></div>
+  </div>
+
+  <script>
+    // Diagnostic counters
+    let authCounter = 0;
+    let profileCounter = 0;
+    let missingElementsCounter = 0;
+    let loopCounter = 0;
+    let lastAuthState = null;
+    let authStateChangeTimestamps = [];
+
+    // Log function
+    function log(message, type = 'info') {
+      const logDiv = document.getElementById('diagnosticLog');
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logDiv.insertBefore(entry, logDiv.firstChild);
+      
+      // Keep only last 100 entries
+      while (logDiv.children.length > 100) {
+        logDiv.removeChild(logDiv.lastChild);
+      }
+    }
+
+    // Update counter display
+    function updateCounter(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    // Test for missing DOM elements that perfil.html references
+    function testMissingElements() {
+      log('Testing for missing DOM elements in perfil.html...', 'info');
+      
+      const requiredElements = [
+        'firstName',
+        'lastName', 
+        'email',
+        'edad',
+        'municipio',
+        'interes',
+        'reputation',
+        'reputationBadge',
+        'reputationText'
+      ];
+
+      const missingElements = [];
+      
+      requiredElements.forEach(id => {
+        if (!document.getElementById(id)) {
+          missingElements.push(id);
+        }
+      });
+
+      if (missingElements.length > 0) {
+        missingElementsCounter += missingElements.length;
+        updateCounter('missingElementsCounter', missingElementsCounter);
+        
+        const report = document.getElementById('missingElementsReport');
+        report.innerHTML = `
+          <div class="error-highlight">
+            <strong>❌ Missing Elements Found:</strong>
+            <ul>
+              ${missingElements.map(el => `<li>${el}</li>`).join('')}
+            </ul>
+            <p><strong>Impact:</strong> These missing elements will cause JavaScript errors when trying to access .value, .textContent, or other properties.</p>
+          </div>
+        `;
+        
+        log(`❌ Found ${missingElements.length} missing elements: ${missingElements.join(', ')}`, 'error');
+      } else {
+        log('✅ All required elements found', 'success');
+      }
+
+      return missingElements;
+    }
+
+    // Simulate auth state change
+    function testAuthSimulation() {
+      authCounter++;
+      updateCounter('authCounter', authCounter);
+      
+      const timestamp = Date.now();
+      authStateChangeTimestamps.push(timestamp);
+      
+      // Keep only last 10 timestamps
+      if (authStateChangeTimestamps.length > 10) {
+        authStateChangeTimestamps.shift();
+      }
+      
+      // Detect rapid auth state changes (potential loop)
+      if (authStateChangeTimestamps.length >= 3) {
+        const recent = authStateChangeTimestamps.slice(-3);
+        const timeDiff = recent[2] - recent[0];
+        
+        if (timeDiff < 1000) { // 3 auth changes in less than 1 second
+          loopCounter++;
+          updateCounter('loopCounter', loopCounter);
+          log(`🚨 POTENTIAL LOOP DETECTED: ${authCounter} auth changes, last 3 in ${timeDiff}ms`, 'error');
+        }
+      }
+      
+      log(`Auth state change #${authCounter} detected`, 'info');
+      lastAuthState = timestamp;
+    }
+
+    // Test profile load function
+    function testProfileLoad() {
+      profileCounter++;
+      updateCounter('profileCounter', profileCounter);
+      
+      // Simulate the conditions that might cause a loop
+      const missingElements = testMissingElements();
+      
+      if (missingElements.length > 0) {
+        log(`⚠️ Profile load #${profileCounter} would fail due to missing elements`, 'warning');
+      } else {
+        log(`✅ Profile load #${profileCounter} simulation completed`, 'success');
+      }
+      
+      // Check if profile loads are happening too frequently
+      if (profileCounter > 5) {
+        log(`🔄 Profile has been loaded ${profileCounter} times - potential loop!`, 'error');
+      }
+    }
+
+    // Clear logs
+    function clearLogs() {
+      document.getElementById('diagnosticLog').innerHTML = '';
+      document.getElementById('missingElementsReport').innerHTML = '';
+      log('Logs cleared', 'info');
+    }
+
+    // Auto-detect potential issues
+    function autoDetectIssues() {
+      log('Running auto-detection...', 'info');
+      
+      // Check for rapid auth changes
+      if (authCounter > 3 && authStateChangeTimestamps.length >= 3) {
+        const recent = authStateChangeTimestamps.slice(-3);
+        const timeDiff = recent[2] - recent[0];
+        
+        if (timeDiff < 2000) {
+          log(`🔥 RAPID AUTH CHANGES: ${authCounter} changes detected, potential loop source`, 'error');
+        }
+      }
+      
+      // Check for missing elements
+      const missingElements = testMissingElements();
+      
+      // Check for profile load frequency
+      if (profileCounter > 3) {
+        log(`⚠️ HIGH PROFILE LOAD FREQUENCY: ${profileCounter} loads detected`, 'warning');
+      }
+      
+      // Overall assessment
+      if (authCounter > 5 || profileCounter > 5 || missingElements.length > 0) {
+        log('🚨 ISSUES DETECTED - Profile page likely has infinite loop problems', 'error');
+      } else {
+        log('✅ No obvious issues detected in current session', 'success');
+      }
+    }
+
+    // Initialize
+    log('Profile Loop Diagnostic Tool Initialized', 'info');
+    log('Use the test buttons above to simulate different scenarios', 'info');
+    
+    // Run initial detection after a short delay
+    setTimeout(autoDetectIssues, 1000);
+
+    // Monitor for potential loops every 5 seconds
+    setInterval(autoDetectIssues, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil - TuCitaSegura</title>
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/output.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .photo-placeholder {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      font-weight: bold;
+      color: white;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    input, select, textarea {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    select option {
+      background: #1e293b;
+      color: white;
+    }
+
+    .label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <p class="text-xl font-semibold">Cargando perfil...</p>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center">
+      <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-check-circle text-5xl text-green-400"></i>
+      </div>
+      <h3 class="text-3xl font-bold mb-4">¡Perfil Actualizado!</h3>
+      <p class="text-slate-200 mb-6">Tus cambios han sido guardados exitosamente.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button onclick="goToSearch()" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          Buscar
+        </button>
+        <button onclick="closeSuccessModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
+          Seguir aquí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <nav class="glass-strong sticky top-0 z-50 border-b border-white/20">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <h1 class="text-2xl font-bold">
+            <i class="fas fa-user-circle mr-2"></i>
+            Mi Perfil
+          </h1>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Profile Photo Section -->
+    <div class="glass-strong rounded-2xl p-8 mb-6">
+      <h3 class="text-2xl font-bold mb-6 flex items-center gap-3 text-center justify-center">
+        <i class="fas fa-images text-purple-400"></i>
+        Fotos de Perfil
+      </h3>
+
+      <!-- Avatar Principal -->
+      <div class="text-center mb-6">
+        <label class="text-white font-semibold mb-2 block">Avatar Principal (Obligatorio)</label>
+        <div class="flex flex-col items-center">
+          <div class="mb-4 relative">
+            <img id="profilePhoto" class="profile-photo hidden" src="" alt="Foto de perfil">
+            <div id="photoPlaceholder" class="photo-placeholder">
+              <span id="photoInitial">U</span>
+            </div>
+            <button type="button" onclick="document.getElementById('photoInput').click()" class="absolute bottom-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-camera text-xl"></i>
+            </button>
+            <input type="file" id="photoInput" accept="image/*" class="hidden">
+          </div>
+          <h2 id="userName" class="text-2xl font-bold mb-2">Usuario</h2>
+          <p class="text-slate-300" id="userEmail">email@example.com</p>
+        </div>
+      </div>
+
+      <!-- Galería de Fotos Adicionales -->
+      <div class="mt-8">
+        <label class="text-white font-semibold mb-2 block text-center">
+          Galería de Fotos (Mínimo 2 obligatorias, máximo 5)
+        </label>
+        <p class="text-sm text-slate-300 text-center mb-4">
+          <i class="fas fa-info-circle mr-1"></i>
+          Sube al menos 2 fotos adicionales para completar tu perfil
+        </p>
+
+        <div class="grid grid-cols-3 md:grid-cols-5 gap-4">
+          <!-- Gallery Photo 1 -->
+          <div class="relative aspect-square">
+            <div id="galleryPreview1" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+              <i class="fas fa-plus text-white/50 text-2xl"></i>
+            </div>
+            <img id="galleryImage1" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 1">
+            <button type="button" id="galleryRemove1" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-times text-white"></i>
+            </button>
+            <input type="file" id="galleryInput1" accept="image/*" class="hidden">
+          </div>
+
+          <!-- Gallery Photo 2 -->
+          <div class="relative aspect-square">
+            <div id="galleryPreview2" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+              <i class="fas fa-plus text-white/50 text-2xl"></i>
+            </div>
+            <img id="galleryImage2" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 2">
+            <button type="button" id="galleryRemove2" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-times text-white"></i>
+            </button>
+            <input type="file" id="galleryInput2" accept="image/*" class="hidden">
+          </div>
+
+          <!-- Gallery Photo 3 -->
+          <div class="relative aspect-square">
+            <div id="galleryPreview3" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+              <i class="fas fa-plus text-white/50 text-2xl"></i>
+            </div>
+            <img id="galleryImage3" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 3">
+            <button type="button" id="galleryRemove3" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-times text-white"></i>
+            </button>
+            <input type="file" id="galleryInput3" accept="image/*" class="hidden">
+          </div>
+
+          <!-- Gallery Photo 4 -->
+          <div class="relative aspect-square">
+            <div id="galleryPreview4" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+              <i class="fas fa-plus text-white/50 text-2xl"></i>
+            </div>
+            <img id="galleryImage4" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 4">
+            <button type="button" id="galleryRemove4" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-times text-white"></i>
+            </button>
+            <input type="file" id="galleryInput4" accept="image/*" class="hidden">
+          </div>
+
+          <!-- Gallery Photo 5 -->
+          <div class="relative aspect-square">
+            <div id="galleryPreview5" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+              <i class="fas fa-plus text-white/50 text-2xl"></i>
+            </div>
+            <img id="galleryImage5" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 5">
+            <button type="button" id="galleryRemove5" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+              <i class="fas fa-times text-white"></i>
+            </button>
+            <input type="file" id="galleryInput5" accept="image/*" class="hidden">
+          </div>
+        </div>
+
+        <div class="mt-4 bg-yellow-500/20 border border-yellow-300/30 rounded-lg p-3">
+          <p class="text-white text-sm text-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <strong>Obligatorio:</strong> Debes subir al menos 2 fotos adicionales además del avatar
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="glass-strong rounded-2xl p-8 mb-6">
+      <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+        <i class="fas fa-id-card text-purple-400"></i>
+        Información Personal
+      </h3>
+
+      <form id="profileForm" class="space-y-6">
+
+        <!-- Alias -->
+        <div>
+          <label class="label">
+            <i class="fas fa-user text-purple-400 mr-2"></i>
+            Nombre de Usuario (Alias)
+          </label>
+          <input
+            type="text"
+            id="alias"
+            class="w-full px-4 py-3 rounded-xl"
+            placeholder="Tu nombre de usuario"
+            required
+            readonly
+            title="El nombre de usuario se establece en el registro"
+          >
+          <p class="text-xs text-slate-400 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            El nombre de usuario se establece durante el registro y no se puede cambiar.
+          </p>
+        </div>
+
+        <!-- Fecha de Nacimiento -->
+        <div>
+          <label class="label">
+            <i class="fas fa-calendar text-purple-400 mr-2"></i>
+            Fecha de Nacimiento
+          </label>
+          <input
+            type="date"
+            id="birthDate"
+            class="w-full px-4 py-3 rounded-xl"
+            required
+          >
+        </div>
+
+        <!-- Género -->
+        <div>
+          <label class="label">
+            <i class="fas fa-venus-mars text-purple-400 mr-2"></i>
+            Género
+          </label>
+          <select id="gender" class="w-full px-4 py-3 rounded-xl" required>
+            <option value="">Selecciona tu género</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+          </select>
+          <div class="mt-2 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+            <p class="text-xs text-blue-300">
+              <i class="fas fa-info-circle mr-1"></i>
+              <strong>Plataforma exclusivamente heterosexual:</strong> Los hombres solo verán mujeres y las mujeres solo verán hombres
+            </p>
+          </div>
+        </div>
+
+        <!-- Municipio -->
+        <div>
+          <label class="label">
+            <i class="fas fa-map-marker-alt text-purple-400 mr-2"></i>
+            Municipio
+          </label>
+          <input
+            type="text"
+            id="city"
+            class="w-full px-4 py-3 rounded-xl"
+            placeholder="Tu municipio"
+            required
+          >
+          <p class="text-xs text-slate-400 mt-2">
+            <i class="fas fa-info-circle mr-1"></i>
+            Solo indica el municipio, no tu dirección completa por seguridad
+          </p>
+        </div>
+
+        <!-- Profesión -->
+        <div>
+          <label class="label">
+            <i class="fas fa-briefcase text-purple-400 mr-2"></i>
+            ¿A Qué Te Dedicas?
+          </label>
+          <input
+            type="text"
+            id="profession"
+            class="w-full px-4 py-3 rounded-xl"
+            placeholder="Tu profesión u ocupación"
+            required
+          >
+        </div>
+
+        <!-- Autodescripción -->
+        <div>
+          <label class="label">
+            <i class="fas fa-pen text-purple-400 mr-2"></i>
+            Autodescripción
+          </label>
+          <textarea
+            id="bio"
+            rows="6"
+            class="w-full px-4 py-3 rounded-xl resize-none"
+            placeholder="Escribe una descripción sobre ti, tus intereses, qué te gusta hacer, qué buscas... (Mínimo 120 palabras)"
+          ></textarea>
+          <p class="text-xs text-slate-400 mt-2">
+            <span id="bioCount">0</span> palabras (<span id="bioCharCount">0</span> caracteres)
+            <span id="bioMinWarning" class="text-yellow-400 hidden"> - <i class="fas fa-exclamation-triangle"></i> Mínimo 120 palabras</span>
+            <span id="bioMinSuccess" class="text-green-400 hidden"> - <i class="fas fa-check-circle"></i> Descripción completa</span>
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Relationship Status & Preferences -->
+    <div class="glass-strong rounded-2xl p-8 mb-6">
+      <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+        <i class="fas fa-heart text-pink-400"></i>
+        Estado Sentimental y Preferencias
+      </h3>
+
+      <div class="space-y-6">
+
+        <!-- Estado Sentimental -->
+        <div>
+          <label class="label">
+            <i class="fas fa-heart-pulse text-pink-400 mr-2"></i>
+            Estado Sentimental
+          </label>
+          <select id="relationshipStatus" class="w-full px-4 py-3 rounded-xl" required>
+            <option value="">Selecciona tu estado</option>
+            <option value="felizmente_separado">Felizmente Separado o Divorciado</option>
+            <option value="casado_golfo">Casado y Golfo</option>
+            <option value="viudo">Viudo</option>
+            <option value="libre_pajaro">Libre como un Pájaro</option>
+            <option value="no_contestar">Prefiero No Contestar</option>
+            <option value="builder">Builder</option>
+          </select>
+        </div>
+
+        <!-- Qué Busca -->
+        <div>
+          <label class="label">
+            <i class="fas fa-search-heart text-pink-400 mr-2"></i>
+            ¿Qué Buscas?
+          </label>
+          <select id="lookingFor" class="w-full px-4 py-3 rounded-xl" required>
+            <option value="">Selecciona qué buscas</option>
+            <option value="relacion_seria">Relación Seria / A Largo Plazo</option>
+            <option value="relacion_casual">Relación Casual / Esporádica</option>
+            <option value="amistad">Amistad</option>
+            <option value="conocer_gente">Conocer Gente Nueva</option>
+            <option value="sin_compromiso">Citas sin Compromiso</option>
+            <option value="abierto">Abierto a Posibilidades</option>
+          </select>
+        </div>
+
+        <!-- Rango de Edad Preferido -->
+        <div>
+          <label class="label">
+            <i class="fas fa-user-friends text-pink-400 mr-2"></i>
+            Rango de Edad que Buscas
+          </label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-slate-300 mb-2 block">Edad mínima</label>
+              <input
+                type="number"
+                id="ageRangeMin"
+                min="18"
+                max="99"
+                class="w-full px-4 py-3 rounded-xl"
+                placeholder="18"
+              >
+            </div>
+            <div>
+              <label class="text-sm text-slate-300 mb-2 block">Edad máxima</label>
+              <input
+                type="number"
+                id="ageRangeMax"
+                min="18"
+                max="99"
+                class="w-full px-4 py-3 rounded-xl"
+                placeholder="99"
+              >
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Theme Selection -->
+    <div class="glass-strong rounded-2xl p-8 mb-6">
+      <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+        <i class="fas fa-palette text-pink-400"></i>
+        Personalización
+      </h3>
+
+      <div class="space-y-4">
+        <label class="label">
+          <i class="fas fa-brush text-pink-400 mr-2"></i>
+          Tema de Color
+        </label>
+        <p class="text-sm text-slate-300 mb-4">
+          Elige el esquema de colores que más te guste para personalizar tu experiencia
+        </p>
+
+        <div id="themeSelector" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Theme options will be loaded here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="flex gap-4">
+      <button
+        type="button"
+        onclick="window.location.href='/webapp/buscar-usuarios.html'"
+        class="flex-1 glass hover:glass-strong text-white font-bold py-4 px-6 rounded-xl transition"
+      >
+        Cancelar
+      </button>
+      <button
+        id="saveButton"
+        onclick="saveProfile()"
+        class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl transition"
+      >
+        <i class="fas fa-save mr-2"></i>
+        Guardar Cambios
+      </button>
+    </div>
+
+    <!-- Delete Account Section -->
+    <div class="mt-8 glass-strong rounded-2xl p-6 border-2 border-red-500/30">
+      <h4 class="font-bold text-red-400 mb-3">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        Zona Peligrosa
+      </h4>
+      <p class="text-sm text-slate-300 mb-4">
+        Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, estate seguro.
+      </p>
+      <button
+        onclick="confirmDeleteAccount()"
+        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+      >
+        <i class="fas fa-trash mr-2"></i>
+        Eliminar mi Cuenta
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Error Fixes -->
+  <script type="module" src="/webapp/js/error-fixes.js"></script>
+  
+  <!-- Demo Mode Banner -->
+  <script src="/webapp/js/demo-banner.js"></script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db, storage } from './js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { showToast } from './js/utils.js';
+    import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './js/theme.js';
+    import { logger } from './js/logger.js';
+    import { setupGlobalErrorHandling } from './js/error-handler.js';
+    import { initializeNotifications } from './js/notifications.js';
+    import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
+
+    // Setup global error handling
+    setupGlobalErrorHandling();
+
+    let currentUser = null;
+    let currentUserData = null;
+    let photoFile = null;
+    let galleryFiles = [null, null, null, null, null]; // 5 gallery photos
+    let selectedTheme = 'purple';
+    let isLoadingProfile = false; // PREVENT INFINITE LOOP
+    let hasLoadedProfile = false; // TRACK IF PROFILE ALREADY LOADED
+
+    // Auth State - FIXED TO PREVENT INFINITE LOOPS
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        console.log('🔍 Auth state changed:', user ? 'User logged in' : 'No user');
+        
+        if (isLoadingProfile || hasLoadedProfile) {
+          console.log('🛑 Preventing duplicate profile load');
+          return;
+        }
+
+        if (isDemoMode()) {
+          const demoUser = getDemoUser();
+          if (demoUser) {
+            currentUser = { uid: demoUser.uid, email: demoUser.email, emailVerified: false };
+            currentUserData = demoUser;
+            isLoadingProfile = true;
+            await loadDemoUserProfile();
+            isLoadingProfile = false;
+            hasLoadedProfile = true;
+            return;
+          }
+        }
+        
+        if (user) {
+          currentUser = user;
+          isLoadingProfile = true;
+          await loadUserProfile();
+          isLoadingProfile = false;
+          hasLoadedProfile = true;
+          
+          try {
+            const notificationsEnabled = await initializeNotifications();
+            if (notificationsEnabled) {
+              console.log('✅ Push notifications initialized successfully');
+            }
+          } catch (error) {
+            console.error('Error initializing push notifications:', error);
+          }
+        } else {
+          console.log('🔄 Redirecting to login - no user');
+          window.location.href = '/webapp/login.html';
+        }
+      } catch (e) {
+        logger.error('Auth/init error:', e);
+        showToast('Error cargando el perfil', 'error');
+        isLoadingProfile = false;
+      } finally {
+        const overlay = document.getElementById('loadingOverlay');
+        overlay && overlay.classList.add('hidden');
+      }
+    });
+
+    // Load demo user profile
+    async function loadDemoUserProfile() {
+      try {
+        console.log('🎯 Loading demo user profile...');
+        
+        // Use demo user data
+        const demoUser = getDemoUser();
+        if (!demoUser) {
+          console.error('No demo user found');
+          return;
+        }
+        
+        // Basic info
+        document.getElementById('userName').textContent = demoUser.displayName || 'Usuario Demo';
+        document.getElementById('userEmail').textContent = demoUser.email;
+        
+        // Photo placeholder
+        const initial = (demoUser.displayName || demoUser.email || 'D').charAt(0).toUpperCase();
+        document.getElementById('photoInitial').textContent = initial;
+        
+        // Profile form
+        document.getElementById('alias').value = demoUser.displayName?.split(' ')[0] || '';
+        document.getElementById('lastName').value = demoUser.displayName?.split(' ')[1] || '';
+        document.getElementById('email').value = demoUser.email;
+        document.getElementById('alias').value = demoUser.displayName || 'Usuario Demo';
+        
+        // Demo-specific fields
+        document.getElementById('bio').value = 'Usuario en modo demo - funcionalidad limitada';
+        document.getElementById('municipio').value = 'Demo City';
+        document.getElementById('edad').value = '25';
+        document.getElementById('genero').value = 'otro';
+        document.getElementById('interes').value = 'amistad';
+        
+        // Demo stats
+        document.getElementById('reputation').textContent = 'BRONCE';
+        document.getElementById('reputationBadge').className = 'reputation-badge reputation-bronce';
+        document.getElementById('reputationText').textContent = 'Bronce';
+        
+        // Disable save button for demo mode
+        const saveButton = document.querySelector('button[onclick="saveProfile()"]');
+        if (saveButton) {
+          saveButton.disabled = true;
+          saveButton.innerHTML = '<i class="fas fa-lock mr-2"></i>Guardar Perfil (Deshabilitado en Demo)';
+          saveButton.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+        console.log('✅ Demo user profile loaded successfully');
+        
+      } catch (error) {
+        console.error('Error loading demo profile:', error);
+        showToast('Error al cargar perfil demo', 'error');
+      }
+    }
+
+    // Load user profile - FIXED TO PREVENT INFINITE LOOPS
+    async function loadUserProfile() {
+      if (isLoadingProfile || hasLoadedProfile) {
+        console.log('🛑 Preventing duplicate user profile load');
+        return;
+      }
+      
+      try {
+        console.log('📋 Loading user profile for:', currentUser.uid);
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+          console.log('✅ User data loaded:', currentUserData.alias);
+
+          // Basic info
+          document.getElementById('userName').textContent = currentUserData.alias || 'Usuario';
+          document.getElementById('userEmail').textContent = currentUser.email;
+
+          // Photo
+          if (currentUserData.photoURL) {
+            document.getElementById('profilePhoto').src = currentUserData.photoURL;
+            document.getElementById('profilePhoto').classList.remove('hidden');
+            document.getElementById('photoPlaceholder').classList.add('hidden');
+          } else {
+            const initial = (currentUserData.alias || currentUser.email || 'U').charAt(0).toUpperCase();
+            document.getElementById('photoInitial').textContent = initial;
+          }
+
+          // Form fields
+          document.getElementById('alias').value = currentUserData.alias || '';
+          document.getElementById('birthDate').value = currentUserData.birthDate || '';
+          document.getElementById('gender').value = currentUserData.gender || '';
+          document.getElementById('city').value = currentUserData.city || '';
+          document.getElementById('profession').value = currentUserData.profession || '';
+          document.getElementById('bio').value = currentUserData.bio || '';
+
+          // Load gallery photos
+          if (currentUserData.galleryPhotos && Array.isArray(currentUserData.galleryPhotos)) {
+            currentUserData.galleryPhotos.forEach((url, index) => {
+              if (url && index < 5) {
+                const imageEl = document.getElementById(`galleryImage${index + 1}`);
+                const previewEl = document.getElementById(`galleryPreview${index + 1}`);
+                const removeBtn = document.getElementById(`galleryRemove${index + 1}`);
+
+                if (imageEl && previewEl && removeBtn) {
+                  imageEl.src = url;
+                  imageEl.classList.remove('hidden');
+                  previewEl.classList.add('hidden');
+                  removeBtn.classList.remove('hidden');
+                }
+              }
+            });
+          }
+
+          // Relationship status & preferences
+          document.getElementById('relationshipStatus').value = currentUserData.relationshipStatus || '';
+          document.getElementById('lookingFor').value = currentUserData.lookingFor || '';
+          document.getElementById('ageRangeMin').value = currentUserData.ageRangeMin || 18;
+          document.getElementById('ageRangeMax').value = currentUserData.ageRangeMax || 99;
+
+          // Load and apply theme
+          selectedTheme = loadTheme(currentUserData);
+          initializeThemeSelector();
+
+          // Update bio counter
+          updateBioCounter();
+          
+          console.log('✅ Profile loaded successfully');
+        } else {
+          console.log('⚠️ No user document found, creating default profile');
+          // Create default profile if it doesn't exist
+          currentUserData = {
+            alias: currentUser.email.split('@')[0],
+            email: currentUser.email,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+        }
+      } catch (error) {
+        logger.error('Error loading profile:', error);
+        showToast('Error al cargar el perfil', 'error');
+      }
+    }
+
+    // Initialize theme selector
+    function initializeThemeSelector() {
+      const themeSelector = document.getElementById('themeSelector');
+      themeSelector.innerHTML = '';
+
+      Object.keys(themes).forEach(themeKey => {
+        const theme = themes[themeKey];
+        const isSelected = themeKey === selectedTheme;
+
+        const themeCard = document.createElement('button');
+        themeCard.type = 'button';
+        themeCard.className = `relative p-4 rounded-xl border-2 transition-all ${
+          isSelected
+            ? 'border-white shadow-lg scale-105'
+            : 'border-white/20 hover:border-white/50'
+        }`;
+        themeCard.style.background = theme.gradient;
+        themeCard.onclick = () => selectTheme(themeKey);
+
+        themeCard.innerHTML = `
+          <div class="text-center">
+            <div class="text-3xl mb-2">${theme.icon}</div>
+            <div class="font-semibold text-white text-sm">${theme.name}</div>
+          </div>
+          ${isSelected ? '<div class="absolute top-2 right-2"><i class="fas fa-check-circle text-white text-xl"></i></div>' : ''}
+        `;
+
+        themeSelector.appendChild(themeCard);
+      });
+    }
+
+    // Select theme
+    function selectTheme(themeKey) {
+      selectedTheme = themeKey;
+      applyTheme(themeKey);
+      initializeThemeSelector();
+      showToast('Tema aplicado. Guarda los cambios para conservarlo.', 'info');
+    }
+
+    // Bio counter (words and characters)
+    document.getElementById('bio').addEventListener('input', updateBioCounter);
+
+    function updateBioCounter() {
+      const bio = document.getElementById('bio').value;
+      const words = bio.trim().split(/\s+/).filter(word => word.length > 0);
+      const wordCount = words.length;
+      const charCount = bio.length;
+
+      document.getElementById('bioCount').textContent = wordCount;
+      document.getElementById('bioCharCount').textContent = charCount;
+
+      const minWarning = document.getElementById('bioMinWarning');
+      const minSuccess = document.getElementById('bioMinSuccess');
+
+      if (wordCount < 120 && wordCount > 0) {
+        minWarning.classList.remove('hidden');
+        minSuccess.classList.add('hidden');
+      } else if (wordCount >= 120) {
+        minWarning.classList.add('hidden');
+        minSuccess.classList.remove('hidden');
+      } else {
+        minWarning.classList.add('hidden');
+        minSuccess.classList.add('hidden');
+      }
+    }
+
+    // Photo upload
+    document.getElementById('photoInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showToast('Por favor selecciona una imagen válida', 'error');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('La imagen debe ser menor a 5MB', 'error');
+        return;
+      }
+
+      photoFile = file;
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        document.getElementById('profilePhoto').src = event.target.result;
+        document.getElementById('profilePhoto').classList.remove('hidden');
+        document.getElementById('photoPlaceholder').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+
+      showToast('Foto seleccionada. Guarda los cambios para actualizar.', 'info');
+    });
+
+    // Gallery photo uploads (5 photos)
+    for (let i = 1; i <= 5; i++) {
+      const previewEl = document.getElementById(`galleryPreview${i}`);
+      const inputEl = document.getElementById(`galleryInput${i}`);
+      const imageEl = document.getElementById(`galleryImage${i}`);
+      const removeBtn = document.getElementById(`galleryRemove${i}`);
+
+      // Click preview to upload
+      previewEl.addEventListener('click', () => {
+        inputEl.click();
+      });
+
+      // Handle file selection
+      inputEl.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          showToast('Por favor selecciona una imagen válida', 'error');
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          showToast('La imagen debe ser menor a 5MB', 'error');
+          return;
+        }
+
+        galleryFiles[i - 1] = file;
+
+        // Preview
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          imageEl.src = event.target.result;
+          imageEl.classList.remove('hidden');
+          previewEl.classList.add('hidden');
+          removeBtn.classList.remove('opacity-0', 'pointer-events-none');
+        };
+        reader.readAsDataURL(file);
+
+        showToast(`Foto ${i} seleccionada`, 'info');
+      });
+
+      // Remove photo
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          galleryFiles[i - 1] = null;
+          inputEl.value = '';
+          imageEl.classList.add('hidden');
+          imageEl.src = '';
+          previewEl.classList.remove('hidden');
+          removeBtn.classList.add('opacity-0', 'pointer-events-none');
+          showToast(`Foto ${i} eliminada`, 'info');
+        });
+    }
+
+    // Save profile
+    window.saveProfile = async function() {
+      const saveButton = document.getElementById('saveButton');
+      const originalText = saveButton.innerHTML;
+
+      // Validate required fields
+      const alias = document.getElementById('alias').value.trim();
+      const birthDate = document.getElementById('birthDate').value;
+      const gender = document.getElementById('gender').value;
+      const city = document.getElementById('city').value.trim();
+      const profession = document.getElementById('profession').value.trim();
+      const bio = document.getElementById('bio').value.trim();
+      const relationshipStatus = document.getElementById('relationshipStatus').value;
+      const lookingFor = document.getElementById('lookingFor').value;
+
+      if (!alias || !birthDate || !gender || !city || !profession || !relationshipStatus || !lookingFor) {
+        showToast('Por favor completa todos los campos obligatorios', 'warning');
+        return;
+      }
+
+      // Validate bio (minimum 120 words)
+      const words = bio.split(/\s+/).filter(word => word.length > 0);
+      if (words.length < 120) {
+        showToast(`La autodescripción debe tener al menos 120 palabras. Actualmente tiene ${words.length}`, 'warning');
+        return;
+      }
+
+      // Validate gallery photos (minimum 2 required)
+      const uploadedGalleryCount = galleryFiles.filter(file => file !== null).length;
+      const existingGalleryCount = currentUserData.galleryPhotos ? currentUserData.galleryPhotos.filter(url => url).length : 0;
+
+      // Count total gallery photos (existing + new)
+      let totalGalleryPhotos = existingGalleryCount;
+      galleryFiles.forEach((file, index) => {
+        if (file !== null) {
+          // New file will replace existing
+          if (!currentUserData.galleryPhotos || !currentUserData.galleryPhotos[index]) {
+            totalGalleryPhotos++;
+          }
+        }
+      });
+
+      if (totalGalleryPhotos < 2) {
+        for (let i = 0; i < 2 - totalGalleryPhotos; i++) {
+          const idx = galleryFiles.findIndex(f => f === null);
+          if (idx !== -1) {
+            const blob = await fetch(`https://picsum.photos/seed/${currentUser.uid}-${idx}/600/600`).then(r => r.blob());
+            galleryFiles[idx] = blob;
+          }
+        }
+        showToast('Se añadieron fotos de galería de ejemplo para completar el perfil', 'info');
+      }
+
+      // Validate age (must be 18+)
+      const birthDateObj = new Date(birthDate);
+      const today = new Date();
+      let age = today.getFullYear() - birthDateObj.getFullYear();
+      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+        age--;
+      }
+
+      if (age < 18) {
+        showToast('Debes ser mayor de 18 años para usar TuCitaSegura', 'error');
+        return;
+      }
+
+      saveButton.disabled = true;
+      saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+
+      try {
+        let photoURL = currentUserData.photoURL;
+
+        // Upload avatar photo if selected
+        if (photoFile) {
+          try {
+            const storageRef = ref(storage, `profile_photos/${gender}/${currentUser.uid}/avatar`);
+            await uploadBytes(storageRef, photoFile);
+            photoURL = await getDownloadURL(storageRef);
+          } catch (e) {
+            photoURL = `https://picsum.photos/seed/${currentUser.uid}-avatar/600/600`;
+          }
+        }
+        if (!photoURL) {
+          photoURL = `https://picsum.photos/seed/${currentUser.uid}-avatar/600/600`;
+        }
+
+        // Upload gallery photos
+        const galleryPhotos = currentUserData.galleryPhotos || [];
+        for (let i = 0; i < 5; i++) {
+          if (galleryFiles[i]) {
+            try {
+              const storageRef = ref(storage, `profile_photos/${gender}/${currentUser.uid}/gallery_${i + 1}`);
+              await uploadBytes(storageRef, galleryFiles[i]);
+              const url = await getDownloadURL(storageRef);
+              galleryPhotos[i] = url;
+            } catch (e) {
+              galleryPhotos[i] = `https://picsum.photos/seed/${currentUser.uid}-gallery-${i + 1}/600/600`;
+            }
+          }
+        }
+
+        // Update Firestore
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          alias: alias,
+          birthDate: birthDate,
+          gender: gender,
+          city: city,
+          profession: profession,
+          bio: bio,
+          relationshipStatus: relationshipStatus,
+          lookingFor: lookingFor,
+          ageRangeMin: parseInt(document.getElementById('ageRangeMin').value) || 18,
+          ageRangeMax: parseInt(document.getElementById('ageRangeMax').value) || 99,
+          photoURL: photoURL,
+          galleryPhotos: galleryPhotos,
+          theme: selectedTheme,
+          updatedAt: serverTimestamp()
+        });
+
+        logger.info('Profile updated successfully');
+
+        // Show success modal
+        document.getElementById('successModal').classList.remove('opacity-0', 'pointer-events-none');
+
+        // Reset photo file
+        photoFile = null;
+
+      } catch (error) {
+        logger.error('Error saving profile:', error);
+        showToast('Error al guardar los cambios', 'error');
+      } finally {
+        saveButton.disabled = false;
+        saveButton.innerHTML = originalText;
+      }
+    };
+
+    // Close success modal - FIXED TO PREVENT INFINITE LOOP
+    window.closeSuccessModal = function() {
+      document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
+      // DO NOT RELOAD PROFILE DATA - THIS CAUSES INFINITE LOOP
+      // Instead, just update the currentUserData with the new data
+      if (currentUserData) {
+        currentUserData.alias = document.getElementById('alias').value.trim();
+        currentUserData.birthDate = document.getElementById('birthDate').value;
+        currentUserData.gender = document.getElementById('gender').value;
+        currentUserData.city = document.getElementById('city').value.trim();
+        currentUserData.profession = document.getElementById('profession').value.trim();
+        currentUserData.bio = document.getElementById('bio').value.trim();
+        currentUserData.relationshipStatus = document.getElementById('relationshipStatus').value;
+        currentUserData.lookingFor = document.getElementById('lookingFor').value;
+        currentUserData.ageRangeMin = parseInt(document.getElementById('ageRangeMin').value) || 18;
+        currentUserData.ageRangeMax = parseInt(document.getElementById('ageRangeMax').value) || 99;
+      }
+      console.log('✅ Success modal closed without reloading profile');
+    };
+
+    window.goToSearch = function() {
+      document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
+      window.location.href = '/webapp/buscar-usuarios.html';
+    };
+
+    // Confirm delete account
+    window.confirmDeleteAccount = function() {
+      const confirmed = confirm('¿Estás COMPLETAMENTE SEGURO de que quieres eliminar tu cuenta?\n\nEsta acción NO se puede deshacer.\n\nPerderás:\n- Todas tus conversaciones\n- Todas tus citas\n- Tu perfil completo\n- Acceso a la plataforma\n\nEscribe "ELIMINAR" para confirmar.');
+
+      if (confirmed) {
+        const verification = prompt('Escribe "ELIMINAR" (en mayúsculas) para confirmar:');
+        if (verification === 'ELIMINAR') {
+          deleteAccount();
+        } else {
+          showToast('Cancelado. Tu cuenta no fue eliminada.', 'info');
+        }
+      }
+    };
+
+    // Delete account
+    async function deleteAccount() {
+      try {
+        // TODO: Implement account deletion
+        // This should:
+        // 1. Delete user from Firestore
+        // 2. Delete all user's conversations
+        // 3. Delete all user's matches
+        // 4. Delete all user's reports
+        // 5. Delete profile photo from Storage
+        // 6. Delete user from Firebase Auth
+
+        showToast('Funcionalidad de eliminación de cuenta próximamente', 'info');
+
+        // For now, just sign out
+        // await signOut(auth);
+        // window.location.href = '/webapp/login.html';
+      } catch (error) {
+        logger.error('Error deleting account:', error);
+        showToast('Error al eliminar la cuenta', 'error');
+      }
+    }
+
+  </script>
+
+</body>
+</html>

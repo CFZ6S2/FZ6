@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Centro de seguridad y herramientas para reportar problemas en TuCitaSegura.">
+  <title>Seguridad - TuCitaSegura</title>
+  <link rel="canonical" href="https://tucitasegura.com/seguridad">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0F172A">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./css/output.css">
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      box-shadow: 0 8px 24px rgba(102,126,234,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(102,126,234,0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(239,68,68,0.4);
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- Header -->
+  <nav class="glass-strong sticky top-0 z-50 border-b border-white/20">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <a href="/" class="flex items-center gap-3">
+            <i class="fa-solid fa-heart-circle-check text-pink-400 text-2xl"></i>
+            <span class="font-black text-xl">TuCitaSegura</span>
+          </a>
+        </div>
+        <div class="flex items-center gap-4">
+          <div id="userInfo" class="flex items-center gap-3">
+            <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+              <i class="fas fa-user"></i>
+            </div>
+            <span id="userAlias" class="font-semibold hidden md:block">Usuario</span>
+          </div>
+          <button id="logoutBtn" class="glass px-4 py-2 rounded-xl hover:bg-white/20 transition">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container mx-auto px-4 py-8">
+    <!-- Loading -->
+    <div id="loading" class="text-center py-12">
+      <i class="fas fa-spinner fa-spin text-4xl text-purple-400"></i>
+      <p class="mt-4">Cargando...</p>
+    </div>
+
+    <!-- Content (hidden until loaded) -->
+    <div id="content" class="hidden">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-black">Centro de Seguridad</h1>
+        <p class="text-slate-200 mt-2 text-lg">Tu tranquilidad es nuestra prioridad. Aquí tienes las herramientas para gestionar tu seguridad.</p>
+      </div>
+
+      <!-- Herramientas de Seguridad -->
+      <div class="glass-strong rounded-2xl p-6 md:p-8 mb-8">
+        <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+          <i class="fas fa-shield-alt text-purple-400"></i>
+          Herramientas
+        </h2>
+        <div class="space-y-6">
+          <!-- Botón de Pánico (SOS) - Solo visible para mujeres -->
+          <div id="sos-section" class="hidden bg-red-900/50 border-2 border-red-500/50 rounded-lg p-6 flex-col sm:flex-row items-center gap-6">
+            <div class="text-6xl text-red-400 flex-shrink-0 animate-pulse">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="flex-1 text-center sm:text-left">
+              <h3 class="text-xl font-bold text-red-200">Botón de Pánico SOS</h3>
+              <p class="text-red-200 mt-1">Úsalo solo en una emergencia real. Al activarlo, alertaremos a nuestro equipo de seguridad, que se pondrá en contacto contigo. Si no respondes, nos pondremos en contacto con las autoridades.</p>
+            </div>
+            <button id="sos-button" class="btn-danger font-bold px-6 py-4 rounded-full flex-shrink-0 text-lg shadow-lg animate-pulse">
+              <i class="fa-solid fa-bell mr-2"></i>ACTIVAR SOS
+            </button>
+          </div>
+
+          <!-- Reportar un Problema -->
+          <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
+            <div class="text-4xl text-yellow-400 flex-shrink-0"><i class="fa-solid fa-flag"></i></div>
+            <div class="flex-1 text-center sm:text-left">
+              <h3 class="text-xl font-bold">Reportar un Problema</h3>
+              <p class="text-yellow-200 mt-1">Si una cita no ha ido bien o has tenido un problema con un usuario, infórmanos.</p>
+            </div>
+            <a href="/webapp/reportes.html" class="bg-yellow-600 font-bold px-6 py-3 rounded-full flex-shrink-0 hover:bg-yellow-500 transition-colors">
+              <i class="fa-solid fa-flag mr-2"></i>Crear Reporte
+            </a>
+          </div>
+
+          <!-- Gestionar Bloqueos -->
+          <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
+            <div class="text-4xl text-blue-300 flex-shrink-0"><i class="fa-solid fa-user-slash"></i></div>
+            <div class="flex-1 text-center sm:text-left">
+              <h3 class="text-xl font-bold">Gestionar Usuarios Bloqueados</h3>
+              <p class="text-blue-200 mt-1">Aquí puedes ver la lista de usuarios que has bloqueado y desbloquearlos si lo consideras oportuno.</p>
+            </div>
+            <button id="manageBlocksBtn" class="glass font-bold px-6 py-3 rounded-full flex-shrink-0 hover:bg-white/20">
+              <i class="fa-solid fa-list-check mr-2"></i>Ver Lista
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consejos de Seguridad -->
+      <div class="mt-12">
+        <h2 class="text-2xl font-bold mb-6 text-center">
+          <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+          Consejos para Citas Seguras
+        </h2>
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div class="glass rounded-lg p-4 flex items-start gap-4">
+            <i class="fa-solid fa-comments text-xl text-blue-300 mt-1"></i>
+            <div>
+              <h4 class="font-bold">Comunícate primero</h4>
+              <p class="text-blue-200">Habla un tiempo a través del chat antes de quedar.</p>
+            </div>
+          </div>
+          <div class="glass rounded-lg p-4 flex items-start gap-4">
+            <i class="fa-solid fa-users text-xl text-blue-300 mt-1"></i>
+            <div>
+              <h4 class="font-bold">Queda en lugares públicos</h4>
+              <p class="text-blue-200">Elige lugares concurridos, especialmente en las primeras citas.</p>
+            </div>
+          </div>
+          <div class="glass rounded-lg p-4 flex items-start gap-4">
+            <i class="fa-solid fa-mobile-screen-button text-xl text-blue-300 mt-1"></i>
+            <div>
+              <h4 class="font-bold">Informa a alguien</h4>
+              <p class="text-blue-200">Coméntale a un amigo con quién, dónde y a qué hora has quedado.</p>
+            </div>
+          </div>
+          <div class="glass rounded-lg p-4 flex items-start gap-4">
+            <i class="fa-solid fa-martini-glass text-xl text-blue-300 mt-1"></i>
+            <div>
+              <h4 class="font-bold">Controla tu bebida</h4>
+              <p class="text-blue-200">No dejes tu bebida desatendida y modera el consumo de alcohol.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Confirmación SOS -->
+  <div id="sos-modal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="glass-strong rounded-2xl p-8 max-w-lg w-full m-4 text-center border-2 border-red-500">
+      <i class="fa-solid fa-triangle-exclamation text-6xl text-red-400 mb-4"></i>
+      <h2 class="text-3xl font-bold text-red-300">¿Estás en una emergencia?</h2>
+      <p class="text-red-200 mt-4">Estás a punto de activar el protocolo SOS.</p>
+      <div class="text-left bg-black/20 p-4 rounded-lg mt-6 space-y-2">
+        <p><strong class="text-white">Paso 1:</strong> Nuestro equipo de seguridad recibirá una alerta inmediata y te llamará al número de teléfono asociado a tu cuenta.</p>
+        <p><strong class="text-white">Paso 2:</strong> Si no respondes a la llamada, contactaremos a las autoridades locales con tu última ubicación conocida.</p>
+      </div>
+      <p class="text-amber-400 font-semibold mt-6">Usa esta función con responsabilidad.</p>
+      <div class="flex gap-4 mt-8">
+        <button id="cancel-sos" class="glass font-bold w-full py-3 rounded-full hover:bg-white/20">Cancelar</button>
+        <button id="confirm-sos" class="btn-danger font-bold w-full py-3 rounded-full">Sí, Activar SOS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pantalla de Alerta Activada -->
+  <div id="sos-activated-screen" class="opacity-0 pointer-events-none fixed inset-0 bg-red-900/90 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <div class="text-center">
+      <i class="fa-solid fa-siren-on text-8xl text-red-300 animate-pulse"></i>
+      <h2 class="text-4xl font-bold text-white mt-6">SOS ACTIVADO</h2>
+      <p class="text-red-200 text-lg mt-4 max-w-2xl">Hemos alertado a nuestro equipo de seguridad. Te llamaremos en breve. Si no contestas, avisaremos a las autoridades. Mantén la calma y busca un lugar seguro.</p>
+    </div>
+  </div>
+
+  <!-- Error Fixes -->
+  <script type="module" src="/webapp/js/error-fixes.js"></script>
+
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { showToast } from './js/utils.js';
+    import { loadTheme } from './js/theme.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+
+    // Check authentication
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = '/webapp/login.html';
+        return;
+      }
+
+      currentUser = user;
+
+      try {
+        // Load user data
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+
+          // Update UI
+          document.getElementById('userAlias').textContent = currentUserData.alias || 'Usuario';
+
+          // Show avatar or initial
+          if (currentUserData.photoURL) {
+            document.getElementById('userAvatar').innerHTML = `<img src="${currentUserData.photoURL}" class="w-full h-full rounded-full object-cover">`;
+          } else {
+            const initial = (currentUserData.alias || currentUserData.email || 'U')[0].toUpperCase();
+            document.getElementById('userAvatar').textContent = initial;
+          }
+
+          // Show SOS button only for women
+          if (currentUserData.gender === 'femenino') {
+            const sosSection = document.getElementById('sos-section');
+            sosSection.classList.remove('hidden');
+            sosSection.classList.add('flex');
+          }
+
+          // Hide loading, show content
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('content').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showToast('Error al cargar datos de usuario', 'error');
+      }
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = '/webapp/login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        showToast('Error al cerrar sesión', 'error');
+      }
+    });
+
+    // SOS Button Logic
+    const sosButton = document.getElementById('sos-button');
+    const sosModal = document.getElementById('sos-modal');
+    const cancelSosButton = document.getElementById('cancel-sos');
+    const confirmSosButton = document.getElementById('confirm-sos');
+    const sosActivatedScreen = document.getElementById('sos-activated-screen');
+
+    if (sosButton) {
+      sosButton.addEventListener('click', () => {
+        sosModal.classList.remove('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    cancelSosButton.addEventListener('click', () => {
+      sosModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+
+    confirmSosButton.addEventListener('click', async () => {
+      sosModal.classList.add('opacity-0', 'pointer-events-none');
+      sosActivatedScreen.classList.remove('opacity-0', 'pointer-events-none');
+
+      try {
+        // Save SOS alert to Firestore
+        await addDoc(collection(db, 'sos_alerts'), {
+          userId: currentUser.uid,
+          userAlias: currentUserData.alias,
+          userEmail: currentUserData.email,
+          userPhone: currentUserData.phone || 'No disponible',
+          timestamp: serverTimestamp(),
+          status: 'active',
+          location: currentUserData.location || null
+        });
+
+        console.log('SOS Alert sent to Firebase');
+        showToast('Alerta SOS enviada. El equipo de seguridad ha sido notificado.', 'info');
+      } catch (error) {
+        console.error('Error sending SOS alert:', error);
+        showToast('Error al enviar alerta SOS', 'error');
+      }
+    });
+
+    // Manage Blocks Button
+    document.getElementById('manageBlocksBtn').addEventListener('click', () => {
+      showToast('Funcionalidad en desarrollo', 'info');
+      // TODO: Navigate to blocked users page
+    });
+  </script>
+</body>
+</html>
