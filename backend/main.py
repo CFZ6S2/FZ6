@@ -201,6 +201,16 @@ else:
     ]
     logger.info(f"Development CORS origins: {cors_origins}")
 
+# IMPORTANT: Middleware order matters! They execute in REVERSE order during response.
+# Add Security Headers FIRST so it runs BEFORE CORS in response chain
+if SecurityHeadersMiddleware:
+    app.add_middleware(SecurityHeadersMiddleware, environment=environment)
+    logger.info("Security Headers Middleware added")
+else:
+    logger.warning("Security Headers Middleware not available")
+
+# Add CORS Middleware LAST so it runs AFTER all other middleware in response chain
+# This ensures CORS headers are applied last and not overwritten by other middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -210,13 +220,6 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=3600  # Cache pre-flight requests for 1 hour
 )
-
-# Add Security Headers Middleware
-if SecurityHeadersMiddleware:
-    app.add_middleware(SecurityHeadersMiddleware, environment=environment)
-    logger.info("Security Headers Middleware added")
-else:
-    logger.warning("Security Headers Middleware not available")
 
 # Add CSRF Protection Middleware
 # Only enable in production or if explicitly enabled
