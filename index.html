@@ -6,8 +6,14 @@
   <meta name="description" content="TuCitaSegura: plataforma segura y accesible para encontrar conexiones auténticas con verificación, reputación transparente y protección de datos.">
   <meta name="robots" content="index,follow">
   <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
   <title>TuCitaSegura - Encuentra tu conexión perfecta</title>
   <link rel="canonical" href="https://tucitasegura.com/">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="192x192" href="/webapp/img/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <meta property="og:title" content="TuCitaSegura">
@@ -99,23 +105,56 @@
 
   <!-- Header -->
   <header class="glass fixed top-0 w-full z-50" role="banner">
-    <nav class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between" role="navigation" aria-label="Principal">
-      <a href="/" class="flex items-center gap-2" aria-current="page">
+    <nav class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between" role="navigation" aria-label="Principal">
+      <a href="/" class="flex items-center gap-2 z-50" aria-current="page">
         <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
         <span class="font-bold text-xl" data-i18n="home.title">TuCitaSegura</span>
       </a>
-      <div class="flex items-center gap-4">
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-4">
         <div id="backend-status-badge" aria-live="polite" class="px-2 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200" data-i18n="home.backendStatus.checking">Comprobando...</div>
-        <!-- Language Selector -->
         <div id="language-selector-container"></div>
-        <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold" data-i18n="common.login">
+        <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold px-4 py-3" data-i18n="common.login">
           Iniciar Sesión
         </a>
-        <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-2 rounded-lg font-semibold transition" data-i18n="common.register">
+        <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-3 rounded-lg font-semibold transition" data-i18n="common.register">
           Registrarse
         </a>
       </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden z-50 p-2 hover:bg-white/10 rounded-lg transition" aria-label="Menú" aria-expanded="false">
+        <div class="w-6 h-5 flex flex-col justify-between">
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-1"></span>
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-2"></span>
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-3"></span>
+        </div>
+      </button>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-lg z-40 opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true">
+      <div class="flex flex-col items-center justify-center min-h-screen px-6 py-20">
+        <div class="w-full max-w-sm space-y-6">
+          <!-- Language Selector -->
+          <div id="language-selector-mobile" class="mb-8"></div>
+
+          <!-- Navigation Links -->
+          <a href="/webapp/login.html" class="block text-center text-2xl font-semibold py-4 px-6 hover:bg-white/10 rounded-xl transition" data-i18n="common.login">
+            <i class="fas fa-sign-in-alt mr-3 text-blue-400"></i>Iniciar Sesión
+          </a>
+          <a href="/webapp/register.html" class="block text-center text-2xl font-semibold py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl transition" data-i18n="common.register">
+            <i class="fas fa-user-plus mr-3"></i>Registrarse
+          </a>
+
+          <!-- Backend Status -->
+          <div class="text-center pt-6">
+            <div id="backend-status-mobile" class="inline-block px-4 py-2 rounded-lg text-sm font-semibold bg-slate-700 text-slate-200"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 
   <!-- Hero Section -->
@@ -123,29 +162,29 @@
     <div class="max-w-7xl mx-auto">
 
       <!-- Hero Content -->
-      <div class="text-center mb-20 fade-in-up">
-        <div class="mb-8 float-animation inline-block">
-          <i class="fas fa-heart-circle-check text-blue-400 text-8xl" aria-hidden="true"></i>
+      <div class="text-center mb-12 md:mb-20 fade-in-up">
+        <div class="mb-6 md:mb-8 float-animation inline-block">
+          <i class="fas fa-heart-circle-check text-blue-400 text-6xl md:text-8xl" aria-hidden="true"></i>
         </div>
-        <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent" data-i18n="home.title">
+        <h1 class="text-3xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent px-4" data-i18n="home.title">
           TuCitaSegura
         </h1>
-        <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto" data-i18n="home.subtitle">
+        <p class="text-lg md:text-xl lg:text-2xl text-slate-300 mb-6 md:mb-8 max-w-3xl mx-auto px-4" data-i18n="home.subtitle">
           Encuentra tu conexión perfecta con seguridad, transparencia y respeto
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+        <div class="flex flex-col sm:flex-row gap-3 justify-center items-center px-4">
+          <a href="/webapp/register.html" class="w-full sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-8 py-4 rounded-lg font-semibold text-base md:text-lg transition transform active:scale-95 sm:hover:scale-105 touch-manipulation" style="min-height: 48px;">
             <i class="fas fa-user-plus mr-2" aria-hidden="true"></i><span data-i18n="home.cta.register">Registrarse Gratis</span>
           </a>
-          <a href="#features" class="glass px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+          <a href="#features" class="w-full sm:w-auto glass px-8 py-4 rounded-lg font-semibold text-base md:text-lg transition transform active:scale-95 sm:hover:scale-105 touch-manipulation" style="min-height: 48px;">
             <i class="fas fa-info-circle mr-2" aria-hidden="true"></i><span data-i18n="home.learnMore">Saber Más</span>
           </a>
         </div>
       </div>
 
       <!-- Features Section -->
-      <div id="features" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-        <div class="glass rounded-2xl p-8 text-center fade-in-up">
+      <div id="features" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12 md:mb-20">
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up">
           <div class="text-5xl mb-4">
             <i class="fas fa-shield-heart text-blue-400" aria-hidden="true"></i>
           </div>
@@ -155,7 +194,7 @@
           </p>
         </div>
 
-        <div class="glass rounded-2xl p-8 text-center fade-in-up" style="animation-delay: 0.2s;">
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up" style="animation-delay: 0.2s;">
           <div class="text-5xl mb-4">
             <i class="fas fa-search-plus text-purple-400" aria-hidden="true"></i>
           </div>
@@ -165,7 +204,7 @@
           </p>
         </div>
 
-        <div class="glass rounded-2xl p-8 text-center fade-in-up" style="animation-delay: 0.4s;">
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up" style="animation-delay: 0.4s;">
           <div class="text-5xl mb-4">
             <i class="fas fa-star text-yellow-400" aria-hidden="true"></i>
           </div>
@@ -177,7 +216,7 @@
       </div>
 
       <!-- Stats Section -->
-      <div class="glass rounded-2xl p-12 mb-20 text-center">
+      <div class="glass rounded-2xl p-6 md:p-12 mb-12 md:mb-20 text-center">
         <h2 class="text-3xl font-bold mb-8">
           <i class="fas fa-chart-line mr-2 text-blue-400" aria-hidden="true"></i>
           <span data-i18n="home.stats.title">Estadísticas de la Plataforma</span>
@@ -229,7 +268,7 @@
       </div>
 
       <!-- CTA Section -->
-      <div class="glass rounded-2xl p-12 text-center hero-gradient">
+      <div class="glass rounded-2xl p-6 md:p-12 text-center hero-gradient">
         <h2 class="text-4xl font-bold mb-4" data-i18n="home.cta2.title">
           ¿Listo para encontrar tu match perfecto?
         </h2>
@@ -511,6 +550,254 @@
         });
       } catch {}
     }
+  </script>
+
+  <!-- Offline Indicator -->
+  <div id="offline-indicator" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+    <i class="fas fa-wifi-slash"></i>
+    <span data-i18n="common.offline">Sin conexión</span>
+  </div>
+
+  <!-- PWA Install Prompt -->
+  <div id="pwa-install-prompt" class="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl z-50 opacity-0 pointer-events-none transition-all duration-300 transform translate-y-4">
+    <button id="pwa-close-btn" class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded" aria-label="Cerrar">
+      <i class="fas fa-times text-sm"></i>
+    </button>
+    <div class="flex items-start gap-3">
+      <i class="fas fa-mobile-alt text-3xl mt-1"></i>
+      <div>
+        <h3 class="font-bold text-lg mb-1">Instala TuCitaSegura</h3>
+        <p class="text-sm opacity-90 mb-3">Accede más rápido desde tu pantalla de inicio</p>
+        <button id="pwa-install-btn" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition">
+          <i class="fas fa-download mr-2"></i>Instalar App
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Worker Registration & PWA -->
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered:', registration.scope);
+
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60000); // Check every minute
+          })
+          .catch((error) => {
+            console.warn('[PWA] Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const pwaPrompt = document.getElementById('pwa-install-prompt');
+    const pwaInstallBtn = document.getElementById('pwa-install-btn');
+    const pwaCloseBtn = document.getElementById('pwa-close-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Show install prompt after 3 seconds
+      setTimeout(() => {
+        pwaPrompt.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      }, 3000);
+    });
+
+    if (pwaInstallBtn) {
+      pwaInstallBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+
+        console.log('[PWA] User choice:', outcome);
+
+        deferredPrompt = null;
+        pwaPrompt.classList.add('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    if (pwaCloseBtn) {
+      pwaCloseBtn.addEventListener('click', () => {
+        pwaPrompt.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      });
+    }
+
+    // Offline/Online Indicator
+    const offlineIndicator = document.getElementById('offline-indicator');
+
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        offlineIndicator.classList.add('opacity-0', 'pointer-events-none');
+        offlineIndicator.classList.remove('bg-red-500');
+        offlineIndicator.classList.add('bg-green-500');
+        offlineIndicator.querySelector('i').className = 'fas fa-wifi';
+        offlineIndicator.querySelector('span').textContent = 'Conectado';
+      } else {
+        offlineIndicator.classList.remove('opacity-0', 'pointer-events-none');
+        offlineIndicator.classList.add('bg-red-500');
+        offlineIndicator.classList.remove('bg-green-500');
+        offlineIndicator.querySelector('i').className = 'fas fa-wifi-slash';
+        offlineIndicator.querySelector('span').textContent = 'Sin conexión';
+      }
+    }
+
+    window.addEventListener('online', () => {
+      updateOnlineStatus();
+      setTimeout(() => {
+        offlineIndicator.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    });
+
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // Check initial status
+    updateOnlineStatus();
+  </script>
+
+  <!-- Mobile Menu & Mobile Optimizations -->
+  <script>
+    (function() {
+      // Mobile Menu Toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuLines = [
+        document.getElementById('menu-line-1'),
+        document.getElementById('menu-line-2'),
+        document.getElementById('menu-line-3')
+      ];
+
+      let isMenuOpen = false;
+
+      function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+
+        // Toggle menu visibility
+        mobileMenu.classList.toggle('opacity-0');
+        mobileMenu.classList.toggle('pointer-events-none');
+        mobileMenu.setAttribute('aria-hidden', !isMenuOpen);
+        mobileMenuBtn.setAttribute('aria-expanded', isMenuOpen);
+
+        // Animate hamburger to X
+        if (isMenuOpen) {
+          menuLines[0].style.transform = 'rotate(45deg) translateY(8px)';
+          menuLines[1].style.opacity = '0';
+          menuLines[2].style.transform = 'rotate(-45deg) translateY(-8px)';
+          document.body.style.overflow = 'hidden'; // Prevent scroll
+        } else {
+          menuLines[0].style.transform = '';
+          menuLines[1].style.opacity = '';
+          menuLines[2].style.transform = '';
+          document.body.style.overflow = '';
+        }
+      }
+
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+      }
+
+      // Close menu when clicking a link
+      const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+      mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (isMenuOpen) toggleMenu();
+        });
+      });
+
+      // Close menu on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) {
+          toggleMenu();
+        }
+      });
+
+      // Sync backend status to mobile menu
+      const observer = new MutationObserver(() => {
+        const desktopStatus = document.getElementById('backend-status-badge');
+        const mobileStatus = document.getElementById('backend-status-mobile');
+        if (desktopStatus && mobileStatus) {
+          mobileStatus.textContent = desktopStatus.textContent;
+          mobileStatus.className = desktopStatus.className;
+        }
+      });
+
+      const desktopBadge = document.getElementById('backend-status-badge');
+      if (desktopBadge) {
+        observer.observe(desktopBadge, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class']
+        });
+      }
+
+      // Clone language selector to mobile menu
+      function syncLanguageSelector() {
+        const desktopSelector = document.getElementById('language-selector-container');
+        const mobileSelector = document.getElementById('language-selector-mobile');
+
+        if (desktopSelector && mobileSelector && desktopSelector.innerHTML) {
+          mobileSelector.innerHTML = desktopSelector.innerHTML;
+
+          // Re-attach event listeners if needed
+          const mobileDropdown = mobileSelector.querySelector('.language-dropdown');
+          if (mobileDropdown && window.languageSelector) {
+            // LanguageSelector will handle this automatically
+          }
+        }
+      }
+
+      // Wait for language selector to load, then sync
+      const langObserver = new MutationObserver(() => {
+        syncLanguageSelector();
+      });
+
+      const langContainer = document.getElementById('language-selector-container');
+      if (langContainer) {
+        langObserver.observe(langContainer, { childList: true, subtree: true });
+      }
+
+      // Initial sync
+      setTimeout(syncLanguageSelector, 500);
+
+      // Prefers-reduced-motion: disable animations
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.float-animation, .fade-in-up').forEach(el => {
+          el.style.animation = 'none';
+        });
+      }
+
+      // Touch optimizations
+      document.querySelectorAll('a, button').forEach(el => {
+        el.style.webkitTapHighlightColor = 'rgba(255, 255, 255, 0.1)';
+      });
+
+      // Prevent pull-to-refresh on mobile (iOS)
+      let touchStartY = 0;
+      document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const touchDiff = touchY - touchStartY;
+
+        // If at top of page and pulling down
+        if (window.scrollY === 0 && touchDiff > 0) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    })();
   </script>
 
 </body>
