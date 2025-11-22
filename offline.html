@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sin Conexión - TuCitaSegura</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-center;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(236, 72, 153, 0.4);
+    }
+
+    .status {
+      margin-top: 24px;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: inline-block;
+      font-size: 14px;
+    }
+
+    .status.online {
+      background: rgba(34, 197, 94, 0.2);
+    }
+
+    .status.offline {
+      background: rgba(239, 68, 68, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>Sin Conexión</h1>
+    <p>Parece que no tienes conexión a internet. Por favor, verifica tu conexión y vuelve a intentarlo.</p>
+    <a href="/" class="btn" onclick="window.location.reload(); return false;">
+      ↻ Reintentar
+    </a>
+    <div id="status" class="status offline">
+      <span id="status-text">Desconectado</span>
+    </div>
+  </div>
+
+  <script>
+    // Check connection status
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      const statusText = document.getElementById('status-text');
+
+      if (navigator.onLine) {
+        statusEl.classList.remove('offline');
+        statusEl.classList.add('online');
+        statusText.textContent = '✓ Conectado - Reintentando...';
+
+        // Auto-redirect when back online
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
+      } else {
+        statusEl.classList.add('offline');
+        statusEl.classList.remove('online');
+        statusText.textContent = '✗ Desconectado';
+      }
+    }
+
+    // Listen for connection changes
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+
+    // Check every 3 seconds
+    setInterval(updateStatus, 3000);
+
+    // Initial check
+    updateStatus();
+  </script>
+</body>
+</html>

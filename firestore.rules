@@ -93,11 +93,14 @@ service cloud.firestore {
         (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
       );
 
-      // Actualización: El dueño puede actualizar su perfil (menos userRole que solo admin cambia)
+      // Actualización: El dueño puede actualizar su perfil (menos campos inmutables)
+      // ⚠️ CAMPOS INMUTABLES: userRole, email, createdAt, alias, gender
+      // - alias y gender se establecen en el registro y NUNCA pueden cambiar
+      // - Solo admin puede modificar estos campos si es absolutamente necesario
       allow update: if isAuthed() && (
-        // Usuario actualizando su propio perfil
-        (uid() == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt'])) ||
-        // Admin puede cambiar userRole y otros campos
+        // Usuario actualizando su propio perfil (SIN cambiar campos inmutables)
+        (uid() == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt','alias','gender'])) ||
+        // Admin puede cambiar cualquier campo
         isAdmin()
       );
 
