@@ -1,0 +1,120 @@
+# ==============================================================================
+# TuCitaSegura Backend - Render Configuration
+# ==============================================================================
+# This file defines services to be deployed on Render
+# Docs: https://render.com/docs/infrastructure-as-code
+
+services:
+  # FastAPI Backend Service
+  - type: web
+    name: tucitasegura-api
+    env: python
+    region: eu-central  # Frankfurt, Germany
+    plan: starter  # Free tier
+    branch: main
+    dockerfilePath: ./Dockerfile.render
+    healthCheckPath: /health
+    autoDeploy: true
+    
+    # Environment Variables
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      
+      - key: DEBUG
+        value: "false"
+      
+      - key: API_WORKERS
+        value: "4"
+      
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      
+      # Firebase (configure manually)
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      
+      # Database (auto-created)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tucitasegura-db
+          property: connectionString
+      
+      # Redis (auto-created)  
+      - key: REDIS_URL
+        fromService:
+          name: tucitasegura-redis
+          type: redis
+          property: connectionString
+      
+      # Secrets (configure manually)
+      - key: SECRET_KEY
+        sync: false
+      
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      
+      - key: OPENAI_API_KEY
+        sync: false
+      
+      - key: SENTRY_DSN
+        sync: false
+      
+      # CORS
+      - key: CORS_ORIGINS
+        value: "https://tucitasegura.com,https://www.tucitasegura.com"
+    
+    # Disk storage for ML models
+    disk:
+      name: tucitasegura-models
+      mountPath: /app/models
+      sizeGB: 1
+  
+  # PostgreSQL Database
+  - type: pserv
+    name: tucitasegura-db
+    env: docker
+    region: eu-central
+    plan: starter  # Free tier, 90 days
+    dockerfilePath: ./Dockerfile.postgres
+    
+    envVars:
+      - key: POSTGRES_DB
+        value: tucitasegura
+      
+      - key: POSTGRES_USER
+        value: tucitasegura
+      
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+    
+    disk:
+      name: tucitasegura-postgres-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 1
+  
+  # Redis Cache
+  - type: redis
+    name: tucitasegura-redis
+    region: eu-central
+    plan: starter  # Free tier
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Allow all (private services only)
+
+# ==============================================================================
+# DEPLOYMENT NOTES
+# ==============================================================================
+# 1. Push this file to your repo root
+# 2. Connect repo to Render: https://dashboard.render.com/select-repo
+# 3. Render will auto-detect render.yaml and create all services
+# 4. Set secret environment variables in Render dashboard
+# 5. Upload serviceAccountKey.json as secret file

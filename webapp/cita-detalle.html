@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validar Cita - TuCitaSegura</title>
+  <link rel="stylesheet" href="./css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3), transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.2), transparent 50%);
+      animation: backgroundMove 15s ease infinite;
+      z-index: 0;
+    }
+
+    @keyframes backgroundMove {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    /* Glassmorphism containers */
+    .glass-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .glass-input {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .glass-input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Gradient Buttons */
+    .gradient-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+
+    .gradient-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Map Container */
+    #map {
+      width: 100%;
+      height: 400px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    /* PIN Input Styling */
+    .pin-input {
+      width: 60px;
+      height: 70px;
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .pin-input:focus {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+      outline: none;
+      transform: scale(1.05);
+    }
+
+    /* Status Badges */
+    .status-pending {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .status-validated {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-expired {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      background: rgba(102, 126, 234, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Distance Indicator */
+    .distance-circle {
+      position: absolute;
+      border: 3px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay fixed inset-0 flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white mb-4"></div>
+      <p class="text-white text-xl font-semibold">Cargando cita...</p>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="glass-container fixed top-0 left-0 right-0 z-40 mx-4 mt-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-3">
+          <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-xl">
+            <i class="fas fa-calendar-check text-white text-xl"></i>
+          </div>
+          <span class="text-white font-bold text-xl">TuCitaSegura</span>
+        </div>
+
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="/webapp/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-search mr-2"></i>Buscar
+          </a>
+          <a href="/webapp/conversaciones.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-comments mr-2"></i>Chats
+          </a>
+          <a href="/webapp/perfil.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-user mr-2"></i>Perfil
+          </a>
+        </div>
+
+        <button id="logoutBtn" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
+          <i class="fas fa-sign-out-alt mr-2"></i>Salir
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 pt-24 pb-12 px-4">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- Page Header -->
+      <div class="text-center mb-8 float-animation">
+        <div class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl mb-4">
+          <i class="fas fa-calendar-check text-white text-5xl"></i>
+        </div>
+        <h1 class="text-white text-4xl md:text-5xl font-bold mb-3">Validar Cita</h1>
+        <p class="text-white text-opacity-90 text-lg">Confirma tu asistencia con PIN y ubicación</p>
+      </div>
+
+      <!-- Date Info Card -->
+      <div id="dateInfoCard" class="glass-container p-8 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold">Información de la Cita</h2>
+          <span id="dateStatusBadge" class="status-pending px-4 py-2 rounded-full text-white font-semibold text-sm">
+            Pendiente
+          </span>
+        </div>
+
+        <div class="space-y-4" id="dateInfo">
+          <!-- Date info will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <div class="glass-container p-8 mb-6">
+        <h2 class="text-white text-2xl font-bold mb-4 flex items-center">
+          <i class="fas fa-map-marker-alt mr-3 text-red-300"></i>
+          Ubicación de la Cita
+        </h2>
+
+        <div id="map" class="mb-4"></div>
+
+        <div id="locationStatus" class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
+          <p class="text-white text-sm">
+            <i class="fas fa-info-circle mr-2"></i>
+            Debes estar dentro de un radio de 250 metros del lugar de la cita para validarla.
+          </p>
+        </div>
+      </div>
+
+      <!-- PIN Validation Section -->
+      <div id="pinSection" class="glass-container p-8 mb-6">
+        <h2 class="text-white text-2xl font-bold mb-4 flex items-center">
+          <i class="fas fa-lock mr-3 text-yellow-300"></i>
+          Validación con PIN
+        </h2>
+
+        <p class="text-white text-opacity-80 mb-6">
+          Intercambia tu código PIN de 4 dígitos con tu cita en persona para confirmar que ambos están presentes.
+        </p>
+
+        <!-- Your PIN -->
+        <div class="mb-6">
+          <label class="text-white font-semibold mb-2 block">Tu PIN (compártelo en persona)</label>
+          <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-6 rounded-2xl text-center">
+            <p id="yourPin" class="text-white text-5xl font-bold tracking-widest">----</p>
+          </div>
+        </div>
+
+        <!-- Enter Partner's PIN -->
+        <div class="mb-6">
+          <label class="text-white font-semibold mb-2 block">Ingresa el PIN de tu cita</label>
+          <div class="flex justify-center space-x-3">
+            <input type="text" maxlength="1" class="pin-input" id="pin1" />
+            <input type="text" maxlength="1" class="pin-input" id="pin2" />
+            <input type="text" maxlength="1" class="pin-input" id="pin3" />
+            <input type="text" maxlength="1" class="pin-input" id="pin4" />
+          </div>
+        </div>
+
+        <button id="validateBtn" class="gradient-button w-full py-4 rounded-xl text-white font-bold text-lg">
+          <i class="fas fa-check-circle mr-2"></i>
+          Validar Cita
+        </button>
+      </div>
+
+      <!-- Validation Rules -->
+      <div class="glass-container p-8">
+        <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
+          <i class="fas fa-clipboard-list mr-3 text-blue-300"></i>
+          Requisitos de Validación
+        </h2>
+
+        <div class="space-y-3">
+          <div id="rule1" class="bg-white bg-opacity-10 p-4 rounded-lg flex items-center space-x-3">
+            <i class="fas fa-circle text-white text-opacity-50 text-sm"></i>
+            <p class="text-white">Estar dentro de 250 metros del lugar de la cita</p>
+          </div>
+
+          <div id="rule2" class="bg-white bg-opacity-10 p-4 rounded-lg flex items-center space-x-3">
+            <i class="fas fa-circle text-white text-opacity-50 text-sm"></i>
+            <p class="text-white">Estar dentro de la ventana de tiempo (30 min antes/después)</p>
+          </div>
+
+          <div id="rule3" class="bg-white bg-opacity-10 p-4 rounded-lg flex items-center space-x-3">
+            <i class="fas fa-circle text-white text-opacity-50 text-sm"></i>
+            <p class="text-white">Intercambiar PINs correctamente con tu cita</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass-container max-w-md w-full p-8 text-center">
+      <div class="inline-block bg-green-500 bg-opacity-30 p-4 rounded-full mb-4">
+        <i class="fas fa-check-circle text-green-300 text-5xl"></i>
+      </div>
+      <h2 class="text-white text-2xl font-bold mb-2">¡Cita Validada!</h2>
+      <p class="text-white text-opacity-80 mb-6">
+        Tu cita ha sido validada exitosamente. Los depósitos se liberarán en 24 horas.
+      </p>
+      <button id="closeSuccessModal" class="gradient-button w-full py-3 rounded-lg text-white font-bold">
+        Entendido
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-8 right-8 glass-container px-6 py-4 rounded-lg shadow-lg z-50 max-w-md">
+    <div class="flex items-center space-x-3">
+      <i id="toastIcon" class="fas fa-check-circle text-2xl"></i>
+      <p id="toastMessage" class="text-white font-semibold"></p>
+    </div>
+  </div>
+
+<<<<<<< HEAD
+  <!--
+    ⚠️ CRITICAL: Google Maps API Configuration Required
+
+    ACTION NEEDED: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key
+
+    Documentation: See /GOOGLE_MAPS_API_SETUP.md for complete setup instructions
+
+    Quick setup:
+    1. Go to https://console.cloud.google.com/
+    2. Enable Maps JavaScript API + Places API
+    3. Create API key with HTTP referrer restrictions
+    4. Replace YOUR_GOOGLE_MAPS_API_KEY below
+
+    Status: 🔴 NOT CONFIGURED - Map will NOT work without valid API key
+  -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+=======
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AQ.Ab8RN6I6FQgaC1SltCBdMTyt6mM49BUATqwB32I7g5crKb91Vg&libraries=places"></script>
+>>>>>>> origin/claude/add-api-key-integration-011CUyqdyCeFEB4PHX2XZJn9
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { loadTheme } from './js/theme.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let dateData = null;
+    let dateId = null;
+    let map = null;
+    let userMarker = null;
+    let dateMarker = null;
+    let distanceCircle = null;
+
+    // Get date ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    dateId = urlParams.get('id');
+
+    if (!dateId) {
+      window.location.href = '/webapp/conversaciones.html';
+    }
+
+    // Check authentication
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserData();
+        await loadDateData();
+        initMap();
+        setupPinInputs();
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      } else {
+        window.location.href = '/webapp/login.html';
+      }
+    });
+
+    // Load user data
+    async function loadUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showToast('Error al cargar datos de usuario', 'error');
+      }
+    }
+
+    // Load date data
+    async function loadDateData() {
+      try {
+        // Find the conversation with this date
+        const conversationsQuery = query(
+          collection(db, 'conversations'),
+          where('participants', 'array-contains', currentUser.uid)
+        );
+
+        const conversationsSnapshot = await getDocs(conversationsQuery);
+
+        for (const convDoc of conversationsSnapshot.docs) {
+          const conversation = { id: convDoc.id, ...convDoc.data() };
+
+          // Check if this conversation has the date we're looking for
+          if (conversation.proposedDate && conversation.proposedDate.id === dateId) {
+            dateData = conversation.proposedDate;
+            dateData.conversationId = conversation.id;
+
+            // Get other participant info
+            const otherUserId = conversation.participants.find(id => id !== currentUser.uid);
+            if (otherUserId) {
+              const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
+              if (otherUserDoc.exists()) {
+                dateData.otherUser = { id: otherUserDoc.id, ...otherUserDoc.data() };
+              }
+            }
+
+            break;
+          }
+        }
+
+        if (!dateData) {
+          showToast('Cita no encontrada', 'error');
+          setTimeout(() => {
+            window.location.href = '/webapp/conversaciones.html';
+          }, 2000);
+          return;
+        }
+
+        displayDateInfo();
+        generateUserPin();
+
+      } catch (error) {
+        console.error('Error loading date data:', error);
+        showToast('Error al cargar información de la cita', 'error');
+      }
+    }
+
+    // Display date info
+    function displayDateInfo() {
+      const dateInfo = document.getElementById('dateInfo');
+      const dateStatusBadge = document.getElementById('dateStatusBadge');
+
+      const dateTime = dateData.dateTime?.toDate ? dateData.dateTime.toDate() : new Date(dateData.dateTime);
+      const formattedDate = dateTime.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const formattedTime = dateTime.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Update status badge
+      if (dateData.validated) {
+        dateStatusBadge.textContent = 'Validada';
+        dateStatusBadge.className = 'status-validated px-4 py-2 rounded-full text-white font-semibold text-sm';
+        document.getElementById('pinSection').classList.add('hidden');
+      } else if (new Date() > new Date(dateTime.getTime() + 2 * 60 * 60 * 1000)) {
+        dateStatusBadge.textContent = 'Expirada';
+        dateStatusBadge.className = 'status-expired px-4 py-2 rounded-full text-white font-semibold text-sm';
+        document.getElementById('pinSection').classList.add('hidden');
+      }
+
+      dateInfo.innerHTML = `
+        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+          <p class="text-white text-opacity-70 text-sm">Cita con</p>
+          <p class="text-white font-semibold text-lg">${dateData.otherUser?.alias || 'Usuario'}</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+            <p class="text-white text-opacity-70 text-sm">Fecha</p>
+            <p class="text-white font-semibold">${formattedDate}</p>
+          </div>
+
+          <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+            <p class="text-white text-opacity-70 text-sm">Hora</p>
+            <p class="text-white font-semibold">${formattedTime}</p>
+          </div>
+        </div>
+
+        <div class="bg-white bg-opacity-10 p-4 rounded-lg">
+          <p class="text-white text-opacity-70 text-sm">Lugar</p>
+          <p class="text-white font-semibold">${dateData.location || 'No especificado'}</p>
+        </div>
+
+        ${dateData.depositAmount ? `
+          <div class="bg-gradient-to-r from-green-500 to-emerald-500 bg-opacity-20 border border-green-300 border-opacity-30 p-4 rounded-lg">
+            <p class="text-white text-opacity-70 text-sm">Depósito de Seguridad</p>
+            <p class="text-white font-bold text-2xl">${dateData.depositAmount} €</p>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    // Initialize Google Map
+    function initMap() {
+      if (!dateData || !dateData.coordinates) {
+        document.getElementById('map').innerHTML = '<div class="flex items-center justify-center h-full bg-gray-800 bg-opacity-50"><p class="text-white">Ubicación no disponible</p></div>';
+        return;
+      }
+
+      const dateLocation = {
+        lat: dateData.coordinates.lat,
+        lng: dateData.coordinates.lng
+      };
+
+      // Create map
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: dateLocation,
+        zoom: 15,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#212121" }] },
+          { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#212121" }] }
+        ]
+      });
+
+      // Add marker for date location
+      dateMarker = new google.maps.Marker({
+        position: dateLocation,
+        map: map,
+        title: 'Lugar de la cita',
+        icon: {
+          url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+        }
+      });
+
+      // Add circle showing 250m radius
+      distanceCircle = new google.maps.Circle({
+        map: map,
+        center: dateLocation,
+        radius: 250, // 250 meters
+        fillColor: '#667eea',
+        fillOpacity: 0.2,
+        strokeColor: '#667eea',
+        strokeOpacity: 0.5,
+        strokeWeight: 2
+      });
+
+      // Try to get user's location
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition((position) => {
+          const userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+
+          // Update or create user marker
+          if (userMarker) {
+            userMarker.setPosition(userLocation);
+          } else {
+            userMarker = new google.maps.Marker({
+              position: userLocation,
+              map: map,
+              title: 'Tu ubicación',
+              icon: {
+                url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+              }
+            });
+          }
+
+          // Calculate distance
+          const distance = calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            dateLocation.lat,
+            dateLocation.lng
+          );
+
+          updateLocationStatus(distance);
+        });
+      }
+    }
+
+    // Calculate distance using Haversine formula
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Earth radius in meters
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c; // Distance in meters
+    }
+
+    // Update location status
+    function updateLocationStatus(distance) {
+      const locationStatus = document.getElementById('locationStatus');
+      const rule1 = document.getElementById('rule1');
+
+      if (distance <= 250) {
+        locationStatus.className = 'bg-green-500 bg-opacity-20 border border-green-300 border-opacity-30 rounded-lg p-4';
+        locationStatus.innerHTML = `
+          <p class="text-white text-sm">
+            <i class="fas fa-check-circle mr-2"></i>
+            ¡Estás dentro del área! Distancia: ${Math.round(distance)} metros
+          </p>
+        `;
+        rule1.querySelector('i').className = 'fas fa-check-circle text-green-300 text-sm';
+      } else {
+        locationStatus.className = 'bg-red-500 bg-opacity-20 border border-red-300 border-opacity-30 rounded-lg p-4';
+        locationStatus.innerHTML = `
+          <p class="text-white text-sm">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            Estás fuera del área. Distancia: ${Math.round(distance)} metros (máximo: 250m)
+          </p>
+        `;
+      }
+    }
+
+    // Generate random PIN for user
+    function generateUserPin() {
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+      document.getElementById('yourPin').textContent = pin;
+      dateData.userPin = pin;
+    }
+
+    // Setup PIN inputs
+    function setupPinInputs() {
+      const inputs = [
+        document.getElementById('pin1'),
+        document.getElementById('pin2'),
+        document.getElementById('pin3'),
+        document.getElementById('pin4')
+      ];
+
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1 && index < 3) {
+            inputs[index + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        });
+      });
+    }
+
+    // Validate date
+    document.getElementById('validateBtn').addEventListener('click', async () => {
+      try {
+        // Get entered PIN
+        const pin1 = document.getElementById('pin1').value;
+        const pin2 = document.getElementById('pin2').value;
+        const pin3 = document.getElementById('pin3').value;
+        const pin4 = document.getElementById('pin4').value;
+        const enteredPin = pin1 + pin2 + pin3 + pin4;
+
+        if (enteredPin.length !== 4) {
+          showToast('Por favor ingresa el PIN completo', 'error');
+          return;
+        }
+
+        // Check location
+        if (!userMarker) {
+          showToast('No se pudo obtener tu ubicación', 'error');
+          return;
+        }
+
+        const userLocation = userMarker.getPosition();
+        const dateLocation = { lat: dateData.coordinates.lat, lng: dateData.coordinates.lng };
+        const distance = calculateDistance(
+          userLocation.lat(),
+          userLocation.lng(),
+          dateLocation.lat,
+          dateLocation.lng
+        );
+
+        if (distance > 250) {
+          showToast('Debes estar dentro de 250 metros del lugar de la cita', 'error');
+          return;
+        }
+
+        // Check time window (30 min before/after)
+        const dateTime = dateData.dateTime?.toDate ? dateData.dateTime.toDate() : new Date(dateData.dateTime);
+        const now = new Date();
+        const timeDiff = Math.abs(now - dateTime) / 1000 / 60; // minutes
+
+        if (timeDiff > 30) {
+          showToast('Debes validar dentro de 30 minutos de la hora de la cita', 'error');
+          return;
+        }
+
+        // TODO: Verify PIN with other user's PIN from database
+        // For now, we'll just mark as validated
+
+        // Update date as validated
+        const conversationRef = doc(db, 'conversations', dateData.conversationId);
+        await updateDoc(conversationRef, {
+          'proposedDate.validated': true,
+          'proposedDate.validatedAt': serverTimestamp(),
+          'proposedDate.validatedBy': currentUser.uid
+        });
+
+        // Update payment status to release deposit
+        const paymentsQuery = query(
+          collection(db, 'payments'),
+          where('dateId', '==', dateId),
+          where('type', '==', 'deposit')
+        );
+
+        const paymentsSnapshot = await getDocs(paymentsQuery);
+        paymentsSnapshot.forEach(async (paymentDoc) => {
+          await updateDoc(doc(db, 'payments', paymentDoc.id), {
+            status: 'completed',
+            completedAt: serverTimestamp()
+          });
+        });
+
+        // Show success modal
+        document.getElementById('successModal').classList.remove('opacity-0', 'pointer-events-none');
+
+        // Update UI
+        const rule2 = document.getElementById('rule2');
+        const rule3 = document.getElementById('rule3');
+        rule2.querySelector('i').className = 'fas fa-check-circle text-green-300 text-sm';
+        rule3.querySelector('i').className = 'fas fa-check-circle text-green-300 text-sm';
+
+      } catch (error) {
+        console.error('Error validating date:', error);
+        showToast('Error al validar la cita', 'error');
+      }
+    });
+
+    // Close success modal
+    document.getElementById('closeSuccessModal').addEventListener('click', () => {
+      window.location.href = '/webapp/conversaciones.html';
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = '/webapp/login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        showToast('Error al cerrar sesión', 'error');
+      }
+    });
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMessage.textContent = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle text-green-400 text-2xl';
+      } else if (type === 'error') {
+        toastIcon.className = 'fas fa-exclamation-circle text-red-400 text-2xl';
+      }
+
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+  </script>
+
+</body>
+</html>

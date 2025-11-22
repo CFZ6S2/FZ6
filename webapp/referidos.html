@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Referidos - TuCitaSegura</title>
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/output.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3), transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.2), transparent 50%);
+      animation: float 20s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
+      }
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .referral-code {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.2em;
+      font-size: 2rem;
+      font-weight: bold;
+      animation: pulse-glow 2s infinite;
+    }
+
+    .tier-card {
+      transition: all 0.3s ease;
+    }
+
+    .tier-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .progress-bar {
+      transition: width 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="relative z-10 min-h-screen py-8 px-4">
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-8">
+      <div class="glass rounded-2xl p-6 animate-fadeIn">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <a href="perfil.html" class="text-gray-600 hover:text-purple-600 transition">
+              <i class="fas fa-arrow-left text-2xl"></i>
+            </a>
+            <div>
+              <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Sistema de Referidos
+              </h1>
+              <p class="text-gray-600 mt-1">Invita amigos y gana recompensas increíbles</p>
+            </div>
+          </div>
+          <i class="fas fa-gift text-5xl text-purple-500"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto space-y-6">
+      <!-- Referral Code Card -->
+      <div class="glass rounded-2xl p-8 animate-fadeIn text-center">
+        <h2 class="text-2xl font-bold mb-4">Tu Código de Invitación</h2>
+        <div class="referral-code text-purple-600 mb-6" id="referralCode">
+          CARGANDO...
+        </div>
+        <p class="text-gray-600 mb-6">Comparte este código con tus amigos</p>
+
+        <div class="flex gap-4 justify-center flex-wrap">
+          <button id="copyCodeBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+            <i class="fas fa-copy mr-2"></i>
+            Copiar Código
+          </button>
+          <button id="shareCodeBtn" class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+            <i class="fas fa-share-alt mr-2"></i>
+            Compartir
+          </button>
+          <button id="shareWhatsappBtn" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+            <i class="fab fa-whatsapp mr-2"></i>
+            WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 animate-fadeIn">
+        <div class="glass rounded-xl p-6 text-center">
+          <i class="fas fa-users text-4xl text-purple-600 mb-3"></i>
+          <div class="text-3xl font-bold" id="totalReferrals">0</div>
+          <div class="text-gray-600">Total Referidos</div>
+        </div>
+        <div class="glass rounded-xl p-6 text-center">
+          <i class="fas fa-clock text-4xl text-yellow-600 mb-3"></i>
+          <div class="text-3xl font-bold" id="pendingReferrals">0</div>
+          <div class="text-gray-600">Pendientes</div>
+        </div>
+        <div class="glass rounded-xl p-6 text-center">
+          <i class="fas fa-check-circle text-4xl text-green-600 mb-3"></i>
+          <div class="text-3xl font-bold" id="completedReferrals">0</div>
+          <div class="text-gray-600">Completados</div>
+        </div>
+        <div class="glass rounded-xl p-6 text-center">
+          <i class="fas fa-trophy text-4xl text-orange-600 mb-3"></i>
+          <div class="text-3xl font-bold" id="currentTier">-</div>
+          <div class="text-gray-600">Nivel Actual</div>
+        </div>
+      </div>
+
+      <!-- Current Progress -->
+      <div class="glass rounded-2xl p-8 animate-fadeIn" id="progressCard" style="display: none;">
+        <h3 class="text-2xl font-bold mb-4">Progreso al Siguiente Nivel</h3>
+        <div class="mb-4">
+          <div class="flex justify-between mb-2">
+            <span id="progressText" class="font-semibold">Progreso</span>
+            <span id="progressPercentage">0%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+            <div id="progressBar" class="progress-bar h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+        <p id="progressDescription" class="text-gray-600"></p>
+      </div>
+
+      <!-- Rewards Tiers -->
+      <div class="glass rounded-2xl p-8 animate-fadeIn">
+        <h3 class="text-2xl font-bold mb-6">Niveles de Recompensas</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="tiersContainer">
+          <!-- Tiers will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Referral History -->
+      <div class="glass rounded-2xl p-8 animate-fadeIn">
+        <h3 class="text-2xl font-bold mb-6">Historial de Referidos</h3>
+        <div id="referralsHistory">
+          <div class="text-center text-gray-500 py-8">
+            <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+            <p>Aún no tienes referidos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+    
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config.js';
+    import {
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      getDocs,
+      addDoc,
+      updateDoc,
+      onSnapshot,
+      serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { loadTheme } from './js/theme.js';
+    import { showToast } from './js/utils.js';
+    import {
+      generateReferralCode,
+      REFERRAL_REWARDS,
+      getReferralTier,
+      getNextTier,
+      calculateReferralStats,
+      shareReferralCode
+    } from './js/referral-system.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let referralCode = '';
+
+    // Initialize
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = '../index.html';
+        return;
+      }
+
+      currentUser = user;
+      await loadUserData();
+    });
+
+    async function loadUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (!userDoc.exists()) {
+          showToast('Usuario no encontrado', 'error');
+          return;
+        }
+
+        currentUserData = userDoc.data();
+        loadTheme(currentUserData);
+
+        // Generate or get referral code
+        if (currentUserData.referralCode) {
+          referralCode = currentUserData.referralCode;
+        } else {
+          referralCode = generateReferralCode(currentUserData.alias, currentUser.uid);
+          // Save to Firestore
+          await updateDoc(doc(db, 'users', currentUser.uid), {
+            referralCode: referralCode,
+            referralStats: {
+              totalReferrals: 0,
+              completedReferrals: 0,
+              pendingReferrals: 0,
+              currentTier: null
+            }
+          });
+        }
+
+        document.getElementById('referralCode').textContent = referralCode;
+
+        // Load referrals
+        await loadReferrals();
+        await loadTiers();
+
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showToast('Error al cargar datos', 'error');
+      }
+    }
+
+    async function loadReferrals() {
+      try {
+        const referralsQuery = query(
+          collection(db, 'referrals'),
+          where('referrerId', '==', currentUser.uid)
+        );
+
+        const snapshot = await getDocs(referralsQuery);
+        const referrals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const stats = calculateReferralStats(referrals);
+        const tier = getReferralTier(stats.completed);
+        const nextTier = getNextTier(stats.completed);
+
+        // Update stats display
+        document.getElementById('totalReferrals').textContent = stats.total;
+        document.getElementById('pendingReferrals').textContent = stats.pending;
+        document.getElementById('completedReferrals').textContent = stats.completed;
+        document.getElementById('currentTier').textContent = tier ? `${tier.icon} ${tier.tier}` : 'Ninguno';
+
+        // Update progress to next tier
+        if (nextTier) {
+          document.getElementById('progressCard').style.display = 'block';
+          const progress = (stats.completed / nextTier.referralsNeeded) * 100;
+          document.getElementById('progressBar').style.width = `${progress}%`;
+          document.getElementById('progressPercentage').textContent = `${Math.round(progress)}%`;
+          document.getElementById('progressText').textContent = `${stats.completed} / ${nextTier.referralsNeeded} referidos`;
+          document.getElementById('progressDescription').textContent =
+            `Te faltan ${nextTier.remaining} referidos para alcanzar el nivel ${nextTier.badge}`;
+        }
+
+        // Display referrals history
+        displayReferralsHistory(referrals);
+
+      } catch (error) {
+        console.error('Error loading referrals:', error);
+        showToast('Error al cargar referidos', 'error');
+      }
+    }
+
+    function loadTiers() {
+      const tiersContainer = document.getElementById('tiersContainer');
+      tiersContainer.innerHTML = '';
+
+      const tiers = [
+        { tier: 'BRONZE', ...REFERRAL_REWARDS.BRONZE },
+        { tier: 'SILVER', ...REFERRAL_REWARDS.SILVER },
+        { tier: 'GOLD', ...REFERRAL_REWARDS.GOLD },
+        { tier: 'PLATINUM', ...REFERRAL_REWARDS.PLATINUM }
+      ];
+
+      tiers.forEach(tier => {
+        const card = document.createElement('div');
+        card.className = 'tier-card glass rounded-xl p-6 text-center';
+        card.innerHTML = `
+          <div class="text-5xl mb-3">${tier.icon}</div>
+          <div class="font-bold text-lg mb-2">${tier.badge}</div>
+          <div class="text-sm text-gray-600 mb-3">${tier.referralsNeeded} referidos</div>
+          <div class="text-xs text-gray-500">${tier.reward}</div>
+        `;
+        tiersContainer.appendChild(card);
+      });
+    }
+
+    function displayReferralsHistory(referrals) {
+      const historyContainer = document.getElementById('referralsHistory');
+
+      if (referrals.length === 0) {
+        historyContainer.innerHTML = `
+          <div class="text-center text-gray-500 py-8">
+            <i class="fas fa-inbox text-6xl mb-4 opacity-50"></i>
+            <p>Aún no tienes referidos</p>
+          </div>
+        `;
+        return;
+      }
+
+      historyContainer.innerHTML = '';
+
+      referrals.forEach(ref => {
+        const statusColors = {
+          pending: 'bg-yellow-100 text-yellow-800',
+          completed: 'bg-green-100 text-green-800',
+          active: 'bg-blue-100 text-blue-800'
+        };
+
+        const statusIcons = {
+          pending: 'fa-clock',
+          completed: 'fa-check-circle',
+          active: 'fa-user-check'
+        };
+
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-4 border-b border-gray-200 hover:bg-gray-50 transition';
+        item.innerHTML = `
+          <div class="flex items-center gap-4">
+            <i class="fas fa-user-circle text-3xl text-purple-600"></i>
+            <div>
+              <div class="font-semibold">${ref.referredAlias || 'Usuario'}</div>
+              <div class="text-sm text-gray-500">
+                ${ref.createdAt ? new Date(ref.createdAt.toDate()).toLocaleDateString() : 'Fecha desconocida'}
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColors[ref.status] || 'bg-gray-100 text-gray-800'}">
+              <i class="fas ${statusIcons[ref.status] || 'fa-question'} mr-1"></i>
+              ${ref.status || 'pendiente'}
+            </span>
+          </div>
+        `;
+        historyContainer.appendChild(item);
+      });
+    }
+
+    // Event Listeners
+    document.getElementById('copyCodeBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(referralCode);
+        showToast('Código copiado al portapapeles', 'success');
+      } catch (error) {
+        showToast('Error al copiar código', 'error');
+      }
+    });
+
+    document.getElementById('shareCodeBtn').addEventListener('click', async () => {
+      const result = await shareReferralCode(referralCode, currentUserData.alias);
+      if (result.success) {
+        if (result.method === 'clipboard') {
+          showToast('Código copiado al portapapeles', 'success');
+        } else {
+          showToast('Código compartido exitosamente', 'success');
+        }
+      } else {
+        showToast('Error al compartir código', 'error');
+      }
+    });
+
+    document.getElementById('shareWhatsappBtn').addEventListener('click', () => {
+      const shareText = `¡Únete a TuCitaSegura con mi código de invitación ${referralCode} y comienza a encontrar relaciones serias! 💕`;
+      const shareUrl = `${window.location.origin}?ref=${referralCode}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`;
+      window.open(whatsappUrl, '_blank');
+    });
+
+  </script>
+</body>
+</html>

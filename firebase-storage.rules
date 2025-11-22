@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helpers con custom claims
+    function isAuthed() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function gender() { return request.auth.token.gender; }
+
+    function isAdmin() { return isAuthed() && role() == 'admin'; }
+    function isConcierge() { return isAuthed() && role() == 'concierge'; }
+    function isMale() { return isAuthed() && gender() == 'masculino'; }
+    function isFemale() { return isAuthed() && gender() == 'femenino'; }
+
+    // ========= PROFILE PHOTOS =========
+    // Ruta con género del dueño para poder evaluar "género opuesto" sin Firestore:
+    // /profile_photos/{ownerGender}/{userId}/{filename}
+    match /profile_photos/{ownerGender}/{userId}/{filename} {
+      function ownerGenderMatchesUploader() {
+        return (ownerGender == 'masculino' && isMale()) ||
+               (ownerGender == 'femenino' && isFemale());
+      }
+
+      // Lectura:
+      // - El dueño
+      // - Género opuesto
+      // - Concierge puede ver mujeres
+      // - Admin todo
+      allow read: if isAuthed() && (
+        request.auth.uid == userId ||
+        (isMale() && ownerGender == 'femenino') ||
+        (isFemale() && ownerGender == 'masculino') ||
+        (isConcierge() && ownerGender == 'femenino') ||
+        isAdmin()
+      );
+
+      // Escritura: solo el dueño, en su propia carpeta de su género
+      allow write: if isAuthed()
+                   && request.auth.uid == userId
+                   && ownerGenderMatchesUploader()
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ========= EVENT PHOTOS (VIP) =========
+    match /event_photos/{eventId}/{filename} {
+      allow read: if isAuthed() && (isFemale() || isConcierge() || isAdmin());
+      allow write: if isAuthed()
+                   && isConcierge()
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ========= SOS EVIDENCE =========
+    match /sos_evidence/{userId}/{filename} {
+      allow read: if isAuthed() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthed()
+                   && request.auth.uid == userId
+                   && request.resource.size < 50 * 1024 * 1024
+                   && (
+                        request.resource.contentType.matches('image/.*') ||
+                        request.resource.contentType.matches('video/.*')
+                      );
+    }
+
+    // ========= VERIFICATION DOCS =========
+    match /verification_docs/{userId}/{filename} {
+      allow read: if isAuthed() && isAdmin();
+      allow write: if isAuthed()
+                   && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024
+                   && (
+                        request.resource.contentType.matches('image/.*') ||
+                        request.resource.contentType == 'application/pdf'
+                      );
+    }
+
+    // ========= CHAT ATTACHMENTS con ACL en Storage =========
+    // ACL: /chat_attachments/{conversationId}/__acl__/{uid} (ficheros vacíos)
+    match /chat_attachments/{conversationId}/__acl__/{memberUid} {
+      allow read: if false; // No exponer ACL
+      allow write: if isAuthed() && (isAdmin() || isConcierge()); // gestionado por backend
+    }
+
+    function isInConversation(conversationId) {
+      return isAuthed() &&
+             request.auth.uid in get(/databases/(default)/documents/conversations/$(conversationId)).data.participants;
+    }
+
+    match /chat_attachments/{conversationId}/{filename} {
+      allow read: if isInConversation(conversationId);
+      allow write: if isInConversation(conversationId)
+                   && request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

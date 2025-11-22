@@ -1,0 +1,137 @@
+[tool.pytest.ini_options]
+# Pytest configuration
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--cov=app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=80"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "security: marks tests as security tests",
+    "performance: marks tests as performance tests"
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+# Coverage configuration
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/.venv/*",
+    "*/.env/*"
+]
+
+[tool.coverage.report]
+# Coverage report configuration
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:"
+]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.black]
+# Black code formatter configuration
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+# isort import sorter configuration
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["app"]
+known_third_party = ["fastapi", "pydantic", "pytest", "numpy", "pandas"]
+
+[tool.mypy]
+# MyPy type checker configuration
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "numpy.*",
+    "pandas.*",
+    "sklearn.*",
+    "tensorflow.*",
+    "torch.*",
+    "cv2.*",
+    "PIL.*",
+    "geopy.*",
+    "firebase_admin.*",
+    "google.*"
+]
+ignore_missing_imports = true
+
+[tool.flake8]
+# Flake8 linter configuration
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    ".env",
+    "venv",
+    "env"
+]
+max-complexity = 10
+
+[tool.bandit]
+# Bandit security linter configuration
+exclude_dirs = ["tests", "venv", "env", ".venv", ".env"]
+skips = ["B101", "B601"]  # Skip assert and shell injection warnings in tests
+
+[tool.safety]
+# Safety vulnerability scanner configuration
+ignore = []
+full_report = true

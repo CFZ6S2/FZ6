@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Sistema Ultra-Resiliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-button:disabled { background: #ccc; cursor: not-allowed; }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test de Sistema Ultra-Resiliente</h1>
+        
+        <div id="status" class="status info">Sistema listo para probar</div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="test-button" onclick="testConfiguration()">🔧 Probar Configuración</button>
+            <button class="test-button" onclick="testConnectivity()">🔗 Probar Conectividad</button>
+            <button class="test-button" onclick="testUltraSystem()">🛡️ Probar Sistema Ultra</button>
+        </div>
+        
+        <div id="results" class="results" style="display: none;">
+            <strong>Resultados:</strong>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase config -->
+    <script src="js/firebase-config.js"></script>
+    <!-- Auth Ultra -->
+    <script src="js/firebase-auth-ultra.js"></script>
+    <!-- Auth Extreme -->
+    <script src="js/firebase-auth-extreme.js"></script>
+    
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+        
+        function addResult(message) {
+            const results = document.getElementById('results');
+            const content = document.getElementById('resultContent');
+            results.style.display = 'block';
+            content.innerHTML += message + '<br>';
+        }
+        
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('resultContent').innerHTML = '';
+        }
+        
+        function testConfiguration() {
+            clearResults();
+            updateStatus('🔧 Probando configuración...', 'info');
+            
+            let configOk = true;
+            let results = '';
+            
+            // Test FIREBASE_API_KEY
+            if (typeof FIREBASE_API_KEY !== 'undefined' && FIREBASE_API_KEY) {
+                results += '✅ FIREBASE_API_KEY: Definido correctamente<br>';
+            } else {
+                results += '❌ FIREBASE_API_KEY: No definido<br>';
+                configOk = false;
+            }
+            
+            // Test FIREBASE_PROJECT_ID
+            if (typeof FIREBASE_PROJECT_ID !== 'undefined' && FIREBASE_PROJECT_ID) {
+                results += '✅ FIREBASE_PROJECT_ID: Definido correctamente<br>';
+            } else {
+                results += '❌ FIREBASE_PROJECT_ID: No definido<br>';
+                configOk = false;
+            }
+            
+            // Test FirebaseAuthUltra class
+            if (typeof FirebaseAuthUltra !== 'undefined') {
+                results += '✅ FirebaseAuthUltra: Clase disponible<br>';
+            } else {
+                results += '❌ FirebaseAuthUltra: Clase no disponible<br>';
+                configOk = false;
+            }
+            
+            // Test FirebaseAuthExtreme class
+            if (typeof FirebaseAuthExtreme !== 'undefined') {
+                results += '✅ FirebaseAuthExtreme: Clase disponible<br>';
+            } else {
+                results += '❌ FirebaseAuthExtreme: Clase no disponible<br>';
+                configOk = false;
+            }
+            
+            // Test auth instances
+            if (typeof authUltra !== 'undefined' && authUltra !== null) {
+                results += '✅ authUltra: Instancia inicializada<br>';
+            } else {
+                results += '⚠️ authUltra: No inicializado (se inicializará al usar)<br>';
+            }
+            
+            if (typeof authExtreme !== 'undefined' && authExtreme !== null) {
+                results += '✅ authExtreme: Instancia inicializada<br>';
+            } else {
+                results += '⚠️ authExtreme: No inicializado (se inicializará al usar)<br>';
+            }
+            
+            addResult(results);
+            updateStatus(configOk ? '✅ Configuración correcta' : '❌ Problemas en configuración', configOk ? 'success' : 'error');
+        }
+        
+        function testConnectivity() {
+            clearResults();
+            updateStatus('🔗 Probando conectividad básica...', 'info');
+            
+            // Test direct connection to Firebase Auth API
+            fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ idToken: 'test-token' })
+            })
+            .then(response => {
+                addResult(`✅ Conexión directa: Status ${response.status} ${response.statusText}`);
+                addResult(`🔄 Response type: ${response.type}`);
+                addResult(`🌐 Response URL: ${response.url}`);
+                updateStatus('✅ Conectividad básica exitosa', 'success');
+            })
+            .catch(error => {
+                addResult(`❌ Error de conexión: ${error.message}`);
+                updateStatus('❌ Falló conectividad básica', 'error');
+            });
+        }
+        
+        function testUltraSystem() {
+            clearResults();
+            
+            if (typeof FIREBASE_API_KEY === 'undefined' || typeof FIREBASE_PROJECT_ID === 'undefined') {
+                updateStatus('❌ Configuración no disponible', 'error');
+                addResult('❌ FIREBASE_API_KEY o FIREBASE_PROJECT_ID no definidos');
+                return;
+            }
+            
+            updateStatus('🛡️ Inicializando sistema ultra...', 'info');
+            
+            try {
+                // Initialize auth systems
+                if (!authUltra) {
+                    authUltra = new FirebaseAuthUltra(FIREBASE_API_KEY, FIREBASE_PROJECT_ID);
+                    addResult('✅ authUltra inicializado');
+                }
+                
+                if (!authExtreme && typeof FirebaseAuthExtreme !== 'undefined') {
+                    authExtreme = new FirebaseAuthExtreme(FIREBASE_API_KEY, FIREBASE_PROJECT_ID);
+                    addResult('✅ authExtreme inicializado');
+                }
+                
+                // Test connectivity
+                addResult('🧪 Probando conectividad ultra-resistente...');
+                
+                authUltra.testConnectivity().then(results => {
+                    addResult('📊 Resultados de conectividad:');
+                    addResult(`   Directa: ${results.direct ? '✅' : '❌'}`);
+                    addResult(`   Proxy: ${results.proxy ? '✅' : '❌'}`);
+                    addResult(`   JSONP: ${results.jsonp ? '✅' : '❌'}`);
+                    addResult(`   Form: ${results.form ? '✅' : '❌'}`);
+                    addResult(`   Beacon: ${results.beacon ? '✅' : '❌'}`);
+                    addResult(`   WebSocket: ${results.websocket ? '✅' : '❌'}`);
+                    
+                    const workingMethods = Object.values(results).filter(v => v === true).length;
+                    updateStatus(`✅ Sistema ultra funcionando: ${workingMethods}/6 métodos`, 'success');
+                }).catch(error => {
+                    addResult(`❌ Error en test de conectividad: ${error.message}`);
+                    updateStatus('⚠️ Sistema ultra con problemas', 'warning');
+                });
+                
+            } catch (error) {
+                addResult(`❌ Error inicializando sistema: ${error.message}`);
+                updateStatus('❌ Falló inicialización del sistema ultra', 'error');
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            updateStatus('🚀 Sistema listo - usa los botones para probar', 'info');
+        });
+    </script>
+</body>
+</html>

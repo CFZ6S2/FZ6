@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - TuCitaSegura</title>
+  <link rel="stylesheet" href="../css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3), transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.2), transparent 50%);
+      animation: backgroundMove 15s ease infinite;
+      z-index: 0;
+    }
+
+    @keyframes backgroundMove {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    /* Glassmorphism containers */
+    .glass-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-5px);
+    }
+
+    /* Chart Container */
+    .chart-container {
+      position: relative;
+      height: 300px;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      background: rgba(102, 126, 234, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Activity Item */
+    .activity-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay fixed inset-0 flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white mb-4"></div>
+      <p class="text-white text-xl font-semibold">Cargando panel de administración...</p>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="glass-container fixed top-0 left-0 right-0 z-40 mx-4 mt-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-3">
+          <div class="bg-gradient-to-r from-red-500 to-orange-500 p-2 rounded-xl">
+            <i class="fas fa-shield-alt text-white text-xl"></i>
+          </div>
+          <span class="text-white font-bold text-xl">Admin Panel</span>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <span id="adminName" class="text-white text-opacity-80 hidden md:block"></span>
+          <button id="logoutBtn" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
+            <i class="fas fa-sign-out-alt mr-2"></i>Salir
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 pt-24 pb-12 px-4">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Page Header -->
+      <div class="text-center mb-8 float-animation">
+        <div class="inline-block bg-gradient-to-r from-red-500 to-orange-500 p-4 rounded-2xl mb-4">
+          <i class="fas fa-chart-line text-white text-5xl"></i>
+        </div>
+        <h1 class="text-white text-4xl md:text-5xl font-bold mb-3">Panel de Administración</h1>
+        <p class="text-white text-opacity-90 text-lg">Estadísticas y gestión de TuCitaSegura</p>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Users -->
+        <div class="stat-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-blue-500 bg-opacity-30 p-3 rounded-xl">
+              <i class="fas fa-users text-blue-300 text-2xl"></i>
+            </div>
+            <span class="text-white text-opacity-50 text-sm">Total</span>
+          </div>
+          <p id="totalUsers" class="text-white text-3xl font-bold mb-1">0</p>
+          <p class="text-white text-opacity-70 text-sm">Usuarios Registrados</p>
+        </div>
+
+        <!-- Active Subscriptions -->
+        <div class="stat-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-green-500 bg-opacity-30 p-3 rounded-xl">
+              <i class="fas fa-crown text-green-300 text-2xl"></i>
+            </div>
+            <span class="text-white text-opacity-50 text-sm">Activas</span>
+          </div>
+          <p id="activeSubscriptions" class="text-white text-3xl font-bold mb-1">0</p>
+          <p class="text-white text-opacity-70 text-sm">Suscripciones</p>
+        </div>
+
+        <!-- Total Reports -->
+        <div class="stat-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-red-500 bg-opacity-30 p-3 rounded-xl">
+              <i class="fas fa-flag text-red-300 text-2xl"></i>
+            </div>
+            <span class="text-white text-opacity-50 text-sm">Pendientes</span>
+          </div>
+          <p id="totalReports" class="text-white text-3xl font-bold mb-1">0</p>
+          <p class="text-white text-opacity-70 text-sm">Reportes</p>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="stat-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-yellow-500 bg-opacity-30 p-3 rounded-xl">
+              <i class="fas fa-euro-sign text-yellow-300 text-2xl"></i>
+            </div>
+            <span class="text-white text-opacity-50 text-sm">Este mes</span>
+          </div>
+          <p id="totalRevenue" class="text-white text-3xl font-bold mb-1">0 €</p>
+          <p class="text-white text-opacity-70 text-sm">Ingresos</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- User Growth Chart -->
+        <div class="glass-container p-6">
+          <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-chart-line mr-3 text-blue-300"></i>
+            Crecimiento de Usuarios
+          </h2>
+          <div class="chart-container">
+            <canvas id="userGrowthChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="glass-container p-6">
+          <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-chart-bar mr-3 text-green-300"></i>
+            Ingresos Mensuales
+          </h2>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gender Distribution & Subscription Status -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Gender Distribution -->
+        <div class="glass-container p-6">
+          <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-venus-mars mr-3 text-pink-300"></i>
+            Distribución por Género
+          </h2>
+          <div class="chart-container">
+            <canvas id="genderChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Dates Statistics -->
+        <div class="glass-container p-6">
+          <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-calendar-check mr-3 text-purple-300"></i>
+            Estadísticas de Citas
+          </h2>
+          <div class="space-y-4">
+            <div class="stat-card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white text-opacity-70 text-sm">Citas Propuestas</p>
+                  <p id="proposedDates" class="text-white text-2xl font-bold">0</p>
+                </div>
+                <i class="fas fa-calendar-plus text-blue-300 text-3xl"></i>
+              </div>
+            </div>
+            <div class="stat-card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white text-opacity-70 text-sm">Citas Validadas</p>
+                  <p id="validatedDates" class="text-white text-2xl font-bold">0</p>
+                </div>
+                <i class="fas fa-calendar-check text-green-300 text-3xl"></i>
+              </div>
+            </div>
+            <div class="stat-card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white text-opacity-70 text-sm">Tasa de Éxito</p>
+                  <p id="successRate" class="text-white text-2xl font-bold">0%</p>
+                </div>
+                <i class="fas fa-percentage text-yellow-300 text-3xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="glass-container p-8">
+        <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
+          <i class="fas fa-history mr-3 text-purple-300"></i>
+          Actividad Reciente
+        </h2>
+
+        <div id="activityList" class="space-y-3">
+          <!-- Activity items will be loaded here -->
+        </div>
+
+        <div id="noActivity" class="hidden text-center py-8">
+          <i class="fas fa-inbox text-white text-opacity-50 text-5xl mb-4"></i>
+          <p class="text-white text-opacity-70">No hay actividad reciente</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-8 right-8 glass-container px-6 py-4 rounded-lg shadow-lg z-50 max-w-md">
+    <div class="flex items-center space-x-3">
+      <i id="toastIcon" class="fas fa-check-circle text-2xl"></i>
+      <p id="toastMessage" class="text-white font-semibold"></p>
+    </div>
+  </div>
+
+  <!-- Error Fixes -->
+  <script src="/webapp/js/error-fixes.js"></script>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import '../js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from '../js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { loadTheme } from '../js/theme.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+
+    // Check authentication and admin role
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserData();
+
+        // Check if user is admin
+        // TODO: Replace with actual admin role check from Firestore
+        // For now, we'll check if user email is admin
+        if (!currentUserData.isAdmin && !currentUser.email.includes('admin')) {
+          showToast('Acceso denegado. Solo administradores.', 'error');
+          setTimeout(() => {
+            window.location.href = '/webapp/perfil.html';
+          }, 2000);
+          return;
+        }
+
+        document.getElementById('adminName').textContent = currentUserData.alias || currentUser.email;
+
+        await loadDashboardData();
+        document.getElementById('loadingOverlay').classList.add('hidden');
+
+        try {
+          const targetEmail = 'cesar.herrera.rojo@gmail.com';
+          const q = query(collection(db, 'users'), where('email', '==', targetEmail), limit(1));
+          const snap = await getDocs(q);
+          if (!snap.empty) {
+            const userDoc = snap.docs[0];
+            const ref = doc(db, 'users', userDoc.id);
+            await updateDoc(ref, {
+              hasActiveSubscription: true,
+              subscriptionStatus: 'active',
+              hasAntiGhostingInsurance: true,
+              insurancePurchaseDate: serverTimestamp(),
+              insuranceAmount: 120
+            });
+            showToast('Membresía y seguro activados para ' + targetEmail, 'success');
+          } else {
+            showToast('Usuario no encontrado: ' + targetEmail, 'error');
+          }
+        } catch (e) {
+          showToast('Error al activar membresía', 'error');
+        }
+      } else {
+        window.location.href = '/webapp/login.html';
+      }
+    });
+
+    // Load user data
+    async function loadUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showToast('Error al cargar datos de usuario', 'error');
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        // Load statistics
+        await loadStatistics();
+
+        // Load charts
+        await loadCharts();
+
+        // Load recent activity
+        await loadRecentActivity();
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showToast('Error al cargar datos del panel', 'error');
+      }
+    }
+
+    // Load statistics
+    async function loadStatistics() {
+      try {
+        // Total Users
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const totalUsers = usersSnapshot.size;
+        document.getElementById('totalUsers').textContent = totalUsers;
+
+        // Active Subscriptions
+        let activeSubscriptions = 0;
+        usersSnapshot.forEach((userDoc) => {
+          const user = userDoc.data();
+          if (user.hasActiveSubscription && user.subscriptionStatus === 'active') {
+            activeSubscriptions++;
+          }
+        });
+        document.getElementById('activeSubscriptions').textContent = activeSubscriptions;
+
+        // Total Reports (pending)
+        const reportsSnapshot = await getDocs(collection(db, 'reports'));
+        const pendingReports = reportsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
+        document.getElementById('totalReports').textContent = pendingReports;
+
+        // Total Revenue (this month)
+        const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+        let totalRevenue = 0;
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        paymentsSnapshot.forEach((paymentDoc) => {
+          const payment = paymentDoc.data();
+          const createdAt = payment.createdAt?.toDate();
+          if (createdAt && createdAt >= firstDayOfMonth && payment.status === 'completed') {
+            totalRevenue += payment.amount || 0;
+          }
+        });
+        document.getElementById('totalRevenue').textContent = `${totalRevenue.toFixed(2)} €`;
+
+        // Date Statistics
+        const conversationsSnapshot = await getDocs(collection(db, 'conversations'));
+        let proposedDates = 0;
+        let validatedDates = 0;
+
+        conversationsSnapshot.forEach((convDoc) => {
+          const conversation = convDoc.data();
+          if (conversation.proposedDate) {
+            proposedDates++;
+            if (conversation.proposedDate.validated) {
+              validatedDates++;
+            }
+          }
+        });
+
+        document.getElementById('proposedDates').textContent = proposedDates;
+        document.getElementById('validatedDates').textContent = validatedDates;
+        document.getElementById('successRate').textContent = proposedDates > 0
+          ? `${Math.round((validatedDates / proposedDates) * 100)}%`
+          : '0%';
+
+      } catch (error) {
+        console.error('Error loading statistics:', error);
+      }
+    }
+
+    // Load charts
+    async function loadCharts() {
+      try {
+        // User Growth Chart
+        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+        new Chart(userGrowthCtx, {
+          type: 'line',
+          data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Usuarios Registrados',
+              data: [10, 25, 45, 78, 120, 165],
+              borderColor: 'rgba(102, 126, 234, 1)',
+              backgroundColor: 'rgba(102, 126, 234, 0.2)',
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: 'white' }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              },
+              y: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              }
+            }
+          }
+        });
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Ingresos (€)',
+              data: [450, 890, 1240, 1890, 2450, 3120],
+              backgroundColor: 'rgba(16, 185, 129, 0.6)',
+              borderColor: 'rgba(16, 185, 129, 1)',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: 'white' }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              },
+              y: {
+                ticks: { color: 'white' },
+                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+              }
+            }
+          }
+        });
+
+        // Gender Distribution Chart
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        let maleCount = 0;
+        let femaleCount = 0;
+
+        usersSnapshot.forEach((userDoc) => {
+          const user = userDoc.data();
+          if (user.gender === 'masculino') {
+            maleCount++;
+          } else if (user.gender === 'femenino') {
+            femaleCount++;
+          }
+        });
+
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Hombres', 'Mujeres'],
+            datasets: [{
+              data: [maleCount, femaleCount],
+              backgroundColor: [
+                'rgba(59, 130, 246, 0.6)',
+                'rgba(236, 72, 153, 0.6)'
+              ],
+              borderColor: [
+                'rgba(59, 130, 246, 1)',
+                'rgba(236, 72, 153, 1)'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: 'white' }
+              }
+            }
+          }
+        });
+
+      } catch (error) {
+        console.error('Error loading charts:', error);
+      }
+    }
+
+    // Load recent activity
+    async function loadRecentActivity() {
+      try {
+        const activityList = document.getElementById('activityList');
+        const noActivity = document.getElementById('noActivity');
+
+        // Get recent users (last 10)
+        const usersQuery = query(
+          collection(db, 'users'),
+          orderBy('createdAt', 'desc'),
+          limit(5)
+        );
+
+        const usersSnapshot = await getDocs(usersQuery);
+
+        if (usersSnapshot.empty) {
+          noActivity.classList.remove('hidden');
+          return;
+        }
+
+        activityList.innerHTML = '';
+
+        usersSnapshot.forEach((userDoc) => {
+          const user = userDoc.data();
+          const createdAt = user.createdAt?.toDate();
+          const timeAgo = createdAt ? getTimeAgo(createdAt) : 'Hace un momento';
+
+          const activityItem = document.createElement('div');
+          activityItem.className = 'activity-item p-4';
+          activityItem.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-lg">
+                  <i class="fas fa-user-plus text-white text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-white font-semibold">Nuevo usuario registrado</p>
+                  <p class="text-white text-opacity-60 text-sm">${user.alias || 'Usuario'} - ${user.city || 'Ciudad no especificada'}</p>
+                </div>
+              </div>
+              <span class="text-white text-opacity-50 text-sm">${timeAgo}</span>
+            </div>
+          `;
+          activityList.appendChild(activityItem);
+        });
+
+      } catch (error) {
+        console.error('Error loading recent activity:', error);
+        // Don't show error if it's just a missing index
+        if (!error.message.includes('index')) {
+          showToast('Error al cargar actividad reciente', 'error');
+        }
+        document.getElementById('noActivity').classList.remove('hidden');
+      }
+    }
+
+    // Get time ago
+    function getTimeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+
+      let interval = Math.floor(seconds / 31536000);
+      if (interval >= 1) return interval === 1 ? 'Hace 1 año' : `Hace ${interval} años`;
+
+      interval = Math.floor(seconds / 2592000);
+      if (interval >= 1) return interval === 1 ? 'Hace 1 mes' : `Hace ${interval} meses`;
+
+      interval = Math.floor(seconds / 86400);
+      if (interval >= 1) return interval === 1 ? 'Hace 1 día' : `Hace ${interval} días`;
+
+      interval = Math.floor(seconds / 3600);
+      if (interval >= 1) return interval === 1 ? 'Hace 1 hora' : `Hace ${interval} horas`;
+
+      interval = Math.floor(seconds / 60);
+      if (interval >= 1) return interval === 1 ? 'Hace 1 minuto' : `Hace ${interval} minutos`;
+
+      return 'Hace un momento';
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = '/webapp/login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        showToast('Error al cerrar sesión', 'error');
+      }
+    });
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMessage.textContent = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle text-green-400 text-2xl';
+      } else if (type === 'error') {
+        toastIcon.className = 'fas fa-exclamation-circle text-red-400 text-2xl';
+      }
+
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "tuscitasseguras-functions",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-functions": "^4.4.0",
+    "firebase-admin": "^12.0.0",
+    "axios": "^1.6.8",
+    "stripe": "^12.0.0"
+  }
+}
