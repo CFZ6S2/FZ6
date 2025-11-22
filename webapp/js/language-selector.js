@@ -90,6 +90,22 @@ class LanguageSelector {
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
+        /* Fondo sólido para selector móvil */
+        #language-selector-mobile .language-selector-glass {
+          background: rgb(30, 41, 59);
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #language-selector-mobile .language-option {
+          background: transparent;
+        }
+
+        #language-selector-mobile .language-option:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
         .language-toggle-btn {
           position: relative;
           overflow: hidden;
