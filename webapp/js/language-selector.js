@@ -76,6 +76,10 @@ class LanguageSelector {
     const languages = window.i18n.getAvailableLanguages();
     const current = languages.find(l => l.current) || languages[0];
 
+    // Generar IDs únicos para cada instancia
+    const toggleId = `language-toggle-${this.containerId}`;
+    const dropdownId = `language-dropdown-${this.containerId}`;
+
     const html = `
       <style>
         .language-selector-glass {
@@ -159,7 +163,7 @@ class LanguageSelector {
 
       <div class="relative language-selector">
         <button
-          id="language-toggle"
+          id="${toggleId}"
           class="language-toggle-btn language-selector-glass flex items-center gap-2 px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-200"
           aria-label="Select language"
           aria-haspopup="true"
@@ -171,7 +175,7 @@ class LanguageSelector {
         </button>
 
         <div
-          id="language-dropdown"
+          id="${dropdownId}"
           class="${this.isOpen ? 'language-dropdown-open' : 'hidden'} absolute right-0 mt-3 w-64 language-selector-glass rounded-2xl shadow-2xl z-50 overflow-hidden"
           role="menu"
           aria-orientation="vertical"
@@ -219,9 +223,12 @@ class LanguageSelector {
    * Adjuntar event listeners
    */
   attachEvents() {
-    const toggle = document.getElementById('language-toggle');
-    const dropdown = document.getElementById('language-dropdown');
-    const options = document.querySelectorAll('.language-option');
+    const toggleId = `language-toggle-${this.containerId}`;
+    const dropdownId = `language-dropdown-${this.containerId}`;
+
+    const toggle = document.getElementById(toggleId);
+    const dropdown = document.getElementById(dropdownId);
+    const options = this.container.querySelectorAll('.language-option');
 
     if (!toggle || !dropdown) {
       console.warn('[LanguageSelector] Required elements not found');
@@ -278,8 +285,10 @@ class LanguageSelector {
    */
   toggleDropdown() {
     this.isOpen = !this.isOpen;
-    const dropdown = document.getElementById('language-dropdown');
-    const toggle = document.getElementById('language-toggle');
+    const toggleId = `language-toggle-${this.containerId}`;
+    const dropdownId = `language-dropdown-${this.containerId}`;
+    const dropdown = document.getElementById(dropdownId);
+    const toggle = document.getElementById(toggleId);
 
     if (dropdown && toggle) {
       dropdown.classList.toggle('hidden', !this.isOpen);
@@ -298,8 +307,10 @@ class LanguageSelector {
    */
   closeDropdown() {
     this.isOpen = false;
-    const dropdown = document.getElementById('language-dropdown');
-    const toggle = document.getElementById('language-toggle');
+    const toggleId = `language-toggle-${this.containerId}`;
+    const dropdownId = `language-dropdown-${this.containerId}`;
+    const dropdown = document.getElementById(dropdownId);
+    const toggle = document.getElementById(toggleId);
 
     if (dropdown && toggle) {
       dropdown.classList.add('hidden');
@@ -323,7 +334,8 @@ class LanguageSelector {
       return;
     }
 
-    const toggle = document.getElementById('language-toggle');
+    const toggleId = `language-toggle-${this.containerId}`;
+    const toggle = document.getElementById(toggleId);
 
     try {
       // Mostrar loading
