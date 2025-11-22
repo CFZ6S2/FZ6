@@ -1,11 +1,31 @@
 """
 Pydantic schemas for API requests and responses
 SECURITY: Input sanitization to prevent XSS attacks
+SECURITY: Advanced input validation using specialized validators
 """
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, validator
 from app.utils.sanitization import sanitize_html, sanitize_phone_number, sanitize_url
+
+# Advanced validators
+try:
+    from app.utils.validators import (
+        validate_alias,
+        validate_name,
+        validate_phone_number,
+        validate_url,
+        validate_bio,
+        validate_description,
+        validate_city,
+        validate_coordinates,
+        validate_interests,
+        validate_amount,
+        validate_age_range
+    )
+    VALIDATORS_AVAILABLE = True
+except ImportError:
+    VALIDATORS_AVAILABLE = False
 
 
 # ========== User Models ==========
@@ -40,6 +60,13 @@ class UserBase(BaseModel):
     alias: str
     gender: str = Field(..., pattern="^(masculino|femenino|otro)$")
     birth_date: str  # YYYY-MM-DD
+
+    @validator('alias')
+    def validate_alias_format(cls, v):
+        """Validate alias format using advanced validator"""
+        if VALIDATORS_AVAILABLE:
+            return validate_alias(v)
+        return v
 
     @validator('birth_date')
     def validate_age_18_plus(cls, v):
@@ -81,14 +108,37 @@ class UserProfile(UserBase):
     reputation: str = "BRONCE"
     created_at: Optional[datetime] = None
 
-    @validator('bio', 'city', 'profession')
-    def sanitize_text_fields(cls, v):
-        """Sanitize text fields to prevent XSS"""
+    @validator('bio')
+    def validate_bio_content(cls, v):
+        """Validate and sanitize bio using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_bio(v, max_length=500)
         return sanitize_html(v) if v else v
 
+    @validator('city')
+    def validate_city_name(cls, v):
+        """Validate city name using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_city(v)
+        return sanitize_html(v) if v else v
+
+    @validator('profession')
+    def sanitize_profession(cls, v):
+        """Sanitize profession field"""
+        return sanitize_html(v) if v else v
+
+    @validator('interests')
+    def validate_interests_list(cls, v):
+        """Validate interests list using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_interests(v, max_count=10)
+        return v
+
     @validator('photo_url')
-    def sanitize_photo_url(cls, v):
-        """Sanitize URL to prevent XSS"""
+    def validate_photo_url_format(cls, v):
+        """Validate photo URL using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_url(v)
         return sanitize_url(v) if v else v
 
 
@@ -227,6 +277,18 @@ class Location(BaseModel):
     lat: float = Field(..., ge=-90, le=90)
     lng: float = Field(..., ge=-180, le=180)
 
+    @validator('lat', 'lng')
+    def validate_coordinates_precision(cls, v, field):
+        """Validate coordinate precision using advanced validator"""
+        if VALIDATORS_AVAILABLE:
+            # Create dict with lat/lng for validation
+            coords = {field.name: v}
+            validate_coordinates(
+                coords.get('lat', 0),
+                coords.get('lng', 0)
+            )
+        return v
+
 
 class MeetingSpotRequest(BaseModel):
     """Request for meeting spot suggestions"""
@@ -296,15 +358,45 @@ class VIPEventCreate(BaseModel):
     dresscode: Optional[str] = None
     requirements: Optional[str] = None
 
-    @validator('title', 'description', 'city', 'address', 'dresscode', 'requirements')
+    @validator('title')
+    def validate_title(cls, v):
+        """Sanitize title field"""
+        return sanitize_html(v) if v else v
+
+    @validator('description')
+    def validate_description_content(cls, v):
+        """Validate description using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_description(v, min_length=20, max_length=1000, field_name='description')
+        return sanitize_html(v) if v else v
+
+    @validator('city')
+    def validate_city_name(cls, v):
+        """Validate city name using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_city(v)
+        return sanitize_html(v) if v else v
+
+    @validator('address', 'dresscode', 'requirements')
     def sanitize_text_fields(cls, v):
         """Sanitize text fields to prevent XSS"""
         return sanitize_html(v) if v else v
 
+    @validator('compensation')
+    def validate_compensation_amount(cls, v):
+        """Validate compensation amount using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            return validate_amount(v, min_amount=0, max_amount=10000)
+        return v
+
     @validator('max_age')
-    def validate_age_range(cls, v, values):
-        if 'min_age' in values and v < values['min_age']:
-            raise ValueError('max_age must be greater than or equal to min_age')
+    def validate_age_range_values(cls, v, values):
+        """Validate age range consistency"""
+        if 'min_age' in values:
+            if VALIDATORS_AVAILABLE:
+                validate_age_range(values['min_age'], v, min_absolute=18, max_absolute=100)
+            elif v < values['min_age']:
+                raise ValueError('max_age must be greater than or equal to min_age')
         return v
 
 
@@ -479,15 +571,28 @@ class VideoCallInvitationResponse(BaseModel):
 
 class EmergencyPhoneBase(BaseModel):
     """Base model for emergency phone numbers"""
-    phone_number: str = Field(..., min_length=9, max_length=15, pattern=r"^\+?[0-9\s\-\(\)]+")
+    phone_number: str = Field(..., min_length=9, max_length=15)
     country_code: str = Field(default="+34", pattern=r"^\+[0-9]{1,3}$")
     is_primary: bool = False
     label: str = Field(default="Teléfono personal", max_length=50)
     notes: Optional[str] = Field(default=None, max_length=200)
 
     @validator('phone_number')
-    def sanitize_phone(cls, v):
-        """Sanitize phone number to prevent XSS"""
+    def validate_phone_format(cls, v, values):
+        """Validate phone number format using advanced validator"""
+        if v and VALIDATORS_AVAILABLE:
+            # Extract country code if available
+            country = values.get('country_code', '+34').replace('+', '')
+            # Determine region code (ES for Spain, etc.)
+            region_map = {
+                '34': 'ES',
+                '1': 'US',
+                '44': 'GB',
+                '33': 'FR',
+                '49': 'DE'
+            }
+            region = region_map.get(country, None)
+            return validate_phone_number(v, region)
         return sanitize_phone_number(v) if v else v
 
     @validator('label', 'notes')
