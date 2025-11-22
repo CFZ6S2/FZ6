@@ -98,6 +98,50 @@
     "footer": {
       "tagline": "Trouvez des connexions authentiques avec sécurité et respect",
       "copyright": "© 2025 RencontresSûres. Tous droits réservés."
+    },
+    "pricing": {
+      "title": "Tarifs Transparents",
+      "subtitle": "Prix justes et transparents. Les femmes ont toujours un accès gratuit complet.",
+      "membership": {
+        "title": "Adhésion Premium",
+        "subtitle": "Accès complet à la plateforme",
+        "feature1": "Chat illimité avec vos matchs",
+        "feature2": "Envoi de demandes de rendez-vous",
+        "feature3": "Filtres de recherche avancés",
+        "feature4": "Voir qui a visité votre profil",
+        "womenFree": "Femmes: GRATUIT pour toujours"
+      },
+      "insurance": {
+        "title": "Assurance Anti-Lapin",
+        "subtitle": "Protection garantie pour vos rendez-vous",
+        "refundable": "100% REMBOURSABLE",
+        "feature1": "Remboursement total si le rendez-vous est réussi",
+        "feature2": "Pénalité pour absence sans préavis",
+        "feature3": "Système de réputation amélioré",
+        "feature4": "Support prioritaire en cas d'incident",
+        "note": "Nécessite une Adhésion Premium active"
+      },
+      "securePayment": "Paiements 100% sécurisés traités par Stripe. Annulez à tout moment, sans engagement."
+    },
+    "verification": {
+      "title": "100% Utilisateurs Vérifiés et Réels",
+      "noScams": "Avec RencontresSûres les arnaques sont impossibles",
+      "description": "Tous nos utilisateurs passent par un processus de vérification rigoureux. Nous garantissons que chaque profil est réel, authentique et vérifié.",
+      "email": {
+        "title": "Vérification Email",
+        "description": "Tous les utilisateurs doivent vérifier leur adresse e-mail avant d'accéder à la plateforme"
+      },
+      "id": {
+        "title": "Vérification d'Identité",
+        "description": "Système de vérification d'identité optionnel pour plus de sécurité et de confiance"
+      },
+      "reputation": {
+        "title": "Système de Réputation",
+        "description": "Réputation transparente basée sur le comportement réel et les retours de la communauté"
+      },
+      "badge1": "Profils Vérifiés",
+      "badge2": "Tolérance Zéro aux Faux",
+      "badge3": "Données Protégées"
     }
   },
 

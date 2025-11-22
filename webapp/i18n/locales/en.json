@@ -98,6 +98,50 @@
     "footer": {
       "tagline": "Find authentic connections with security and respect",
       "copyright": "© 2025 SafeDate. All rights reserved."
+    },
+    "pricing": {
+      "title": "Transparent Pricing",
+      "subtitle": "Fair and transparent prices. Women always have full free access.",
+      "membership": {
+        "title": "Premium Membership",
+        "subtitle": "Full access to the platform",
+        "feature1": "Unlimited chat with your matches",
+        "feature2": "Send date requests",
+        "feature3": "Advanced search filters",
+        "feature4": "See who visited your profile",
+        "womenFree": "Women: FREE forever"
+      },
+      "insurance": {
+        "title": "Anti-Ghosting Insurance",
+        "subtitle": "Guaranteed protection for your dates",
+        "refundable": "100% REFUNDABLE",
+        "feature1": "Full refund if the date is successful",
+        "feature2": "Penalty for no-shows without notice",
+        "feature3": "Improved reputation system",
+        "feature4": "Priority support for incidents",
+        "note": "Requires active Premium Membership"
+      },
+      "securePayment": "100% secure payments processed by Stripe. Cancel anytime, no commitments."
+    },
+    "verification": {
+      "title": "100% Verified and Real Users",
+      "noScams": "With SafeDate scams are impossible",
+      "description": "All our users go through a rigorous verification process. We guarantee that every profile is real, authentic and verified.",
+      "email": {
+        "title": "Email Verification",
+        "description": "All users must verify their email address before accessing the platform"
+      },
+      "id": {
+        "title": "Identity Verification",
+        "description": "Optional identity verification system for increased security and trust"
+      },
+      "reputation": {
+        "title": "Reputation System",
+        "description": "Transparent reputation based on real behavior and community feedback"
+      },
+      "badge1": "Verified Profiles",
+      "badge2": "Zero Tolerance for Fakes",
+      "badge3": "Protected Data"
     }
   },
 

@@ -98,6 +98,50 @@
     "footer": {
       "tagline": "Finden Sie authentische Verbindungen mit Sicherheit und Respekt",
       "copyright": "© 2025 SicherDates. Alle Rechte vorbehalten."
+    },
+    "pricing": {
+      "title": "Transparente Preise",
+      "subtitle": "Faire und transparente Preise. Frauen haben immer vollen kostenlosen Zugang.",
+      "membership": {
+        "title": "Premium-Mitgliedschaft",
+        "subtitle": "Vollständiger Zugriff auf die Plattform",
+        "feature1": "Unbegrenzter Chat mit Ihren Matches",
+        "feature2": "Date-Anfragen senden",
+        "feature3": "Erweiterte Suchfilter",
+        "feature4": "Sehen Sie, wer Ihr Profil besucht hat",
+        "womenFree": "Frauen: KOSTENLOS für immer"
+      },
+      "insurance": {
+        "title": "Anti-Ghosting-Versicherung",
+        "subtitle": "Garantierter Schutz für Ihre Dates",
+        "refundable": "100% RÜCKERSTATTUNG",
+        "feature1": "Volle Rückerstattung bei erfolgreichem Date",
+        "feature2": "Strafe für unentschuldigtes Nichterscheinen",
+        "feature3": "Verbessertes Reputationssystem",
+        "feature4": "Prioritäts-Support bei Vorfällen",
+        "note": "Erfordert aktive Premium-Mitgliedschaft"
+      },
+      "securePayment": "100% sichere Zahlungen über Stripe. Jederzeit kündbar, keine Verpflichtungen."
+    },
+    "verification": {
+      "title": "100% Verifizierte und Echte Benutzer",
+      "noScams": "Mit SicherDates sind Betrug unmöglich",
+      "description": "Alle unsere Benutzer durchlaufen einen strengen Verifizierungsprozess. Wir garantieren, dass jedes Profil echt, authentisch und verifiziert ist.",
+      "email": {
+        "title": "E-Mail-Verifizierung",
+        "description": "Alle Benutzer müssen ihre E-Mail-Adresse verifizieren, bevor sie auf die Plattform zugreifen können"
+      },
+      "id": {
+        "title": "Identitätsprüfung",
+        "description": "Optionales Identitätsprüfungssystem für mehr Sicherheit und Vertrauen"
+      },
+      "reputation": {
+        "title": "Reputationssystem",
+        "description": "Transparente Reputation basierend auf echtem Verhalten und Community-Feedback"
+      },
+      "badge1": "Verifizierte Profile",
+      "badge2": "Null Toleranz für Fakes",
+      "badge3": "Geschützte Daten"
     }
   },
 
