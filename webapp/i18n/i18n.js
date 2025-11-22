@@ -11,7 +11,7 @@ class I18n {
     this.currentLanguage = 'es';
     this.defaultLanguage = 'es';
     this.translations = {};
-    this.supportedLanguages = ['es', 'en']; // Extensible a: 'fr', 'pt', 'de'
+    this.supportedLanguages = ['es', 'en', 'fr', 'pt', 'de']; // ES, EN, FR, PT, DE
     this.isInitialized = false;
 
     // Cache de traducciones para mejor rendimiento
