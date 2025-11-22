@@ -9,3 +9,5 @@ bleach==6.1.0
 cryptography==41.0.7
 phonenumbers==8.13.26
 email-validator==2.1.0
+python-magic==0.4.27
+Pillow==10.1.0
