@@ -17,6 +17,16 @@ except Exception as e:
     logger.warning(f"Could not import SecurityHeadersMiddleware: {e}")
     SecurityHeadersMiddleware = None
     get_security_headers_summary = None
+
+# CSRF Protection Middleware
+try:
+    from app.middleware.csrf_protection import CSRFProtection, csrf_protect, get_csrf_token
+except Exception as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import CSRFProtection: {e}")
+    CSRFProtection = None
+    csrf_protect = None
+    get_csrf_token = None
 try:
     import firebase_admin
     from firebase_admin import credentials
@@ -103,6 +113,17 @@ if SecurityHeadersMiddleware:
     logger.info("Security Headers Middleware added")
 else:
     logger.warning("Security Headers Middleware not available")
+
+# Add CSRF Protection Middleware
+# Only enable in production or if explicitly enabled
+enable_csrf = os.getenv("ENABLE_CSRF", "false").lower() == "true" or environment == "production"
+if CSRFProtection and enable_csrf:
+    app.add_middleware(CSRFProtection)
+    logger.info("CSRF Protection Middleware added")
+elif CSRFProtection:
+    logger.info("CSRF Protection available but disabled in development")
+else:
+    logger.warning("CSRF Protection Middleware not available")
 
 # Incluir routers de la API
 if payments_router:
@@ -199,8 +220,41 @@ async def security_info(request: Request):
         "security_headers": security_headers,
         "cors_origins": cors_origins if environment != "production" else ["[HIDDEN FOR SECURITY]"],
         "rate_limiting": "enabled",
-        "firebase_auth": "enabled" if firebase_admin and firebase_admin._apps else "disabled"
+        "firebase_auth": "enabled" if firebase_admin and firebase_admin._apps else "disabled",
+        "csrf_protection": "enabled" if enable_csrf else "disabled"
     })
+
+@app.get("/api/csrf-token")
+@limiter.limit("60/minute")
+async def get_csrf_token_endpoint(request: Request):
+    """
+    Get CSRF token for the current session.
+
+    This endpoint allows the frontend to retrieve the CSRF token
+    that should be included in the X-CSRF-Token header for
+    state-changing requests (POST, PUT, DELETE, PATCH).
+
+    The token is also set in a secure HttpOnly cookie.
+    """
+    if get_csrf_token:
+        try:
+            token = get_csrf_token(request)
+            return JSONResponse({
+                "csrf_token": token,
+                "header_name": "X-CSRF-Token",
+                "info": "Include this token in the X-CSRF-Token header for POST/PUT/DELETE requests"
+            })
+        except Exception as e:
+            logger.warning(f"Could not get CSRF token: {e}")
+            return JSONResponse({
+                "message": "CSRF token will be set in cookie after first request",
+                "header_name": "X-CSRF-Token"
+            })
+    else:
+        return JSONResponse({
+            "message": "CSRF protection not enabled",
+            "enabled": False
+        })
 
 @app.options("/debug")
 async def debug_options():
