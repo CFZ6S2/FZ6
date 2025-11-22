@@ -1,19 +1,24 @@
 """
 Servicio de integración con PayPal para TuCitaSegura.
 Maneja la creación de órdenes de pago, verificación y webhooks.
+SECURITY: HTTP timeouts y validación de expiración de tokens
 """
 import os
 import json
 import logging
 from typing import Dict, Optional, Any
+from datetime import datetime, timedelta
 import httpx
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+# HTTP timeout configuration (in seconds)
+PAYPAL_TIMEOUT = 15.0  # 15 seconds for PayPal API calls
+
 class PayPalService:
     """Servicio para interactuar con la API de PayPal."""
-    
+
     def __init__(self):
         self.settings = get_settings()
         self.client_id = os.getenv("PAYPAL_CLIENT_ID")
@@ -21,7 +26,7 @@ class PayPalService:
         self.mode = os.getenv("PAYPAL_MODE", "sandbox")
         self.base_url = self._get_base_url()
         self.access_token = None
-        self.token_expiry = None
+        self.token_obtained_at = None
     
     def _get_base_url(self) -> str:
         """Obtiene la URL base de la API de PayPal según el modo."""
@@ -29,17 +34,26 @@ class PayPalService:
             return "https://api.paypal.com"
         return "https://api.sandbox.paypal.com"
     
+    def _is_token_expired(self) -> bool:
+        """Verifica si el token de acceso ha expirado."""
+        if not self.token_obtained_at or not self.access_token:
+            return True
+
+        # Renovar token 5 minutos antes de expiración (margen de seguridad)
+        expiry_time = self.token_obtained_at + timedelta(hours=8) - timedelta(minutes=5)
+        return datetime.now() >= expiry_time
+
     async def get_access_token(self) -> str:
-        """Obtiene un token de acceso de la API de PayPal."""
-        if self.access_token and self.token_expiry:
-            # TODO: Implementar verificación de expiración
+        """Obtiene un token de acceso de la API de PayPal con verificación de expiración."""
+        # Verificar si el token sigue siendo válido
+        if self.access_token and not self._is_token_expired():
             return self.access_token
-        
+
         auth = httpx.BasicAuth(self.client_id, self.client_secret)
         data = {"grant_type": "client_credentials"}
-        
+
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=PAYPAL_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.base_url}/v1/oauth2/token",
                     auth=auth,
@@ -47,14 +61,18 @@ class PayPalService:
                     headers={"Content-Type": "application/x-www-form-urlencoded"}
                 )
                 response.raise_for_status()
-                
+
                 token_data = response.json()
                 self.access_token = token_data["access_token"]
-                # Establecer expiración (normalmente 8 horas)
-                self.token_expiry = token_data.get("expires_in", 28800)
-                
+                self.token_obtained_at = datetime.now()
+
+                logger.info(f"PayPal access token obtained, expires in {token_data.get('expires_in', 28800)}s")
+
                 return self.access_token
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout obteniendo token de PayPal: {e}")
+            raise Exception("PayPal no responde (timeout)")
         except httpx.HTTPError as e:
             logger.error(f"Error obteniendo token de PayPal: {e}")
             raise Exception("No se pudo conectar con PayPal")
@@ -102,7 +120,7 @@ class PayPalService:
             order_data["purchase_units"][0]["custom_id"] = custom_id
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=PAYPAL_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.base_url}/v2/checkout/orders",
                     json=order_data,
@@ -113,9 +131,12 @@ class PayPalService:
                     }
                 )
                 response.raise_for_status()
-                
+
                 return response.json()
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout creando orden en PayPal: {e}")
+            raise Exception("PayPal no responde (timeout)")
         except httpx.HTTPError as e:
             logger.error(f"Error creando orden en PayPal: {e}")
             raise Exception("No se pudo crear la orden de pago")
@@ -133,7 +154,7 @@ class PayPalService:
         access_token = await self.get_access_token()
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=PAYPAL_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.base_url}/v2/checkout/orders/{order_id}/capture",
                     headers={
@@ -143,9 +164,12 @@ class PayPalService:
                     }
                 )
                 response.raise_for_status()
-                
+
                 return response.json()
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout capturando orden en PayPal: {e}")
+            raise Exception("PayPal no responde (timeout)")
         except httpx.HTTPError as e:
             logger.error(f"Error capturando orden en PayPal: {e}")
             raise Exception("No se pudo capturar el pago")
@@ -179,7 +203,7 @@ class PayPalService:
         }
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=PAYPAL_TIMEOUT) as client:
                 response = await client.post(
                     f"{self.base_url}/v1/notifications/verify-webhook-signature",
                     json=verification_data,
@@ -189,10 +213,13 @@ class PayPalService:
                     }
                 )
                 response.raise_for_status()
-                
+
                 result = response.json()
                 return result.get("verification_status") == "SUCCESS"
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout verificando webhook de PayPal: {e}")
+            return False
         except Exception as e:
             logger.error(f"Error verificando webhook de PayPal: {e}")
             return False
@@ -202,7 +229,7 @@ class PayPalService:
         access_token = await self.get_access_token()
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=PAYPAL_TIMEOUT) as client:
                 response = await client.get(
                     f"{self.base_url}/v2/checkout/orders/{order_id}",
                     headers={
@@ -211,9 +238,12 @@ class PayPalService:
                     }
                 )
                 response.raise_for_status()
-                
+
                 return response.json()
-                
+
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout obteniendo detalles de orden: {e}")
+            raise Exception("PayPal no responde (timeout)")
         except httpx.HTTPError as e:
             logger.error(f"Error obteniendo detalles de orden: {e}")
             raise Exception("No se pudieron obtener los detalles de la orden")
