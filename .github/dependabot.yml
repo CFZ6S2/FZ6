@@ -1,0 +1,87 @@
+# GitHub Dependabot Configuration
+# Automatically checks for dependency updates and security vulnerabilities
+
+version: 2
+updates:
+  # Python dependencies (backend)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    # Security and version updates
+    open-pull-requests-limit: 10
+    # Automatically merge minor and patch updates for security
+    # (requires GitHub Actions workflow for auto-merge)
+    labels:
+      - "dependencies"
+      - "python"
+      - "security"
+    # Grouping strategy for related updates
+    groups:
+      security-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+      minor-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Commit message prefix
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    # Reviewers (configure as needed)
+    # reviewers:
+    #   - "security-team"
+    # assignees:
+    #   - "lead-developer"
+
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Madrid"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Docker dependencies (if using Docker)
+  # - package-ecosystem: "docker"
+  #   directory: "/backend"
+  #   schedule:
+  #     interval: "weekly"
+  #   open-pull-requests-limit: 5
+  #   labels:
+  #     - "dependencies"
+  #     - "docker"
+
+# Dependabot Security Updates Features:
+#
+# 1. Automatic PRs for security vulnerabilities
+# 2. Weekly checks for dependency updates
+# 3. Grouped updates to reduce PR noise
+# 4. Custom labels for easy filtering
+# 5. Commit message formatting
+#
+# To enable auto-merge for security updates, create a GitHub Action workflow:
+# .github/workflows/dependabot-auto-merge.yml
+#
+# Benefits:
+# - Faster security patch deployment
+# - Reduced manual dependency management
+# - Compliance with security best practices
+# - Automated version updates
