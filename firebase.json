@@ -85,13 +85,6 @@
   "database": {
     "rules": "database.rules.json"
   },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "firebase-storage.rules"
-  },
   "emulators": {
     "functions": {
       "port": 5001
