@@ -2,6 +2,7 @@
 Input sanitization utilities to prevent XSS and injection attacks.
 """
 import bleach
+import re
 from typing import Optional, List
 
 # Allowed HTML tags (very restrictive - text only)
@@ -14,7 +15,46 @@ ALLOWED_ATTRIBUTES: dict = {}
 STRIP = True
 
 
-def sanitize_html(text: Optional[str], allow_newlines: bool = True) -> Optional[str]:
+def _detect_xss_patterns(text: str) -> bool:
+    """
+    Detect common XSS patterns in text.
+
+    Returns:
+        True if suspicious patterns are detected
+    """
+    if not text:
+        return False
+
+    text_lower = text.lower()
+
+    # Common XSS patterns
+    xss_patterns = [
+        r'<script[^>]*>',
+        r'javascript:',
+        r'onerror\s*=',
+        r'onload\s*=',
+        r'onclick\s*=',
+        r'onmouseover\s*=',
+        r'<iframe',
+        r'<object',
+        r'<embed',
+        r'eval\s*\(',
+        r'alert\s*\(',
+        r'prompt\s*\(',
+        r'confirm\s*\(',
+        r'document\.cookie',
+        r'document\.write',
+        r'window\.location',
+    ]
+
+    for pattern in xss_patterns:
+        if re.search(pattern, text_lower):
+            return True
+
+    return False
+
+
+def sanitize_html(text: Optional[str], allow_newlines: bool = True, field_name: Optional[str] = None, user_id: Optional[str] = None) -> Optional[str]:
     """
     Sanitize HTML content to prevent XSS attacks.
 
@@ -24,6 +64,8 @@ def sanitize_html(text: Optional[str], allow_newlines: bool = True) -> Optional[
     Args:
         text: Input text that may contain HTML
         allow_newlines: Whether to preserve newlines (default: True)
+        field_name: Name of the field being sanitized (for logging)
+        user_id: User ID submitting the data (for logging)
 
     Returns:
         Sanitized plain text without HTML
@@ -41,6 +83,30 @@ def sanitize_html(text: Optional[str], allow_newlines: bool = True) -> Optional[
 
     if not isinstance(text, str):
         return str(text)
+
+    # Detect XSS patterns before sanitization
+    if _detect_xss_patterns(text):
+        # Log XSS attempt (async logging done in background)
+        if field_name and user_id:
+            try:
+                # Import here to avoid circular dependency
+                from app.services.security.security_logger import security_logger
+                import asyncio
+
+                # Create background task to log
+                loop = asyncio.get_event_loop()
+                loop.create_task(
+                    security_logger.log_xss_attempt(
+                        user_id=user_id,
+                        field=field_name,
+                        malicious_input=text[:500],  # Truncate for storage
+                        ip_address=None,
+                        user_agent=None
+                    )
+                )
+            except Exception:
+                # Don't fail sanitization if logging fails
+                pass
 
     # Clean HTML - removes all tags
     cleaned = bleach.clean(
