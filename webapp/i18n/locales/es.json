@@ -98,6 +98,50 @@
     "footer": {
       "tagline": "Encuentra conexiones auténticas con seguridad y respeto",
       "copyright": "© 2025 TuCitaSegura. Todos los derechos reservados."
+    },
+    "pricing": {
+      "title": "Precios Transparentes",
+      "subtitle": "Precios justos y transparentes. Las mujeres siempre tienen acceso gratuito completo.",
+      "membership": {
+        "title": "Membresía Premium",
+        "subtitle": "Acceso completo a la plataforma",
+        "feature1": "Chat ilimitado con tus matches",
+        "feature2": "Envío de solicitudes de citas",
+        "feature3": "Filtros de búsqueda avanzados",
+        "feature4": "Ver quién visitó tu perfil",
+        "womenFree": "Mujeres: GRATIS para siempre"
+      },
+      "insurance": {
+        "title": "Seguro Anti-Plantón",
+        "subtitle": "Protección garantizada para tus citas",
+        "refundable": "100% REEMBOLSABLE",
+        "feature1": "Reembolso total si la cita es correcta",
+        "feature2": "Penalización para quien falta sin avisar",
+        "feature3": "Sistema de reputación mejorado",
+        "feature4": "Soporte prioritario ante incidencias",
+        "note": "Requiere Membresía Premium activa"
+      },
+      "securePayment": "Pagos 100% seguros procesados por Stripe. Cancela cuando quieras, sin compromisos."
+    },
+    "verification": {
+      "title": "100% Usuarios Verificados y Reales",
+      "noScams": "Con TuCitaSegura no hay estafas posibles",
+      "description": "Todos nuestros usuarios pasan por un riguroso proceso de verificación. Garantizamos que cada perfil es real, auténtico y verificado.",
+      "email": {
+        "title": "Verificación de Email",
+        "description": "Todos los usuarios deben verificar su correo electrónico antes de acceder a la plataforma"
+      },
+      "id": {
+        "title": "Verificación de Identidad",
+        "description": "Sistema de verificación de identidad opcional para mayor seguridad y confianza"
+      },
+      "reputation": {
+        "title": "Sistema de Reputación",
+        "description": "Reputación transparente basada en comportamiento real y feedback de la comunidad"
+      },
+      "badge1": "Perfiles Verificados",
+      "badge2": "Cero Tolerancia a Fakes",
+      "badge3": "Datos Protegidos"
     }
   },
 
