@@ -40,8 +40,10 @@
   "home": {
     "title": "TuCitaSegura",
     "subtitle": "Encuentra tu conexión perfecta con seguridad, transparencia y respeto",
-    "cta": "Comenzar Ahora",
-    "exploreUsers": "Explorar Usuarios",
+    "cta": {
+      "register": "Registrarse Gratis",
+      "start": "Comenzar Ahora"
+    },
     "learnMore": "Saber Más",
     "backendStatus": {
       "checking": "Comprobando...",

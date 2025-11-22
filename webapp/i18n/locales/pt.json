@@ -40,8 +40,10 @@
   "home": {
     "title": "Encontrosseguros",
     "subtitle": "Encontre sua conexão perfeita com segurança, transparência e respeito",
-    "cta": "Começar Agora",
-    "exploreUsers": "Explorar Usuários",
+    "cta": {
+      "register": "Cadastro Gratuito",
+      "start": "Começar Agora"
+    },
     "learnMore": "Saiba Mais",
     "backendStatus": {
       "checking": "Verificando...",

@@ -40,8 +40,10 @@
   "home": {
     "title": "SicherDates",
     "subtitle": "Finden Sie Ihre perfekte Verbindung mit Sicherheit, Transparenz und Respekt",
-    "cta": "Jetzt Starten",
-    "exploreUsers": "Benutzer Erkunden",
+    "cta": {
+      "register": "Kostenlos Registrieren",
+      "start": "Jetzt Starten"
+    },
     "learnMore": "Mehr Erfahren",
     "backendStatus": {
       "checking": "Überprüfung...",

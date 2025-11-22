@@ -90,11 +90,7 @@
       "@type": "WebSite",
       "name": "TuCitaSegura",
       "url": "https://tucitasegura.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://tucitasegura.com/webapp/buscar-usuarios.html?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "description": "Plataforma segura para encontrar conexiones auténticas con verificación, reputación transparente y protección de datos"
     }
   </script>
 </head>
@@ -138,8 +134,8 @@
           Encuentra tu conexión perfecta con seguridad, transparencia y respeto
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a href="/webapp/buscar-usuarios.html" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
-            <i class="fas fa-search mr-2" aria-hidden="true"></i><span data-i18n="home.exploreUsers">Explorar Usuarios</span>
+          <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+            <i class="fas fa-user-plus mr-2" aria-hidden="true"></i><span data-i18n="home.cta.register">Registrarse Gratis</span>
           </a>
           <a href="#features" class="glass px-8 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
             <i class="fas fa-info-circle mr-2" aria-hidden="true"></i><span data-i18n="home.learnMore">Saber Más</span>
@@ -451,16 +447,18 @@
       updateAuthUI(authStatus) {
         // Update header buttons based on auth status
         const loginButton = document.querySelector('a[href="/webapp/login.html"]');
-        const registerButton = document.querySelector('a[href="/webapp/register.html"]');
-        
-        if (loginButton && registerButton) {
+        const registerButtons = document.querySelectorAll('a[href="/webapp/register.html"]');
+
+        if (loginButton) {
           if (authStatus.email_verified) {
             // User is authenticated and email is verified
             loginButton.textContent = 'Mi Perfil';
             loginButton.href = '/webapp/perfil.html';
-            
-            registerButton.textContent = 'Explorar';
-            registerButton.href = '/webapp/buscar-usuarios.html';
+
+            // Hide all register buttons for logged-in users
+            registerButtons.forEach(btn => {
+              btn.style.display = 'none';
+            });
           }
         }
       }
@@ -500,13 +498,15 @@
         firebase.auth().onAuthStateChanged(async (user) => {
           if (user) {
             const loginButton = document.querySelector('a[href="/webapp/login.html"]');
-            const registerButton = document.querySelector('a[href="/webapp/register.html"]');
-            if (loginButton && registerButton) {
+            const registerButtons = document.querySelectorAll('a[href="/webapp/register.html"]');
+            if (loginButton) {
               loginButton.textContent = 'Mi Perfil';
               loginButton.href = '/webapp/perfil.html';
-              registerButton.textContent = 'Explorar';
-              registerButton.href = '/webapp/buscar-usuarios.html';
             }
+            // Hide all register buttons for logged-in users
+            registerButtons.forEach(btn => {
+              btn.style.display = 'none';
+            });
           }
         });
       } catch {}
