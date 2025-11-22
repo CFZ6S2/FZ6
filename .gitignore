@@ -2,6 +2,21 @@
 .env
 .env.local
 .env.*.local
+webapp/.env
+webapp/.env.local
+webapp/.env.production
+webapp/.env.development
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# Service account keys and credentials
+**/serviceAccountKey.json
+**/firebase-credentials.json
+**/credentials.json
+**/*-credentials.json
+**/*.pem
+**/*.key
 
 # Node modules
 node_modules/
