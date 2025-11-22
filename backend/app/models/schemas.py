@@ -41,6 +41,31 @@ class UserBase(BaseModel):
     gender: str = Field(..., pattern="^(masculino|femenino|otro)$")
     birth_date: str  # YYYY-MM-DD
 
+    @validator('birth_date')
+    def validate_age_18_plus(cls, v):
+        """Validate that user is at least 18 years old"""
+        if not v:
+            raise ValueError("birth_date is required")
+
+        try:
+            # Parse birth date (YYYY-MM-DD format)
+            birth_date = datetime.fromisoformat(v.replace('Z', '+00:00').split('T')[0])
+        except (ValueError, AttributeError):
+            raise ValueError("birth_date must be in YYYY-MM-DD format")
+
+        # Calculate age
+        today = datetime.now()
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+
+        if age < 18:
+            raise ValueError("You must be at least 18 years old to register")
+
+        # Prevent unrealistic ages (e.g., 150 years old)
+        if age > 120:
+            raise ValueError("Invalid birth date")
+
+        return v
+
 
 class UserProfile(UserBase):
     """Complete user profile"""

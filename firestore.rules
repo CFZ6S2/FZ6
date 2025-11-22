@@ -81,17 +81,17 @@ service cloud.firestore {
                     && isAdult(request.resource.data.birthDate);  // CRITICAL: Must be 18+
 
       // Lectura: Usuarios autenticados pueden ver perfiles
-      // ⚠️ IMPORTANTE - FILTRADO DE GÉNERO (Business Rule Enforcement):
-      // - Backend permite leer todos los perfiles autenticados (necesario para funcionalidad)
-      // - **CRITICAL**: Frontend DEBE filtrar queries por género opuesto:
-      //   ✅ CORRECTO: db.collection('users').where('gender', '==', oppositeGender)
-      //   ❌ INCORRECTO: db.collection('users').get() // sin filtro
-      // - Aplicar filtro aquí requeriría get() costoso (€€€) por cada lectura
-      // - Trade-off aceptado: Usuarios técnicos pueden bypassear, pero:
-      //   1. Chat/citas SÍ validan género en backend (canChat/canSchedule)
-      //   2. Mayoría de usuarios usan app normal con filtros
-      //   3. Costo de get() en cada lectura > riesgo de bypass
-      allow read: if isAuthed();
+      // ✅ CORREGIDO: Filtrado de género aplicado en las reglas
+      // - Los hombres solo pueden ver perfiles de mujeres
+      // - Las mujeres solo pueden ver perfiles de hombres
+      // - Cada usuario puede ver su propio perfil
+      // - Los admins pueden ver todos los perfiles
+      allow read: if isAuthed() && (
+        userId == uid() ||  // Propio perfil
+        isAdmin() ||  // Admin puede ver todos
+        (isMale() && resource.data.gender == 'femenino') ||  // Hombres ven mujeres
+        (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
+      );
 
       // Actualización: El dueño puede actualizar su perfil (menos userRole que solo admin cambia)
       allow update: if isAuthed() && (
