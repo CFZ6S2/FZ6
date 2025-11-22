@@ -1,0 +1,315 @@
+name: Firestore Backup
+
+on:
+  schedule:
+    # Daily backup at 2 AM UTC
+    - cron: '0 2 * * *'
+    # Weekly backup (Sunday at 3 AM UTC)
+    - cron: '0 3 * * 0'
+    # Monthly backup (1st of month at 4 AM UTC)
+    - cron: '0 4 1 * *'
+  workflow_dispatch:
+    inputs:
+      backup_type:
+        description: 'Backup type (daily, weekly, monthly, manual)'
+        required: false
+        default: 'manual'
+        type: choice
+        options:
+          - manual
+          - daily
+          - weekly
+          - monthly
+
+jobs:
+  backup:
+    name: Export Firestore Data
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: 'latest'
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Determine backup type
+        id: backup_type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BACKUP_TYPE="${{ github.event.inputs.backup_type }}"
+          elif [ "${{ github.event.schedule }}" = "0 2 * * *" ]; then
+            BACKUP_TYPE="daily"
+          elif [ "${{ github.event.schedule }}" = "0 3 * * 0" ]; then
+            BACKUP_TYPE="weekly"
+          elif [ "${{ github.event.schedule }}" = "0 4 1 * *" ]; then
+            BACKUP_TYPE="monthly"
+          else
+            BACKUP_TYPE="manual"
+          fi
+
+          echo "type=$BACKUP_TYPE" >> $GITHUB_OUTPUT
+          echo "📦 Backup type: $BACKUP_TYPE"
+
+      - name: Set backup path
+        id: backup_path
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          BACKUP_TYPE="${{ steps.backup_type.outputs.type }}"
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+
+          # Backup path structure: gs://bucket/backups/{type}/{date}/
+          BACKUP_PATH="gs://${PROJECT_ID}-backups/backups/${BACKUP_TYPE}/${TIMESTAMP}"
+
+          echo "path=$BACKUP_PATH" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "📍 Backup path: $BACKUP_PATH"
+
+      - name: Create Cloud Storage bucket if not exists
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BUCKET_NAME="${PROJECT_ID}-backups"
+
+          # Check if bucket exists
+          if ! gsutil ls "gs://${BUCKET_NAME}" 2>/dev/null; then
+            echo "Creating backup bucket: ${BUCKET_NAME}"
+
+            # Create bucket with lifecycle policy
+            gsutil mb -p "${PROJECT_ID}" -l us-central1 "gs://${BUCKET_NAME}"
+
+            # Enable versioning
+            gsutil versioning set on "gs://${BUCKET_NAME}"
+
+            echo "✅ Bucket created successfully"
+          else
+            echo "✅ Bucket already exists"
+          fi
+
+      - name: Set lifecycle policy on bucket
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BUCKET_NAME="${PROJECT_ID}-backups"
+
+          # Create lifecycle policy
+          cat > lifecycle.json <<EOF
+          {
+            "lifecycle": {
+              "rule": [
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {
+                    "age": 7,
+                    "matchesPrefix": ["backups/daily/"]
+                  }
+                },
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {
+                    "age": 30,
+                    "matchesPrefix": ["backups/weekly/"]
+                  }
+                },
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {
+                    "age": 365,
+                    "matchesPrefix": ["backups/monthly/"]
+                  }
+                },
+                {
+                  "action": {"type": "Delete"},
+                  "condition": {
+                    "age": 30,
+                    "matchesPrefix": ["backups/manual/"]
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+
+          # Apply lifecycle policy
+          gsutil lifecycle set lifecycle.json "gs://${BUCKET_NAME}"
+
+          echo "✅ Lifecycle policy applied"
+
+      - name: Export Firestore database
+        id: export
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BACKUP_PATH="${{ steps.backup_path.outputs.path }}"
+
+          echo "🚀 Starting Firestore export..."
+          echo "Project: $PROJECT_ID"
+          echo "Destination: $BACKUP_PATH"
+
+          # Export all collections
+          gcloud firestore export "$BACKUP_PATH" \
+            --project="$PROJECT_ID" \
+            --async \
+            2>&1 | tee export.log
+
+          # Extract operation name
+          OPERATION=$(grep -oP 'operations/\S+' export.log | head -1)
+          echo "operation=$OPERATION" >> $GITHUB_OUTPUT
+
+          echo "📋 Operation: $OPERATION"
+
+      - name: Wait for export to complete
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          OPERATION="${{ steps.export.outputs.operation }}"
+
+          if [ -z "$OPERATION" ]; then
+            echo "❌ No operation found"
+            exit 1
+          fi
+
+          echo "⏳ Waiting for export to complete..."
+
+          MAX_WAIT=1800  # 30 minutes
+          ELAPSED=0
+          INTERVAL=30
+
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            STATUS=$(gcloud firestore operations describe "$OPERATION" \
+              --project="$PROJECT_ID" \
+              --format="value(done)" 2>/dev/null || echo "false")
+
+            if [ "$STATUS" = "True" ]; then
+              echo "✅ Export completed successfully!"
+
+              # Get operation details
+              gcloud firestore operations describe "$OPERATION" \
+                --project="$PROJECT_ID" \
+                --format="yaml"
+
+              exit 0
+            fi
+
+            echo "⏳ Still running... ($ELAPSED/$MAX_WAIT seconds)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          echo "❌ Export timed out after $MAX_WAIT seconds"
+          exit 1
+
+      - name: Verify backup
+        run: |
+          BACKUP_PATH="${{ steps.backup_path.outputs.path }}"
+
+          echo "🔍 Verifying backup..."
+
+          # List backup contents
+          gsutil ls -lh "$BACKUP_PATH/" || {
+            echo "❌ Backup verification failed - no files found"
+            exit 1
+          }
+
+          # Get backup size
+          BACKUP_SIZE=$(gsutil du -sh "$BACKUP_PATH" | awk '{print $1}')
+          echo "backup_size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
+
+          echo "✅ Backup verified successfully"
+          echo "📊 Backup size: $BACKUP_SIZE"
+
+      - name: Create backup metadata
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BACKUP_PATH="${{ steps.backup_path.outputs.path }}"
+          BACKUP_TYPE="${{ steps.backup_type.outputs.type }}"
+          TIMESTAMP="${{ steps.backup_path.outputs.timestamp }}"
+
+          # Create metadata file
+          cat > backup-metadata.json <<EOF
+          {
+            "timestamp": "$TIMESTAMP",
+            "type": "$BACKUP_TYPE",
+            "project_id": "$PROJECT_ID",
+            "backup_path": "$BACKUP_PATH",
+            "git_sha": "${{ github.sha }}",
+            "git_ref": "${{ github.ref }}",
+            "triggered_by": "${{ github.actor }}",
+            "workflow_run": "${{ github.run_id }}"
+          }
+          EOF
+
+          # Upload metadata
+          gsutil cp backup-metadata.json "${BACKUP_PATH}/metadata.json"
+
+          echo "✅ Metadata created"
+
+      - name: List recent backups
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BUCKET_NAME="${PROJECT_ID}-backups"
+          BACKUP_TYPE="${{ steps.backup_type.outputs.type }}"
+
+          echo "📂 Recent ${BACKUP_TYPE} backups:"
+          gsutil ls "gs://${BUCKET_NAME}/backups/${BACKUP_TYPE}/" | tail -5 || echo "No previous backups found"
+
+      - name: Cleanup old manual backups
+        if: steps.backup_type.outputs.type == 'manual'
+        run: |
+          PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}"
+          BUCKET_NAME="${PROJECT_ID}-backups"
+
+          echo "🧹 Cleaning up old manual backups (keeping last 5)..."
+
+          # List all manual backups sorted by date
+          BACKUPS=$(gsutil ls "gs://${BUCKET_NAME}/backups/manual/" | sort -r)
+
+          # Count backups
+          BACKUP_COUNT=$(echo "$BACKUPS" | wc -l)
+
+          if [ $BACKUP_COUNT -gt 5 ]; then
+            # Delete backups beyond the 5 most recent
+            echo "$BACKUPS" | tail -n +6 | while read backup; do
+              echo "Deleting: $backup"
+              gsutil -m rm -r "$backup" || true
+            done
+
+            echo "✅ Cleanup completed"
+          else
+            echo "ℹ️ No cleanup needed (only $BACKUP_COUNT backups)"
+          fi
+
+      - name: Backup summary
+        if: success()
+        run: |
+          BACKUP_TYPE="${{ steps.backup_type.outputs.type }}"
+          BACKUP_PATH="${{ steps.backup_path.outputs.path }}"
+          TIMESTAMP="${{ steps.backup_path.outputs.timestamp }}"
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 FIRESTORE BACKUP COMPLETED"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Type: $BACKUP_TYPE"
+          echo "Timestamp: $TIMESTAMP"
+          echo "Path: $BACKUP_PATH"
+          echo ""
+          echo "Retention policies:"
+          echo "  • Daily: 7 days"
+          echo "  • Weekly: 30 days"
+          echo "  • Monthly: 365 days"
+          echo "  • Manual: 30 days (last 5 kept)"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ BACKUP FAILED"
+          echo "Please check the logs and investigate immediately."
+          echo "Data loss risk if backups continue to fail!"
+          exit 1
