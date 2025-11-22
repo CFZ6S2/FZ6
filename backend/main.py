@@ -27,6 +27,22 @@ except Exception as e:
     CSRFProtection = None
     csrf_protect = None
     get_csrf_token = None
+
+# Health Check Service
+try:
+    from app.services.health import health_service
+except Exception as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import health_service: {e}")
+    health_service = None
+
+# Sentry Monitoring Service
+try:
+    from app.services.monitoring import sentry_service
+except Exception as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import sentry_service: {e}")
+    sentry_service = None
 try:
     import firebase_admin
     from firebase_admin import credentials
@@ -53,6 +69,11 @@ try:
 except Exception:
     emergency_phones_router = None
 
+try:
+    from app.api.v1 import api_v1_router
+except Exception:
+    api_v1_router = None
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -60,7 +81,82 @@ logger = logging.getLogger(__name__)
 # Configure rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="TuCitaSegura Railway")
+# OpenAPI documentation configuration
+app = FastAPI(
+    title="TuCitaSegura API",
+    description="""
+## TuCitaSegura - Plataforma de Citas Seguras
+
+API REST para la gestión de citas seguras con características de seguridad avanzadas.
+
+### Características
+
+* **Autenticación**: Firebase Auth con JWT tokens
+* **Seguridad**: Rate limiting, CSRF protection, input validation
+* **Pagos**: PayPal integration para suscripciones
+* **Notificaciones**: Push notifications en tiempo real
+* **Eventos VIP**: Sistema de concierge para eventos exclusivos
+* **SOS**: Sistema de emergencia integrado
+
+### Seguridad
+
+Todas las peticiones requieren autenticación mediante Firebase JWT token.
+Se aplica rate limiting para prevenir abuso.
+Los datos sensibles están encriptados en reposo.
+
+### Autenticación
+
+```
+Authorization: Bearer <firebase_jwt_token>
+```
+
+### Rate Limits
+
+- Endpoints de pago: 10/minuto
+- Health check: 60/minuto
+- Teléfonos de emergencia: 15/minuto
+- Endpoints generales: según configuración
+    """,
+    version="1.0.0",
+    terms_of_service="https://tucitasegura.com/terms",
+    contact={
+        "name": "TuCitaSegura Support",
+        "url": "https://tucitasegura.com/support",
+        "email": "support@tucitasegura.com",
+    },
+    license_info={
+        "name": "Proprietary",
+    },
+    openapi_tags=[
+        {
+            "name": "health",
+            "description": "Health check endpoints para monitoring"
+        },
+        {
+            "name": "v1",
+            "description": "API Version 1 - Stable endpoints"
+        },
+        {
+            "name": "info",
+            "description": "Información de la API y versiones"
+        },
+        {
+            "name": "payments",
+            "description": "Endpoints de pagos y suscripciones (PayPal)"
+        },
+        {
+            "name": "emergency",
+            "description": "Gestión de teléfonos de emergencia y SOS"
+        },
+        {
+            "name": "security",
+            "description": "Endpoints de seguridad (CSRF, info)"
+        }
+    ],
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
 
 # Add rate limiter to app state
 app.state.limiter = limiter
@@ -126,13 +222,21 @@ else:
     logger.warning("CSRF Protection Middleware not available")
 
 # Incluir routers de la API
+
+# Include versioned API v1
+if api_v1_router:
+    app.include_router(api_v1_router)
+    logger.info("API v1 router incluido")
+
+# Legacy endpoints (backwards compatibility)
+# These will be deprecated in favor of versioned endpoints
 if payments_router:
     app.include_router(payments_router)
-    logger.info("Router de pagos incluido")
+    logger.info("Router de pagos incluido (legacy, use /v1/payments)")
 
 if emergency_phones_router:
     app.include_router(emergency_phones_router)
-    logger.info("Router de teléfonos de emergencia incluido")
+    logger.info("Router de teléfonos de emergencia incluido (legacy, use /v1/emergency-phones)")
 
 logger.info(f"Environment: {environment}")
 logger.info(f"CORS origins: {cors_origins}")
@@ -167,24 +271,94 @@ if firebase_admin and not firebase_admin._apps:
     except Exception as e:
         logger.error(f"Error inicializando Firebase Admin: {e}")
 
-@app.get("/", response_model=HealthCheck if HealthCheck else None)
-@app.get("/health", response_model=HealthCheck if HealthCheck else None)
+# Initialize Sentry for error tracking and monitoring
+if sentry_service:
+    try:
+        if sentry_service.initialize():
+            logger.info("Sentry monitoring initialized successfully")
+        else:
+            logger.info("Sentry monitoring not initialized (DSN not configured or SDK not available)")
+    except Exception as e:
+        logger.error(f"Error initializing Sentry: {e}")
+
+@app.get(
+    "/",
+    response_model=HealthCheck if HealthCheck else None,
+    tags=["health"],
+    summary="Health Check",
+    description="Verifica el estado de todos los servicios críticos"
+)
+@app.get(
+    "/health",
+    response_model=HealthCheck if HealthCheck else None,
+    tags=["health"],
+    summary="Health Check",
+    description="Verifica el estado de todos los servicios críticos"
+)
 @limiter.limit("60/minute")
 async def health_check(request: Request):
-    try:
-        firebase_connected = bool(firebase_admin._apps) if firebase_admin else False
-    except Exception:
-        firebase_connected = False
-    return {
-        "status": "healthy",
-        "version": getattr(settings, "API_VERSION", os.getenv("API_VERSION", "unknown")),
-        "timestamp": datetime.utcnow(),
-        "services": {
-            "api": "running",
-            "firebase": "connected" if firebase_connected else "unavailable",
-            "ml": "loaded",
-        },
-    }
+    """
+    ## Health Check Endpoint
+
+    Verifica el estado de salud de todos los servicios críticos:
+
+    - **Firestore**: Base de datos
+    - **Firebase Auth**: Autenticación
+    - **PayPal API**: Procesamiento de pagos
+    - **reCAPTCHA**: Protección anti-bots
+
+    ### Response
+    - `status`: Estado general (healthy/degraded/unhealthy)
+    - `checks`: Estado detallado de cada servicio
+    - `elapsed_ms`: Tiempo de respuesta del health check
+
+    ### Caching
+    Los resultados se cachean por 30 segundos para mejorar performance.
+    Usa `/health/detailed` para forzar un check fresco.
+    """
+    if health_service:
+        # Use comprehensive health check service
+        return await health_service.check_all(use_cache=True)
+    else:
+        # Fallback to basic health check
+        try:
+            firebase_connected = bool(firebase_admin._apps) if firebase_admin else False
+        except Exception:
+            firebase_connected = False
+        return {
+            "status": "healthy",
+            "version": getattr(settings, "API_VERSION", os.getenv("API_VERSION", "unknown")),
+            "timestamp": datetime.utcnow(),
+            "services": {
+                "api": "running",
+                "firebase": "connected" if firebase_connected else "unavailable",
+            },
+        }
+
+@app.get(
+    "/health/detailed",
+    tags=["health"],
+    summary="Detailed Health Check",
+    description="Health check detallado sin caché (fresh check)"
+)
+@limiter.limit("30/minute")
+async def health_check_detailed(request: Request):
+    """
+    ## Detailed Health Check (No Cache)
+
+    Fuerza un health check fresco sin usar caché.
+
+    Use este endpoint para:
+    - Debugging de problemas de conectividad
+    - Validación después de cambios de infraestructura
+    - Monitoring detallado
+
+    **Note**: Tiene rate limit más restrictivo (30/min) para evitar sobrecarga.
+    """
+    if health_service:
+        return await health_service.check_all(use_cache=False)
+    else:
+        return {"error": "Health service not available"}
 
 @app.options("/")
 async def root_options():
@@ -209,10 +383,27 @@ async def debug(request: Request):
         "security_headers": security_headers
     })
 
-@app.get("/security-info")
+@app.get(
+    "/security-info",
+    tags=["security"],
+    summary="Security Configuration Info",
+    description="Información sobre las características de seguridad activas"
+)
 @limiter.limit("30/minute")
 async def security_info(request: Request):
-    """Get information about active security features."""
+    """
+    ## Security Configuration Information
+
+    Retorna información sobre las características de seguridad activas:
+
+    - Security headers configurados
+    - CORS origins (ocultos en producción)
+    - Rate limiting status
+    - Firebase Auth status
+    - CSRF protection status
+
+    Útil para validación de configuración y auditorías de seguridad.
+    """
     logger.info("Security info endpoint accessed")
     security_headers = get_security_headers_summary() if get_security_headers_summary else None
     return JSONResponse({
@@ -224,17 +415,39 @@ async def security_info(request: Request):
         "csrf_protection": "enabled" if enable_csrf else "disabled"
     })
 
-@app.get("/api/csrf-token")
+@app.get(
+    "/api/csrf-token",
+    tags=["security"],
+    summary="Get CSRF Token",
+    description="Obtiene el token CSRF para la sesión actual"
+)
 @limiter.limit("60/minute")
 async def get_csrf_token_endpoint(request: Request):
     """
-    Get CSRF token for the current session.
+    ## Get CSRF Token
 
-    This endpoint allows the frontend to retrieve the CSRF token
-    that should be included in the X-CSRF-Token header for
-    state-changing requests (POST, PUT, DELETE, PATCH).
+    Obtiene el token CSRF para la sesión actual.
 
-    The token is also set in a secure HttpOnly cookie.
+    ### Uso
+    1. Llama a este endpoint para obtener el token
+    2. Incluye el token en el header `X-CSRF-Token` para requests POST/PUT/DELETE/PATCH
+
+    ### Response
+    ```json
+    {
+        "csrf_token": "token_value",
+        "header_name": "X-CSRF-Token",
+        "info": "Include this token..."
+    }
+    ```
+
+    El token también se establece en una cookie HttpOnly segura.
+
+    ### Seguridad
+    - Token firmado con HMAC
+    - Cookie HttpOnly (protección XSS)
+    - SameSite=Lax (protección CSRF)
+    - Rotación automática después de requests exitosos
     """
     if get_csrf_token:
         try:
