@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Chat - TuCitaSegura</title>
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/output.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #localVideo, #remoteVideo {
+      background: #000;
+      object-fit: cover;
+    }
+
+    #localVideo {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 200px;
+      height: 150px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      z-index: 10;
+    }
+
+    #remoteVideo {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+    }
+
+    .video-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+      transform: scale(1.1);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .control-btn.active {
+      background: rgba(239, 68, 68, 0.8);
+    }
+
+    .control-btn.end-call {
+      background: rgba(239, 68, 68, 0.9);
+      width: 70px;
+      height: 70px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .calling {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-indicator {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- Contenedor Principal -->
+  <div class="min-h-screen p-4">
+
+    <!-- Header -->
+    <div class="glass rounded-2xl p-4 mb-4 flex items-center justify-between">
+      <button onclick="window.history.back()" class="hover:bg-white/10 p-2 rounded-lg transition">
+        <i class="fas fa-arrow-left text-xl"></i>
+      </button>
+      <div class="text-center flex-1">
+        <h1 class="text-xl font-bold">Video Chat</h1>
+        <p id="remoteUserName" class="text-sm text-slate-300">Cargando...</p>
+        <div class="mt-1">
+          <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+            <i class="fas fa-user mr-1"></i>Chat 1-a-1 exclusivo
+          </span>
+        </div>
+      </div>
+      <div class="w-10"></div>
+    </div>
+
+    <!-- Video Container -->
+    <div class="glass rounded-2xl p-4" style="height: calc(100vh - 180px); position: relative;">
+
+      <!-- Indicador de Estado -->
+      <div id="statusIndicator" class="status-indicator glass px-4 py-2 rounded-lg">
+        <p id="statusText" class="text-sm font-semibold">Iniciando...</p>
+      </div>
+
+      <!-- Video Remoto (principal) -->
+      <div class="w-full h-full relative">
+        <video id="remoteVideo" autoplay playsinline muted></video>
+
+        <!-- Mensaje de espera -->
+        <div id="waitingMessage" class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-xl calling">
+          <i class="fas fa-video text-6xl mb-4"></i>
+          <p class="text-xl font-bold">Esperando respuesta...</p>
+        </div>
+      </div>
+
+      <!-- Video Local (PIP) -->
+      <video id="localVideo" autoplay playsinline muted></video>
+
+      <!-- Controles -->
+      <div class="video-controls">
+        <!-- Mute Audio -->
+        <button id="muteBtn" class="control-btn bg-white/20" title="Silenciar">
+          <i class="fas fa-microphone text-2xl"></i>
+        </button>
+
+        <!-- Pausar Video -->
+        <button id="videoBtn" class="control-btn bg-white/20" title="Pausar video">
+          <i class="fas fa-video text-2xl"></i>
+        </button>
+
+        <!-- Compartir Pantalla -->
+        <button id="screenBtn" class="control-btn bg-white/20" title="Compartir pantalla">
+          <i class="fas fa-desktop text-2xl"></i>
+        </button>
+
+        <!-- Colgar -->
+        <button id="endCallBtn" class="control-btn end-call" title="Finalizar llamada">
+          <i class="fas fa-phone-slash text-2xl"></i>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Modal de Llamada Entrante -->
+  <div id="incomingCallModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50" style="backdrop-filter: blur(10px);">
+    <div class="glass rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+      <div class="mb-6">
+        <i class="fas fa-phone-volume text-6xl text-green-400 calling"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">Llamada Entrante</h2>
+      <p id="callerName" class="text-lg text-slate-300 mb-8">Usuario desconocido</p>
+      <div class="flex gap-4">
+        <button id="declineCallBtn" class="flex-1 bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg font-semibold transition">
+          <i class="fas fa-phone-slash mr-2"></i>Rechazar
+        </button>
+        <button id="acceptCallBtn" class="flex-1 bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg font-semibold transition">
+          <i class="fas fa-phone mr-2"></i>Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import VideoChat, { listenForIncomingCall } from './js/video-chat.js';
+    import { showToast } from './js/utils.js';
+
+    let videoChat = null;
+    let currentUser = null;
+    let conversationId = null;
+    let remoteUserId = null;
+    let incomingCallListener = null;
+
+    // ==========================================================================
+    // INICIALIZACIÓN
+    // ==========================================================================
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Verificar autenticación
+      currentUser = auth.currentUser;
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Verificar soporte de WebRTC
+      if (!VideoChat.isSupported()) {
+        showToast('Tu navegador no soporta video chat. Usa Chrome, Firefox o Edge.', 'error');
+        setTimeout(() => window.history.back(), 3000);
+        return;
+      }
+
+      // Obtener parámetros de URL
+      const params = new URLSearchParams(window.location.search);
+      conversationId = params.get('conversationId');
+      remoteUserId = params.get('remoteUserId');
+      const action = params.get('action'); // 'call' o 'receive'
+
+      if (!conversationId || !remoteUserId) {
+        showToast('Parámetros inválidos', 'error');
+        window.history.back();
+        return;
+      }
+
+      // Cargar datos del usuario remoto
+      await loadRemoteUserData();
+
+      // Inicializar video chat
+      videoChat = new VideoChat(conversationId, currentUser.uid, remoteUserId);
+
+      // Configurar callbacks
+      videoChat.onRemoteStream = (stream) => {
+        document.getElementById('waitingMessage').style.display = 'none';
+        document.getElementById('remoteVideo').muted = false;
+      };
+
+      videoChat.onCallEnded = () => {
+        showToast('Llamada finalizada', 'info');
+        setTimeout(() => window.history.back(), 2000);
+      };
+
+      videoChat.onError = (error, message) => {
+        showToast(message, 'error');
+      };
+
+      videoChat.onStatusChange = (status) => {
+        document.getElementById('statusText').textContent = status;
+      };
+
+      // Acción según parámetro
+      if (action === 'call') {
+        // Iniciar llamada
+        startCall();
+      } else {
+        // Escuchar llamadas entrantes
+        listenForCalls();
+      }
+
+      // Configurar controles
+      setupControls();
+    });
+
+    // ==========================================================================
+    // CARGAR DATOS DE USUARIO REMOTO
+    // ==========================================================================
+
+    async function loadRemoteUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', remoteUserId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          document.getElementById('remoteUserName').textContent = userData.alias || 'Usuario';
+          document.getElementById('callerName').textContent = userData.alias || 'Usuario';
+        }
+      } catch (error) {
+        console.error('Error cargando usuario:', error);
+      }
+    }
+
+    // ==========================================================================
+    // INICIAR LLAMADA
+    // ==========================================================================
+
+    async function startCall() {
+      const localVideo = document.getElementById('localVideo');
+      const remoteVideo = document.getElementById('remoteVideo');
+
+      const success = await videoChat.startCall(localVideo, remoteVideo);
+
+      if (!success) {
+        showToast('Error iniciando llamada', 'error');
+        setTimeout(() => window.history.back(), 2000);
+      }
+    }
+
+    // ==========================================================================
+    // ESCUCHAR LLAMADAS ENTRANTES
+    // ==========================================================================
+
+    function listenForCalls() {
+      incomingCallListener = listenForIncomingCall(
+        conversationId,
+        currentUser.uid,
+        (callData) => {
+          showIncomingCallModal(callData);
+        }
+      );
+    }
+
+    function showIncomingCallModal(callData) {
+      const modal = document.getElementById('incomingCallModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      // Aceptar llamada
+      document.getElementById('acceptCallBtn').onclick = async () => {
+        modal.classList.add('hidden');
+
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+
+        const success = await videoChat.answerCall(localVideo, remoteVideo, callData);
+
+        if (!success) {
+          showToast('Error respondiendo llamada', 'error');
+          setTimeout(() => window.history.back(), 2000);
+        }
+      };
+
+      // Rechazar llamada
+      document.getElementById('declineCallBtn').onclick = () => {
+        modal.classList.add('hidden');
+        showToast('Llamada rechazada', 'info');
+        window.history.back();
+      };
+    }
+
+    // ==========================================================================
+    // CONTROLES
+    // ==========================================================================
+
+    function setupControls() {
+      // Mute/Unmute
+      document.getElementById('muteBtn').addEventListener('click', () => {
+        const isMuted = videoChat.toggleMute();
+        const btn = document.getElementById('muteBtn');
+        const icon = btn.querySelector('i');
+
+        if (isMuted) {
+          icon.className = 'fas fa-microphone-slash text-2xl';
+          btn.classList.add('active');
+        } else {
+          icon.className = 'fas fa-microphone text-2xl';
+          btn.classList.remove('active');
+        }
+      });
+
+      // Video On/Off
+      document.getElementById('videoBtn').addEventListener('click', () => {
+        const isVideoOff = videoChat.toggleVideo();
+        const btn = document.getElementById('videoBtn');
+        const icon = btn.querySelector('i');
+
+        if (isVideoOff) {
+          icon.className = 'fas fa-video-slash text-2xl';
+          btn.classList.add('active');
+        } else {
+          icon.className = 'fas fa-video text-2xl';
+          btn.classList.remove('active');
+        }
+      });
+
+      // Compartir Pantalla
+      document.getElementById('screenBtn').addEventListener('click', async () => {
+        const localVideo = document.getElementById('localVideo');
+        const isSharing = await videoChat.toggleScreenShare(localVideo);
+        const btn = document.getElementById('screenBtn');
+
+        if (isSharing) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Finalizar Llamada
+      document.getElementById('endCallBtn').addEventListener('click', async () => {
+        await videoChat.endCall();
+      });
+    }
+
+    // Limpiar al salir
+    window.addEventListener('beforeunload', async () => {
+      if (videoChat && videoChat.isCallActive) {
+        await videoChat.endCall();
+      }
+      if (incomingCallListener) {
+        incomingCallListener();
+      }
+    });
+  </script>
+
+</body>
+</html>

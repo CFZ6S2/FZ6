@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase SDK Test - TuCitaSegura</title>
+    
+    <!-- Firebase SDK - COMPAT VERSION -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #4caf50;
+            color: white;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+        }
+        .warning {
+            background: #ff9800;
+            color: white;
+        }
+        .info {
+            background: #2196f3;
+            color: white;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        #console {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase SDK Test - TuCitaSegura</h1>
+    
+    <div class="test-section">
+        <h2>📋 Firebase Configuration Test</h2>
+        <div id="configStatus" class="status info">Checking Firebase configuration...</div>
+        <button onclick="testFirebaseConfig()">Test Configuration</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔐 Authentication Test</h2>
+        <div id="authStatus" class="status info">Checking authentication...</div>
+        <button onclick="testAuth()">Test Auth</button>
+        <button onclick="testAuthState()">Test Auth State</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔥 Firestore Test</h2>
+        <div id="firestoreStatus" class="status info">Checking Firestore...</div>
+        <button onclick="testFirestore()">Test Firestore</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📁 Storage Test</h2>
+        <div id="storageStatus" class="status info">Checking Storage...</div>
+        <button onclick="testStorage()">Test Storage</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 All Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testProfileRedirect()">Test Profile Redirect</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🖥️ Console Output</h2>
+        <div id="console"></div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+            authDomain: "tu-cita-segura.firebaseapp.com",
+            projectId: "tu-cita-segura",
+            storageBucket: "tu-cita-segura.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        let app, auth, db, storage;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : type === 'warning' ? '#ffd43b' : '#74c0fc';
+            console.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        // Test Firebase Configuration
+        function testFirebaseConfig() {
+            try {
+                log('Testing Firebase configuration...');
+                
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK not loaded');
+                }
+
+                log('✅ Firebase SDK is available');
+                log(`✅ Firebase version: ${firebase.SDK_VERSION}`);
+
+                // Initialize Firebase
+                try {
+                    app = firebase.initializeApp(firebaseConfig);
+                    log('✅ Firebase app initialized successfully');
+                    updateStatus('configStatus', 'Firebase configured successfully', 'success');
+                } catch (error) {
+                    if (error.code === 'app/duplicate-app') {
+                        app = firebase.app();
+                        log('✅ Using existing Firebase app instance');
+                        updateStatus('configStatus', 'Firebase already configured', 'success');
+                    } else {
+                        throw error;
+                    }
+                }
+
+            } catch (error) {
+                log(`❌ Firebase configuration error: ${error.message}`, 'error');
+                updateStatus('configStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Authentication
+        function testAuth() {
+            try {
+                log('Testing Firebase Authentication...');
+                
+                if (!app) {
+                    throw new Error('Firebase app not initialized');
+                }
+
+                auth = firebase.auth();
+                log('✅ Firebase Auth service initialized');
+
+                // Test auth functionality
+                const currentUser = auth.currentUser;
+                log(`✅ Current user: ${currentUser ? currentUser.email : 'No user logged in'}`);
+
+                updateStatus('authStatus', 'Authentication service ready', 'success');
+
+            } catch (error) {
+                log(`❌ Authentication error: ${error.message}`, 'error');
+                updateStatus('authStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Auth State
+        function testAuthState() {
+            try {
+                log('Testing Auth State Listener...');
+                
+                if (!auth) {
+                    throw new Error('Auth not initialized');
+                }
+
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        log(`✅ User authenticated: ${user.email} (${user.uid})`);
+                        updateStatus('authStatus', `User: ${user.email}`, 'success');
+                    } else {
+                        log('ℹ️ No user authenticated');
+                        updateStatus('authStatus', 'No user authenticated', 'warning');
+                    }
+                });
+
+                log('✅ Auth state listener attached');
+
+            } catch (error) {
+                log(`❌ Auth state error: ${error.message}`, 'error');
+                updateStatus('authStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Firestore
+        function testFirestore() {
+            try {
+                log('Testing Firestore...');
+                
+                if (!app) {
+                    throw new Error('Firebase app not initialized');
+                }
+
+                db = firebase.firestore();
+                log('✅ Firestore service initialized');
+
+                // Configure Firestore
+                db.settings({ timestampsInSnapshots: true });
+                log('✅ Firestore settings configured');
+
+                // Test Firestore connection
+                db.collection('users').limit(1).get()
+                    .then((querySnapshot) => {
+                        log(`✅ Firestore connection successful (${querySnapshot.size} documents found)`);
+                        updateStatus('firestoreStatus', 'Firestore connected', 'success');
+                    })
+                    .catch((error) => {
+                        log(`⚠️ Firestore query error: ${error.message}`, 'warning');
+                        updateStatus('firestoreStatus', `Warning: ${error.message}`, 'warning');
+                    });
+
+            } catch (error) {
+                log(`❌ Firestore error: ${error.message}`, 'error');
+                updateStatus('firestoreStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Storage
+        function testStorage() {
+            try {
+                log('Testing Storage...');
+                
+                if (!app) {
+                    throw new Error('Firebase app not initialized');
+                }
+
+                storage = firebase.storage();
+                log('✅ Storage service initialized');
+
+                // Test storage reference
+                const storageRef = storage.ref();
+                log(`✅ Storage reference created: ${storageRef.toString()}`);
+
+                updateStatus('storageStatus', 'Storage service ready', 'success');
+
+            } catch (error) {
+                log(`❌ Storage error: ${error.message}`, 'error');
+                updateStatus('storageStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test Profile Redirect
+        function testProfileRedirect() {
+            log('Testing profile page redirect...');
+            
+            if (!auth) {
+                log('⚠️ Auth not initialized, testing redirect anyway...', 'warning');
+                window.location.href = '/webapp/perfil-super-fixed.html';
+                return;
+            }
+
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    log(`✅ User authenticated, redirecting to profile: ${user.email}`);
+                    setTimeout(() => {
+                        window.location.href = '/webapp/perfil-super-fixed.html';
+                    }, 1000);
+                } else {
+                    log('ℹ️ No user authenticated, redirecting to login');
+                    setTimeout(() => {
+                        window.location.href = '/webapp/login.html';
+                    }, 1000);
+                }
+            });
+        }
+
+        // Run All Tests
+        function runAllTests() {
+            log('Running all Firebase tests...', 'info');
+            
+            setTimeout(() => testFirebaseConfig(), 500);
+            setTimeout(() => testAuth(), 1000);
+            setTimeout(() => testAuthState(), 1500);
+            setTimeout(() => testFirestore(), 2000);
+            setTimeout(() => testStorage(), 2500);
+            
+            log('✅ All tests initiated', 'success');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('Firebase SDK Test Page Loaded');
+            log('Click "Run All Tests" to verify Firebase functionality');
+        });
+    </script>
+</body>
+</html>

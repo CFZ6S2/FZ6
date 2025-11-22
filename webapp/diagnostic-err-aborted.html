@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico ERR_ABORTED - Firebase Auth</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .error-analysis {
+            background: #442222;
+            border: 1px solid #884444;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .success-analysis {
+            background: #224422;
+            border: 1px solid #448844;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success { background: #004400; border-left: 4px solid #00ff00; }
+        .error { background: #440000; border-left: 4px solid #ff0000; }
+        .warning { background: #444400; border-left: 4px solid #ffff00; }
+        .info { background: #001144; border-left: 4px solid #0088ff; }
+        button {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        button:hover { background: #ff6666; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        .log-entry {
+            font-family: monospace;
+            font-size: 11px;
+            margin: 2px 0;
+            padding: 4px;
+            background: #333;
+            border-radius: 3px;
+        }
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .method-card {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .method-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .method-name {
+            font-weight: bold;
+            color: #fff;
+        }
+        .status-indicator {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-testing { background: #ffaa00; color: #000; }
+        .status-success { background: #00ff00; color: #000; }
+        .status-error { background: #ff0000; color: #fff; }
+        .status-pending { background: #888; color: #fff; }
+        .error-details {
+            background: #552222;
+            border: 1px solid #884444;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #ffaaaa;
+        }
+        .recommendation {
+            background: #222255;
+            border: 1px solid #444488;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #aaaaff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico Especializado - ERR_ABORTED</h1>
+        
+        <div class="error-analysis">
+            <h3>⚠️ Error Detectado: net::ERR_ABORTED</h3>
+            <p>Este error indica que la petición a Firebase Auth fue <strong>abortada/cancelada</strong> antes de completarse.</p>
+            <p><strong>Causas comunes:</strong></p>
+            <ul>
+                <li>🔒 <strong>CORS bloqueando</strong> - El navegador bloquea la petición cross-origin</li>
+                <li>🚫 <strong>App Check activado</strong> - Firebase App Check está rechazando peticiones</li>
+                <li>🔑 <strong>Restricciones de API Key</strong> - La API key tiene restricciones de dominio/IP</li>
+                <li>🌐 <strong>Proxy/Red corporativa</strong> - Red intermedia bloqueando peticiones</li>
+                <li>🛡️ <strong>AdBlock/Antivirus</strong> - Extensiones bloqueando peticiones a Google APIs</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Tests de Diagnóstico ERR_ABORTED</h2>
+            <button onclick="runERR_ABORTED_Diagnostic()">🚀 Ejecutar Diagnóstico Completo</button>
+            <button onclick="testCORS_Proxies()">🌐 Probar Proxies CORS</button>
+            <button onclick="testAppCheck_Bypass()">🛡️ Bypass App Check</button>
+            <button onclick="testAPIKey_Validity()">🔑 Validar API Key</button>
+            <button onclick="testAlternative_Methods()">🔧 Métodos Alternativos</button>
+            
+            <div id="diagnosticResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 Métodos de Bypass para ERR_ABORTED</h2>
+            <div class="method-grid" id="bypassMethods">
+                <!-- Los métodos se generarán dinámicamente -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Logs Detallados de Diagnóstico</h2>
+            <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+            <div id="logContainer" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="recommendation" id="recommendations" style="display: none;">
+            <h3>💡 Recomendaciones Basadas en Resultados</h3>
+            <div id="recommendationContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+
+        let diagnosticResults = [];
+        let logContainer = document.getElementById('logContainer');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.style.color = type === 'error' ? '#ff6b6b' : 
+                                 type === 'success' ? '#51cf66' : 
+                                 type === 'warning' ? '#ffd93d' : '#00ff00';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function addDiagnosticResult(title, message, type = 'info', details = null) {
+            const resultsDiv = document.getElementById('diagnosticResults');
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.innerHTML = `<strong>${title}:</strong> ${message}`;
+            
+            if (details) {
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'error-details';
+                detailsDiv.textContent = details;
+                result.appendChild(detailsDiv);
+            }
+            
+            resultsDiv.appendChild(result);
+            diagnosticResults.push({title, message, type, details});
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '';
+            document.getElementById('diagnosticResults').innerHTML = '';
+            diagnosticResults = [];
+        }
+
+        // Métodos de bypass para ERR_ABORTED
+        const bypassMethods = [
+            {
+                id: 'proxy_cors_anywhere',
+                name: 'Proxy CORS Anywhere',
+                description: 'Usa cors-anywhere.herokuapp.com para bypass',
+                test: async () => {
+                    try {
+                        const proxyUrl = `https://cors-anywhere.herokuapp.com/https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
+                        const response = await fetch(proxyUrl, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({idToken: 'test-token'})
+                        });
+                        return {success: response.ok, status: response.status};
+                    } catch (error) {
+                        return {success: false, error: error.message};
+                    }
+                }
+            },
+            {
+                id: 'proxy_allorigins',
+                name: 'Proxy AllOrigins',
+                description: 'Usa api.allorigins.win/raw para bypass',
+                test: async () => {
+                    try {
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`)}`;
+                        const response = await fetch(proxyUrl, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({idToken: 'test-token'})
+                        });
+                        return {success: response.ok, status: response.status};
+                    } catch (error) {
+                        return {success: false, error: error.message};
+                    }
+                }
+            },
+            {
+                id: 'no_cors_mode',
+                name: 'Modo no-cors',
+                description: 'Usa mode: "no-cors" para evitar CORS',
+                test: async () => {
+                    try {
+                        const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: {'Content-Type': 'text/plain'},
+                            body: JSON.stringify({idToken: 'test-token'})
+                        });
+                        // no-cors siempre retorna response.ok = false, pero si no hay error, es éxito
+                        return {success: true, status: 'no-cors mode', note: 'Request sent, response opaque'};
+                    } catch (error) {
+                        return {success: false, error: error.message};
+                    }
+                }
+            },
+            {
+                id: 'jsonp_bypass',
+                name: 'JSONP Bypass',
+                description: 'Técnica JSONP para evitar CORS',
+                test: async () => {
+                    return new Promise((resolve) => {
+                        const callbackName = `jsonp_callback_${Date.now()}`;
+                        const script = document.createElement('script');
+                        
+                        window[callbackName] = function(data) {
+                            delete window[callbackName];
+                            document.body.removeChild(script);
+                            resolve({success: true, method: 'JSONP', data: data});
+                        };
+                        
+                        script.onerror = () => {
+                            delete window[callbackName];
+                            document.body.removeChild(script);
+                            resolve({success: false, error: 'JSONP failed'});
+                        };
+                        
+                        script.src = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}&callback=${callbackName}`;
+                        document.body.appendChild(script);
+                        
+                        setTimeout(() => {
+                            if (window[callbackName]) {
+                                delete window[callbackName];
+                                document.body.removeChild(script);
+                                resolve({success: false, error: 'JSONP timeout'});
+                            }
+                        }, 8000);
+                    });
+                }
+            },
+            {
+                id: 'xhr_override',
+                name: 'XHR con Override',
+                description: 'XMLHttpRequest con configuración especial',
+                test: async () => {
+                    return new Promise((resolve) => {
+                        const xhr = new XMLHttpRequest();
+                        let completed = false;
+                        
+                        const timeout = setTimeout(() => {
+                            if (!completed) {
+                                completed = true;
+                                xhr.abort();
+                                resolve({success: false, error: 'XHR timeout'});
+                            }
+                        }, 10000);
+                        
+                        xhr.onreadystatechange = function() {
+                            if (completed) return;
+                            
+                            if (xhr.readyState === 4) {
+                                completed = true;
+                                clearTimeout(timeout);
+                                
+                                if (xhr.status === 200 || xhr.status === 0) {
+                                    resolve({success: true, status: xhr.status, method: 'XHR'});
+                                } else {
+                                    resolve({success: false, error: `XHR status ${xhr.status}`});
+                                }
+                            }
+                        };
+                        
+                        xhr.onerror = function() {
+                            if (completed) return;
+                            completed = true;
+                            clearTimeout(timeout);
+                            // Status 0 puede indicar conexión exitosa con problemas CORS
+                            resolve({success: xhr.status === 0, status: xhr.status, method: 'XHR'});
+                        };
+                        
+                        xhr.open('POST', `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, true);
+                        xhr.setRequestHeader('Content-Type', 'text/plain');
+                        xhr.send(JSON.stringify({idToken: 'test-token'}));
+                    });
+                }
+            },
+            {
+                id: 'form_submission',
+                name: 'Form Submission',
+                description: 'Envío mediante formulario HTML',
+                test: async () => {
+                    return new Promise((resolve) => {
+                        try {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
+                            form.target = 'hidden_iframe';
+                            form.style.display = 'none';
+                            
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'idToken';
+                            input.value = 'test-token';
+                            form.appendChild(input);
+                            
+                            const iframe = document.createElement('iframe');
+                            iframe.name = 'hidden_iframe';
+                            iframe.style.display = 'none';
+                            document.body.appendChild(iframe);
+                            
+                            let timeout = setTimeout(() => {
+                                document.body.removeChild(form);
+                                document.body.removeChild(iframe);
+                                resolve({success: false, error: 'Form submission timeout'});
+                            }, 8000);
+                            
+                            iframe.onload = () => {
+                                clearTimeout(timeout);
+                                document.body.removeChild(form);
+                                document.body.removeChild(iframe);
+                                resolve({success: true, method: 'form'});
+                            };
+                            
+                            iframe.onerror = () => {
+                                clearTimeout(timeout);
+                                document.body.removeChild(form);
+                                document.body.removeChild(iframe);
+                                resolve({success: false, error: 'Form submission failed'});
+                            };
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } catch (error) {
+                            resolve({success: false, error: error.message});
+                        }
+                    });
+                }
+            }
+        ];
+
+        function createBypassMethodCard(method) {
+            const card = document.createElement('div');
+            card.className = 'method-card';
+            card.id = `method-${method.id}`;
+            card.innerHTML = `
+                <div class="method-header">
+                    <div class="method-name">${method.name}</div>
+                    <div class="status-indicator status-pending" id="status-${method.id}">Pendiente</div>
+                </div>
+                <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">${method.description}</div>
+                <button onclick="testBypassMethod('${method.id}')">Probar Método</button>
+                <div id="details-${method.id}"></div>
+            `;
+            return card;
+        }
+
+        async function testBypassMethod(methodId) {
+            const method = bypassMethods.find(m => m.id === methodId);
+            if (!method) return;
+            
+            const statusElement = document.getElementById(`status-${method.id}`);
+            const detailsElement = document.getElementById(`details-${method.id}`);
+            
+            statusElement.className = 'status-indicator status-testing';
+            statusElement.textContent = 'Probando...';
+            detailsElement.innerHTML = '';
+            
+            log(`🧪 Probando método: ${method.name}`, 'info');
+            
+            try {
+                const result = await method.test();
+                
+                if (result.success) {
+                    statusElement.className = 'status-indicator status-success';
+                    statusElement.textContent = '✅ Éxito';
+                    detailsElement.innerHTML = `
+                        <div style="color: #51cf66; font-size: 11px; margin-top: 8px;">
+                            ✅ Conexión exitosa<br>
+                            ${result.status ? `Status: ${result.status}<br>` : ''}
+                            ${result.method ? `Método: ${result.method}<br>` : ''}
+                            ${result.note ? `Nota: ${result.note}<br>` : ''}
+                        </div>
+                    `;
+                    log(`✅ Método ${method.name} exitoso`, 'success');
+                } else {
+                    statusElement.className = 'status-indicator status-error';
+                    statusElement.textContent = '❌ Falló';
+                    detailsElement.innerHTML = `
+                        <div style="color: #ff6b6b; font-size: 11px; margin-top: 8px;">
+                            ❌ Error: ${result.error}<br>
+                            ${result.status ? `Status: ${result.status}<br>` : ''}
+                        </div>
+                    `;
+                    log(`❌ Método ${method.name} falló: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                statusElement.className = 'status-indicator status-error';
+                statusElement.textContent = '❌ Error';
+                detailsElement.innerHTML = `
+                    <div style="color: #ff6b6b; font-size: 11px; margin-top: 8px;">
+                        ❌ Excepción: ${error.message}
+                    </div>
+                `;
+                log(`❌ Excepción en ${method.name}: ${error.message}`, 'error');
+            }
+        }
+
+        async function runERR_ABORTED_Diagnostic() {
+            clearLogs();
+            log('🔍 Iniciando diagnóstico especializado ERR_ABORTED...', 'info');
+            
+            addDiagnosticResult('Análisis ERR_ABORTED', 'Detectando causas del error abortado...', 'info');
+            
+            // Test 1: Direct connection analysis
+            log('🧪 Test 1: Analizando conexión directa...', 'info');
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({idToken: 'test-token'}),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                addDiagnosticResult('Conexión Directa', `Status: ${response.status}`, 'success', `Response type: ${response.type}`);
+                log(`✅ Conexión directa: Status ${response.status}`, 'success');
+            } catch (error) {
+                addDiagnosticResult('Conexión Directa', 'ERR_ABORTED detectado', 'error', error.name);
+                log(`❌ Conexión directa: ${error.name} - ${error.message}`, 'error');
+            }
+            
+            // Test 2: CORS analysis
+            log('🧪 Test 2: Analizando CORS...', 'info');
+            try {
+                const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({idToken: 'test-token'})
+                });
+                addDiagnosticResult('Modo no-cors', 'Request procesado', 'success', 'Response tipo: ' + response.type);
+                log(`✅ Modo no-cors: Response tipo ${response.type}`, 'success');
+            } catch (error) {
+                addDiagnosticResult('Modo no-cors', 'Error en no-cors', 'error', error.message);
+                log(`❌ Modo no-cors: ${error.message}`, 'error');
+            }
+            
+            // Test 3: API Key validation
+            log('🧪 Test 3: Validando API Key...', 'info');
+            try {
+                const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email: `test_${Date.now()}@example.com`,
+                        password: 'test123456',
+                        returnSecureToken: true
+                    })
+                });
+                addDiagnosticResult('API Key', `Status: ${response.status}`, response.status === 200 ? 'success' : 'warning');
+                log(`📡 API Key test: Status ${response.status}`, 'info');
+            } catch (error) {
+                addDiagnosticResult('API Key', 'Error validando API', 'error', error.message);
+                log(`❌ API Key test: ${error.message}`, 'error');
+            }
+            
+            log('✅ Diagnóstico ERR_ABORTED completado', 'success');
+            updateRecommendations();
+        }
+
+        function updateRecommendations() {
+            const recommendations = document.getElementById('recommendations');
+            const content = document.getElementById('recommendationContent');
+            
+            let recommendationText = '';
+            
+            // Analizar resultados y dar recomendaciones
+            const failedDirect = diagnosticResults.some(r => r.title === 'Conexión Directa' && r.type === 'error');
+            const apiKeyIssue = diagnosticResults.some(r => r.title === 'API Key' && r.type === 'error');
+            
+            if (failedDirect) {
+                recommendationText += `
+                    <h4>🎯 Recomendación Principal: Usar Proxies CORS</h4>
+                    <p>El error ERR_ABORTED indica bloqueo CORS. Prueba estos métodos:</p>
+                    <ol>
+                        <li>Usar <strong>cors-anywhere.herokuapp.com</strong></li>
+                        <li>Intentar con <strong>api.allorigins.win</strong></li>
+                        <li>Probar <strong>corsproxy.io</strong></li>
+                        <li>Usar modo <strong>no-cors</strong> con fetch</li>
+                    </ol>
+                `;
+            }
+            
+            if (apiKeyIssue) {
+                recommendationText += `
+                    <h4>🔑 Verificar API Key</h4>
+                    <p>La API key puede tener restricciones:</p>
+                    <ol>
+                        <li>Revisar en Firebase Console → Configuración del proyecto</li>
+                        <li>Verificar restricciones de dominio/IP</li>
+                        <li>Desactivar App Check temporalmente</li>
+                        <li>Crear nueva API key sin restricciones para pruebas</li>
+                    </ol>
+                `;
+            }
+            
+            recommendationText += `
+                <h4>🛠️ Métodos Alternativos</h4>
+                <p>Si los proxies fallan, intenta:</p>
+                <ol>
+                    <li><strong>JSONP</strong> - Técnica antigua pero efectiva</li>
+                    <li><strong>Form submission</strong> - Via formulario HTML</li>
+                    <li><strong>XHR extrema</strong> - XMLHttpRequest con configuración especial</li>
+                    <li><strong>Backend proxy</strong> - Crear tu propio servidor proxy</li>
+                </ol>
+            `;
+            
+            content.innerHTML = recommendationText;
+            recommendations.style.display = 'block';
+        }
+
+        async function testCORS_Proxies() {
+            log('🌐 Probando proxies CORS específicamente...', 'info');
+            
+            const proxies = [
+                'https://cors-anywhere.herokuapp.com',
+                'https://api.allorigins.win/raw',
+                'https://corsproxy.io/?',
+                'https://cors-proxy.htmldriven.com/?',
+                'https://proxy.cors.sh/'
+            ];
+            
+            for (const proxy of proxies) {
+                try {
+                    const proxyUrl = `${proxy}https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
+                    const response = await fetch(proxyUrl, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({idToken: 'test-token'})
+                    });
+                    
+                    addDiagnosticResult(`Proxy ${proxy}`, `Status: ${response.status}`, response.ok ? 'success' : 'warning');
+                    log(`${proxy}: Status ${response.status}`, response.ok ? 'success' : 'warning');
+                } catch (error) {
+                    addDiagnosticResult(`Proxy ${proxy}`, 'Falló', 'error', error.message);
+                    log(`❌ Proxy ${proxy}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testAppCheck_Bypass() {
+            log('🛡️ Probando bypass de App Check...', 'info');
+            
+            // Intentar con diferentes headers y configuraciones
+            const configs = [
+                {
+                    name: 'Standard',
+                    headers: {'Content-Type': 'application/json'}
+                },
+                {
+                    name: 'No App Check Header',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                },
+                {
+                    name: 'Text Plain',
+                    headers: {'Content-Type': 'text/plain'},
+                    mode: 'no-cors'
+                }
+            ];
+            
+            for (const config of configs) {
+                try {
+                    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`, {
+                        method: 'POST',
+                        ...config,
+                        body: JSON.stringify({idToken: 'test-token'})
+                    });
+                    
+                    addDiagnosticResult(`Config ${config.name}`, `Status: ${response.status}`, response.ok ? 'success' : 'warning');
+                    log(`Config ${config.name}: Status ${response.status}`, response.ok ? 'success' : 'warning');
+                } catch (error) {
+                    addDiagnosticResult(`Config ${config.name}`, 'Falló', 'error', error.message);
+                    log(`❌ Config ${config.name}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testAPIKey_Validity() {
+            log('🔑 Validando API Key en detalle...', 'info');
+            
+            // Test con diferentes endpoints
+            const endpoints = [
+                'accounts:lookup',
+                'accounts:signInWithPassword',
+                'accounts:signUp',
+                'accounts:sendOobCode'
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/${endpoint}?key=${FIREBASE_API_KEY}`, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({test: 'data'})
+                    });
+                    
+                    addDiagnosticResult(`Endpoint ${endpoint}`, `Status: ${response.status}`, 'info');
+                    log(`Endpoint ${endpoint}: Status ${response.status}`, 'info');
+                } catch (error) {
+                    addDiagnosticResult(`Endpoint ${endpoint}`, 'Error', 'error', error.message);
+                    log(`❌ Endpoint ${endpoint}: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testAlternative_Methods() {
+            log('🔧 Probando métodos alternativos...', 'info');
+            
+            // Inicializar grid de métodos
+            const grid = document.getElementById('bypassMethods');
+            grid.innerHTML = '';
+            
+            for (const method of bypassMethods) {
+                const card = createBypassMethodCard(method);
+                grid.appendChild(card);
+            }
+            
+            // Probar todos los métodos automáticamente
+            log('🚀 Iniciando pruebas automáticas de bypass...', 'info');
+            for (const method of bypassMethods) {
+                await testBypassMethod(method.id);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1s entre pruebas
+            }
+        }
+
+        // Inicialización
+        window.addEventListener('load', () => {
+            log('🔍 Sistema de diagnóstico ERR_ABORTED iniciado', 'success');
+            log('📋 Este diagnóstico está diseñado específicamente para el error net::ERR_ABORTED', 'info');
+            log('🧪 Usa los botones para ejecutar pruebas específicas o el diagnóstico completo', 'info');
+        });
+    </script>
+</body>
+</html>

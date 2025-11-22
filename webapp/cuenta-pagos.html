@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Pagos - TuCitaSegura</title>
+  <link rel="stylesheet" href="./css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3), transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 0, 128, 0.2), transparent 50%);
+      animation: backgroundMove 15s ease infinite;
+      z-index: 0;
+    }
+
+    @keyframes backgroundMove {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    /* Glassmorphism containers */
+    .glass-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .glass-input {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    /* Gradient Buttons */
+    .gradient-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+
+    .gradient-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Status Badges */
+    .status-active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .status-inactive {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .status-pending {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    /* Payment Cards */
+    .payment-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .payment-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      background: rgba(102, 126, 234, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="relative">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay fixed inset-0 flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white mb-4"></div>
+      <p class="text-white text-xl font-semibold">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="glass-container fixed top-0 left-0 right-0 z-40 mx-4 mt-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-3">
+          <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-xl">
+            <i class="fas fa-wallet text-white text-xl"></i>
+          </div>
+          <span class="text-white font-bold text-xl">TuCitaSegura</span>
+        </div>
+
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="/webapp/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-search mr-2"></i>Buscar
+          </a>
+          <a href="/webapp/conversaciones.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-comments mr-2"></i>Chats
+          </a>
+          <a href="/webapp/perfil.html" class="text-white hover:text-purple-200 transition">
+            <i class="fas fa-user mr-2"></i>Perfil
+          </a>
+          <a href="/webapp/cuenta-pagos.html" class="text-white hover:text-purple-200 transition border-b-2 border-white">
+            <i class="fas fa-wallet mr-2"></i>Pagos
+          </a>
+        </div>
+
+        <button id="logoutBtn" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
+          <i class="fas fa-sign-out-alt mr-2"></i>Salir
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="relative z-10 pt-24 pb-12 px-4">
+    <div class="max-w-5xl mx-auto">
+
+      <!-- Page Header -->
+      <div class="text-center mb-8 float-animation">
+        <div class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 p-4 rounded-2xl mb-4">
+          <i class="fas fa-wallet text-white text-5xl"></i>
+        </div>
+        <h1 class="text-white text-4xl md:text-5xl font-bold mb-3">Gestión de Pagos</h1>
+        <p class="text-white text-opacity-90 text-lg">Administra tu suscripción y depósitos</p>
+      </div>
+
+      <!-- Subscription Status Card -->
+      <div class="glass-container p-8 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold flex items-center">
+            <i class="fas fa-crown mr-3 text-yellow-300"></i>
+            Estado de Suscripción
+          </h2>
+          <span id="subscriptionBadge" class="status-inactive px-4 py-2 rounded-full text-white font-semibold text-sm">
+            Inactiva
+          </span>
+        </div>
+
+        <div id="subscriptionInfo" class="space-y-4">
+          <!-- Subscription info will be loaded here -->
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-white border-opacity-20">
+          <a href="/webapp/suscripcion.html" class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
+            <i class="fas fa-arrow-right mr-2"></i>Gestionar Suscripción
+          </a>
+        </div>
+      </div>
+
+      <!-- Anti-Ghosting Insurance Card -->
+      <div class="glass-container p-8 mb-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold flex items-center">
+            <i class="fas fa-shield-alt mr-3 text-blue-300"></i>
+            Seguro Anti-Ghosting
+          </h2>
+          <span id="insuranceBadge" class="status-inactive px-4 py-2 rounded-full text-white font-semibold text-sm">
+            No Contratado
+          </span>
+        </div>
+
+        <div id="insuranceInfo" class="space-y-4">
+          <!-- Insurance info will be loaded here -->
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-white border-opacity-20">
+          <a href="/webapp/seguro.html" class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
+            <i class="fas fa-arrow-right mr-2"></i>Gestionar Seguro
+          </a>
+        </div>
+      </div>
+
+      <!-- Wallet / Deposits -->
+      <div class="glass-container p-8 mb-6">
+        <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
+          <i class="fas fa-piggy-bank mr-3 text-pink-300"></i>
+          Mis Depósitos
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <!-- Active Deposits -->
+          <div class="payment-card p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white text-opacity-70">Depósitos Activos</span>
+              <i class="fas fa-lock text-yellow-300 text-xl"></i>
+            </div>
+            <p id="activeDepositsAmount" class="text-white text-3xl font-bold">0 €</p>
+            <p class="text-white text-opacity-60 text-sm mt-2">En citas programadas</p>
+          </div>
+
+          <!-- Available to Withdraw -->
+          <div class="payment-card p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white text-opacity-70">Disponible</span>
+              <i class="fas fa-check-circle text-green-300 text-xl"></i>
+            </div>
+            <p id="availableWithdrawAmount" class="text-white text-3xl font-bold">0 €</p>
+            <p class="text-white text-opacity-60 text-sm mt-2">Citas completadas</p>
+          </div>
+        </div>
+
+        <div class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
+          <p class="text-white text-sm">
+            <i class="fas fa-info-circle mr-2"></i>
+            Los depósitos se liberan automáticamente 24 horas después de validar la cita con PIN. Si la cita no se valida, el depósito se reembolsa en 48 horas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="glass-container p-8">
+        <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
+          <i class="fas fa-history mr-3 text-purple-300"></i>
+          Historial de Transacciones
+        </h2>
+
+        <div id="transactionsList" class="space-y-3">
+          <!-- Transactions will be loaded here -->
+        </div>
+
+        <div id="noTransactions" class="hidden text-center py-8">
+          <i class="fas fa-receipt text-white text-opacity-50 text-5xl mb-4"></i>
+          <p class="text-white text-opacity-70">No hay transacciones registradas</p>
+        </div>
+
+        <div class="mt-6 text-center">
+          <button id="loadMoreBtn" class="hidden glass-input px-6 py-2 rounded-lg text-white font-semibold hover:bg-white hover:bg-opacity-30 transition">
+            Cargar Más
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-8 right-8 glass-container px-6 py-4 rounded-lg shadow-lg z-50 max-w-md">
+    <div class="flex items-center space-x-3">
+      <i id="toastIcon" class="fas fa-check-circle text-2xl"></i>
+      <p id="toastMessage" class="text-white font-semibold"></p>
+    </div>
+  </div>
+
+  <!-- Error Fixes -->
+  <script src="/webapp/js/error-fixes.js"></script>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { loadTheme } from './js/theme.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+
+    // Check authentication
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadUserData();
+        await loadPaymentData();
+        await loadTransactionHistory();
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      } else {
+        window.location.href = '/webapp/login.html';
+      }
+    });
+
+    // Load user data
+    async function loadUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        showToast('Error al cargar datos de usuario', 'error');
+      }
+    }
+
+    // Load payment data (subscription and insurance)
+    async function loadPaymentData() {
+      try {
+        // Subscription Status
+        const subscriptionBadge = document.getElementById('subscriptionBadge');
+        const subscriptionInfo = document.getElementById('subscriptionInfo');
+
+        if (currentUserData.hasActiveSubscription && currentUserData.subscriptionStatus === 'active') {
+          subscriptionBadge.textContent = 'Activa';
+          subscriptionBadge.className = 'status-active px-4 py-2 rounded-full text-white font-semibold text-sm';
+
+          const endDate = currentUserData.subscriptionEndDate?.toDate();
+          const formattedDate = endDate ? new Date(endDate).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }) : 'Fecha no disponible';
+
+          subscriptionInfo.innerHTML = `
+            <div class="payment-card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white font-semibold">Membresía Premium</p>
+                  <p class="text-white text-opacity-70 text-sm">€29.99 / mes + IVA</p>
+                </div>
+                <i class="fas fa-check-circle text-green-300 text-2xl"></i>
+              </div>
+            </div>
+            <div class="payment-card p-4">
+              <p class="text-white text-opacity-70 text-sm">Próxima renovación</p>
+              <p class="text-white font-semibold">${formattedDate}</p>
+            </div>
+            <div class="payment-card p-4">
+              <p class="text-white text-opacity-70 text-sm">ID de Suscripción</p>
+              <p class="text-white font-mono text-sm">${currentUserData.subscriptionId || 'N/A'}</p>
+            </div>
+          `;
+        } else {
+          subscriptionBadge.textContent = 'Inactiva';
+          subscriptionBadge.className = 'status-inactive px-4 py-2 rounded-full text-white font-semibold text-sm';
+
+          subscriptionInfo.innerHTML = `
+            <div class="payment-card p-4">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-exclamation-triangle text-yellow-300 text-2xl"></i>
+                <div>
+                  <p class="text-white font-semibold">No tienes una suscripción activa</p>
+                  <p class="text-white text-opacity-70 text-sm">Activa tu membresía para enviar mensajes y proponer citas</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Insurance Status
+        const insuranceBadge = document.getElementById('insuranceBadge');
+        const insuranceInfo = document.getElementById('insuranceInfo');
+
+        if (currentUserData.hasAntiGhostingInsurance) {
+          insuranceBadge.textContent = 'Activo';
+          insuranceBadge.className = 'status-active px-4 py-2 rounded-full text-white font-semibold text-sm';
+
+          const purchaseDate = currentUserData.insurancePurchaseDate?.toDate();
+          const formattedDate = purchaseDate ? new Date(purchaseDate).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }) : 'Fecha no disponible';
+
+          insuranceInfo.innerHTML = `
+            <div class="payment-card p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white font-semibold">Seguro Anti-Ghosting</p>
+                  <p class="text-white text-opacity-70 text-sm">€120 (pago único)</p>
+                </div>
+                <i class="fas fa-shield-check text-blue-300 text-2xl"></i>
+              </div>
+            </div>
+            <div class="payment-card p-4">
+              <p class="text-white text-opacity-70 text-sm">Fecha de contratación</p>
+              <p class="text-white font-semibold">${formattedDate}</p>
+            </div>
+            <div class="payment-card p-4">
+              <p class="text-white text-opacity-70 text-sm">ID de Transacción</p>
+              <p class="text-white font-mono text-sm">${currentUserData.insurancePaymentId || 'N/A'}</p>
+            </div>
+          `;
+        } else {
+          insuranceBadge.textContent = 'No Contratado';
+          insuranceBadge.className = 'status-inactive px-4 py-2 rounded-full text-white font-semibold text-sm';
+
+          insuranceInfo.innerHTML = `
+            <div class="payment-card p-4">
+              <div class="flex items-center space-x-3">
+                <i class="fas fa-info-circle text-blue-300 text-2xl"></i>
+                <div>
+                  <p class="text-white font-semibold">No tienes el seguro anti-ghosting</p>
+                  <p class="text-white text-opacity-70 text-sm">Contrata el seguro para programar citas y recibir depósitos de seguridad</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+      } catch (error) {
+        console.error('Error loading payment data:', error);
+        showToast('Error al cargar información de pagos', 'error');
+      }
+    }
+
+    // Load transaction history
+    async function loadTransactionHistory() {
+      try {
+        const transactionsList = document.getElementById('transactionsList');
+        const noTransactions = document.getElementById('noTransactions');
+
+        // Query payments collection for this user
+        const paymentsQuery = query(
+          collection(db, 'payments'),
+          where('userId', '==', currentUser.uid),
+          orderBy('createdAt', 'desc'),
+          limit(10)
+        );
+
+        const paymentsSnapshot = await getDocs(paymentsQuery);
+
+        if (paymentsSnapshot.empty) {
+          noTransactions.classList.remove('hidden');
+          transactionsList.innerHTML = '';
+          document.getElementById('activeDepositsAmount').textContent = '0 €';
+          document.getElementById('availableWithdrawAmount').textContent = '0 €';
+          return;
+        }
+
+        noTransactions.classList.add('hidden');
+        transactionsList.innerHTML = '';
+
+        let activeDeposits = 0;
+        let availableWithdraw = 0;
+
+        paymentsSnapshot.forEach((paymentDoc) => {
+          const payment = { id: paymentDoc.id, ...paymentDoc.data() };
+
+          // Calculate deposits
+          if (payment.type === 'deposit') {
+            if (payment.status === 'locked') {
+              activeDeposits += payment.amount || 0;
+            } else if (payment.status === 'completed') {
+              availableWithdraw += payment.amount || 0;
+            }
+          }
+
+          const date = payment.createdAt?.toDate();
+          const formattedDate = date ? new Date(date).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) : 'Fecha no disponible';
+
+          const transactionCard = document.createElement('div');
+          transactionCard.className = 'payment-card p-4';
+
+          let typeIcon = 'fa-question-circle';
+          let typeText = 'Desconocido';
+          let statusClass = 'status-pending';
+          let statusText = payment.status || 'Pendiente';
+
+          if (payment.type === 'subscription') {
+            typeIcon = 'fa-crown';
+            typeText = 'Suscripción';
+          } else if (payment.type === 'insurance') {
+            typeIcon = 'fa-shield-alt';
+            typeText = 'Seguro Anti-Ghosting';
+          } else if (payment.type === 'deposit') {
+            typeIcon = 'fa-piggy-bank';
+            typeText = 'Depósito de Cita';
+          }
+
+          if (payment.status === 'completed') {
+            statusClass = 'status-active';
+            statusText = 'Completado';
+          } else if (payment.status === 'pending') {
+            statusClass = 'status-pending';
+            statusText = 'Pendiente';
+          } else if (payment.status === 'failed' || payment.status === 'canceled') {
+            statusClass = 'status-inactive';
+            statusText = 'Cancelado';
+          } else if (payment.status === 'locked') {
+            statusClass = 'status-pending';
+            statusText = 'Bloqueado';
+          }
+
+          transactionCard.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div class="bg-gradient-to-br from-purple-500 to-pink-500 p-3 rounded-lg">
+                  <i class="fas ${typeIcon} text-white text-xl"></i>
+                </div>
+                <div>
+                  <p class="text-white font-semibold">${typeText}</p>
+                  <p class="text-white text-opacity-60 text-sm">${formattedDate}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-white font-bold text-lg">${payment.amount?.toFixed(2) || '0.00'} €</p>
+                <span class="${statusClass} px-2 py-1 rounded-full text-white text-xs font-semibold">${statusText}</span>
+              </div>
+            </div>
+          `;
+
+          transactionsList.appendChild(transactionCard);
+        });
+
+        // Update deposit amounts
+        document.getElementById('activeDepositsAmount').textContent = `${activeDeposits.toFixed(2)} €`;
+        document.getElementById('availableWithdrawAmount').textContent = `${availableWithdraw.toFixed(2)} €`;
+
+      } catch (error) {
+        console.error('Error loading transaction history:', error);
+        // Don't show error toast if orderBy fails (might be missing index)
+        if (!error.message.includes('index')) {
+          showToast('Error al cargar historial de transacciones', 'error');
+        }
+        document.getElementById('noTransactions').classList.remove('hidden');
+      }
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = '/webapp/login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        showToast('Error al cerrar sesión', 'error');
+      }
+    });
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMessage.textContent = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle text-green-400 text-2xl';
+      } else if (type === 'error') {
+        toastIcon.className = 'fas fa-exclamation-circle text-red-400 text-2xl';
+      }
+
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+  </script>
+
+</body>
+</html>

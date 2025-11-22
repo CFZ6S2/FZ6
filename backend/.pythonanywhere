@@ -1,0 +1,4 @@
+# Configuración para PythonAnywhere
+# Ejecutar: pa_autoconfigure_django.py o similar
+# Web app: main_simple:app
+# Virtualenv: Python 3.11

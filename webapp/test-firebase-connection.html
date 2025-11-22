@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Conexión Firebase - TuCitaSegura</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-gray-900 to-blue-900 min-h-screen p-4">
+
+  <div class="max-w-4xl mx-auto py-8">
+    <div class="text-center mb-8">
+      <div class="inline-block bg-blue-500 p-4 rounded-full mb-4">
+        <i class="fas fa-vial text-white text-4xl"></i>
+      </div>
+      <h1 class="text-4xl font-bold text-white mb-2">Test de Conexión Firebase</h1>
+      <p class="text-blue-200">Diagnóstico completo de servicios</p>
+    </div>
+
+    <!-- Test Progress -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i class="fas fa-clipboard-check mr-3 text-blue-500"></i>
+        Pruebas de Servicios
+      </h2>
+
+      <div class="space-y-4" id="testResults">
+        <!-- Los resultados se cargarán aquí -->
+      </div>
+
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <button id="runTestsBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 rounded-lg transition">
+          <i class="fas fa-play mr-2"></i>Ejecutar Pruebas
+        </button>
+      </div>
+    </div>
+
+    <!-- Logs Console -->
+    <div class="bg-gray-900 rounded-2xl shadow-xl p-6">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+        <i class="fas fa-terminal mr-3 text-green-400"></i>
+        Console Logs
+      </h2>
+      <div id="console" class="bg-black rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm text-green-400">
+        <div class="text-gray-500">Esperando inicio de pruebas...</div>
+      </div>
+    </div>
+
+    <!-- Back button -->
+    <div class="mt-6 text-center">
+      <a href="/webapp/buscar-usuarios.html" class="text-blue-300 hover:text-blue-100 transition">
+        <i class="fas fa-arrow-left mr-2"></i>Volver a la Aplicación
+      </a>
+    </div>
+  </div>
+
+  <script type="module">
+    import './js/firebase-appcheck.js';
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { collection, getDocs, addDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    const testResultsEl = document.getElementById('testResults');
+    const consoleEl = document.getElementById('console');
+    const runTestsBtn = document.getElementById('runTestsBtn');
+
+    const tests = [
+      {
+        name: 'App Check - Debug Token',
+        icon: 'fa-shield-alt',
+        test: testAppCheckDebugToken
+      },
+      {
+        name: 'App Check - Token Exchange',
+        icon: 'fa-key',
+        test: testAppCheckTokenExchange
+      },
+      {
+        name: 'Firebase Authentication',
+        icon: 'fa-user-shield',
+        test: testAuthentication
+      },
+      {
+        name: 'Firestore - Read Access',
+        icon: 'fa-database',
+        test: testFirestoreRead
+      },
+      {
+        name: 'Firestore - Connection Mode',
+        icon: 'fa-wifi',
+        test: testFirestoreConnection
+      }
+    ];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const colors = {
+        info: 'text-blue-400',
+        success: 'text-green-400',
+        error: 'text-red-400',
+        warning: 'text-yellow-400'
+      };
+
+      const icons = {
+        info: 'ℹ️',
+        success: '✅',
+        error: '❌',
+        warning: '⚠️'
+      };
+
+      const logLine = document.createElement('div');
+      logLine.className = colors[type];
+      logLine.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${icons[type]} ${message}`;
+      consoleEl.appendChild(logLine);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function createTestCard(test, index) {
+      return `
+        <div class="border border-gray-200 rounded-lg p-4 transition-all" id="test-${index}">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <i class="fas ${test.icon} text-xl text-gray-400" id="icon-${index}"></i>
+              <div>
+                <h3 class="font-semibold text-gray-800">${test.name}</h3>
+                <p class="text-sm text-gray-500" id="status-${index}">Esperando...</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <i class="fas fa-circle text-gray-300 text-xs" id="indicator-${index}"></i>
+            </div>
+          </div>
+          <div class="mt-3 hidden" id="details-${index}">
+            <div class="bg-gray-50 rounded p-3 text-sm text-gray-600"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateTestStatus(index, status, message, details = null) {
+      const statusEl = document.getElementById(`status-${index}`);
+      const indicatorEl = document.getElementById(`indicator-${index}`);
+      const iconEl = document.getElementById(`icon-${index}`);
+      const detailsEl = document.getElementById(`details-${index}`);
+      const cardEl = document.getElementById(`test-${index}`);
+
+      statusEl.textContent = message;
+
+      if (status === 'running') {
+        indicatorEl.className = 'fas fa-spinner fa-spin text-blue-500';
+        iconEl.className = `fas ${tests[index].icon} text-xl text-blue-500`;
+        cardEl.className = 'border border-blue-300 rounded-lg p-4 transition-all bg-blue-50';
+      } else if (status === 'success') {
+        indicatorEl.className = 'fas fa-check-circle text-green-500';
+        iconEl.className = `fas ${tests[index].icon} text-xl text-green-500`;
+        cardEl.className = 'border border-green-300 rounded-lg p-4 transition-all bg-green-50';
+      } else if (status === 'error') {
+        indicatorEl.className = 'fas fa-times-circle text-red-500';
+        iconEl.className = `fas ${tests[index].icon} text-xl text-red-500`;
+        cardEl.className = 'border border-red-300 rounded-lg p-4 transition-all bg-red-50';
+      }
+
+      if (details) {
+        detailsEl.classList.remove('hidden');
+        detailsEl.querySelector('div').innerHTML = details;
+      }
+    }
+
+    // Test 1: Verificar debug token
+    async function testAppCheckDebugToken() {
+      const token = localStorage.getItem('FIREBASE_APPCHECK_DEBUG_TOKEN');
+      if (token) {
+        return {
+          success: true,
+          message: 'Token encontrado',
+          details: `Debug token: <code class="bg-gray-200 px-2 py-1 rounded">${token}</code>`
+        };
+      } else {
+        return {
+          success: false,
+          message: 'No se encontró token',
+          details: 'El debug token no está en localStorage. Debería generarse automáticamente.'
+        };
+      }
+    }
+
+    // Test 2: Intercambio de token con Firebase
+    async function testAppCheckTokenExchange() {
+      try {
+        const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js');
+        const { appCheck } = await import('./js/firebase-appcheck.js');
+
+        const result = await getToken(appCheck);
+
+        if (result && result.token) {
+          return {
+            success: true,
+            message: 'Token intercambiado correctamente',
+            details: `App Check token obtenido: <code class="bg-gray-200 px-2 py-1 rounded">${result.token.substring(0, 30)}...</code>`
+          };
+        } else {
+          return {
+            success: false,
+            message: 'No se pudo obtener token',
+            details: 'El intercambio falló sin error explícito'
+          };
+        }
+      } catch (error) {
+        return {
+          success: false,
+          message: 'Error en intercambio de token',
+          details: `Error: ${error.code || error.message}<br><br>
+                    ${error.message.includes('403') || error.code === 'app-check/fetch-status-error'
+                      ? '<strong>Causa:</strong> Debug token no registrado en Firebase Console. <a href="/webapp/generate-new-debug-token.html" class="text-blue-600 underline">Generar/Registrar token</a>'
+                      : ''}`
+        };
+      }
+    }
+
+    // Test 3: Estado de autenticación
+    async function testAuthentication() {
+      return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          unsubscribe();
+          if (user) {
+            resolve({
+              success: true,
+              message: 'Usuario autenticado',
+              details: `UID: <code class="bg-gray-200 px-2 py-1 rounded">${user.uid}</code><br>Email: ${user.email}`
+            });
+          } else {
+            resolve({
+              success: true,
+              message: 'No hay usuario autenticado',
+              details: 'Esto es normal si no has iniciado sesión. El servicio de autenticación funciona correctamente.'
+            });
+          }
+        }, (error) => {
+          unsubscribe();
+          resolve({
+            success: false,
+            message: 'Error en autenticación',
+            details: `Error: ${error.message}`
+          });
+        });
+      });
+    }
+
+    // Test 4: Lectura de Firestore
+    async function testFirestoreRead() {
+      try {
+        const usersRef = collection(db, 'users');
+        const snapshot = await getDocs(usersRef);
+
+        return {
+          success: true,
+          message: `Lectura exitosa (${snapshot.size} documentos)`,
+          details: `Firestore está funcionando correctamente. Se encontraron ${snapshot.size} usuarios.`
+        };
+      } catch (error) {
+        return {
+          success: false,
+          message: 'Error al leer Firestore',
+          details: `Error: ${error.code || error.message}<br><br>
+                    ${error.code === 'permission-denied'
+                      ? 'Las reglas de seguridad están bloqueando el acceso. Esto puede ser normal si no estás autenticado.'
+                      : ''}`
+        };
+      }
+    }
+
+    // Test 5: Modo de conexión de Firestore
+    async function testFirestoreConnection() {
+      try {
+        // Intentar obtener estado de red
+        const isOffline = !navigator.onLine;
+
+        if (isOffline) {
+          return {
+            success: false,
+            message: 'Sin conexión a internet',
+            details: 'Tu navegador no tiene conexión a internet'
+          };
+        }
+
+        // Verificar si Firestore está en modo offline
+        const testRef = collection(db, '_test_connection_');
+        try {
+          await getDocs(testRef);
+        } catch (error) {
+          // Esperamos un error de permisos, pero si hay conexión
+          if (error.message.includes('offline')) {
+            return {
+              success: false,
+              message: 'Firestore en modo offline',
+              details: 'Firestore no puede conectar al backend. Verifica App Check.'
+            };
+          }
+        }
+
+        return {
+          success: true,
+          message: 'Conexión online',
+          details: 'Firestore está conectado al backend de Firebase'
+        };
+      } catch (error) {
+        return {
+          success: false,
+          message: 'Error verificando conexión',
+          details: `Error: ${error.message}`
+        };
+      }
+    }
+
+    // Ejecutar todas las pruebas
+    async function runAllTests() {
+      consoleEl.innerHTML = '';
+      log('Iniciando pruebas de diagnóstico...', 'info');
+
+      for (let i = 0; i < tests.length; i++) {
+        const test = tests[i];
+        log(`Ejecutando: ${test.name}`, 'info');
+        updateTestStatus(i, 'running', 'Ejecutando...');
+
+        try {
+          const result = await test.test();
+
+          if (result.success) {
+            log(`${test.name}: ${result.message}`, 'success');
+            updateTestStatus(i, 'success', result.message, result.details);
+          } else {
+            log(`${test.name}: ${result.message}`, 'error');
+            updateTestStatus(i, 'error', result.message, result.details);
+          }
+        } catch (error) {
+          log(`${test.name}: Error inesperado - ${error.message}`, 'error');
+          updateTestStatus(i, 'error', 'Error inesperado', error.message);
+        }
+
+        // Pequeña pausa entre tests
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      log('Pruebas completadas', 'success');
+    }
+
+    // Inicializar
+    function init() {
+      // Renderizar tarjetas de tests
+      testResultsEl.innerHTML = tests.map((test, index) => createTestCard(test, index)).join('');
+
+      // Event listener para botón
+      runTestsBtn.addEventListener('click', () => {
+        runTestsBtn.disabled = true;
+        runTestsBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ejecutando...';
+
+        runAllTests().finally(() => {
+          runTestsBtn.disabled = false;
+          runTestsBtn.innerHTML = '<i class="fas fa-redo mr-2"></i>Ejecutar Nuevamente';
+        });
+      });
+    }
+
+    init();
+  </script>
+
+</body>
+</html>

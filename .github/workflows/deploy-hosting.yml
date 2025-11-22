@@ -1,0 +1,52 @@
+name: Deploy Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - claude/paypal-insurance-retention-01KCDWh2xVbLZSmqH8kX3uhW
+    paths:
+      - 'webapp/**'
+      - 'src/**'
+      - 'firebase.json'
+      - '.github/workflows/deploy-hosting.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  FIREBASE_PROJECT_ID: 'tuscitasseguras-2d1a6'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build CSS
+        run: npm run build:css
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase deploy --only hosting --project ${{ env.FIREBASE_PROJECT_ID }} --token "$FIREBASE_TOKEN"

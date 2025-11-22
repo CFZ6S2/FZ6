@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar App Check - TuCitaSegura</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+    .status-box {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 5px solid #ccc;
+    }
+    .status-box.pending {
+      background: #fff3cd;
+      border-left-color: #ffc107;
+    }
+    .status-box.success {
+      background: #d4edda;
+      border-left-color: #28a745;
+    }
+    .status-box.error {
+      background: #f8d7da;
+      border-left-color: #dc3545;
+    }
+    .status-box h3 {
+      margin-top: 0;
+    }
+    .code-block {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 3px;
+    }
+    .test-passed {
+      background: #d4edda;
+      color: #155724;
+    }
+    .test-failed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    pre {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .icon {
+      font-size: 24px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Verificación de Firebase App Check</h1>
+
+    <div id="loadingStatus" class="status-box pending">
+      <h3><span class="icon">⏳</span>Cargando...</h3>
+      <p>Inicializando App Check...</p>
+    </div>
+
+    <div id="debugTokenInfo" class="status-box" style="display: none;">
+      <h3><span class="icon">🔑</span>Debug Token</h3>
+      <p>Token generado para localhost:</p>
+      <div class="code-block" id="debugTokenDisplay"></div>
+      <p><strong>⚠️ IMPORTANTE:</strong> Copia este token y regístralo en Firebase Console:</p>
+      <ol>
+        <li>Ve a <a href="https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck" target="_blank">Firebase Console → App Check</a></li>
+        <li>Haz clic en "Apps" → "Manage debug tokens"</li>
+        <li>Haz clic en "+ Add debug token"</li>
+        <li>Pega el token de arriba</li>
+        <li>Guarda y recarga esta página</li>
+      </ol>
+    </div>
+
+    <div id="appCheckStatus" class="status-box" style="display: none;"></div>
+
+    <div id="testControls" style="display: none;">
+      <h2>Pruebas de Verificación</h2>
+      <button onclick="testGetToken()">1. Obtener Token de App Check</button>
+      <button onclick="testFirestoreRead()">2. Probar Firestore Read</button>
+      <button onclick="testFirestoreWrite()">3. Probar Firestore Write</button>
+      <button onclick="testStorageRead()">4. Probar Storage Read</button>
+      <button onclick="runAllTests()">▶️ Ejecutar Todas las Pruebas</button>
+    </div>
+
+    <div id="testResults"></div>
+
+    <div id="consoleOutput">
+      <h2>Console Output</h2>
+      <pre id="consoleLog"></pre>
+    </div>
+
+    <div class="status-box">
+      <h3>ℹ️ Información del Proyecto</h3>
+      <div class="code-block">
+        <strong>Project ID:</strong> tuscitasseguras-2d1a6<br>
+        <strong>Web App ID:</strong> 1:924208562587:web:5291359426fe390b36213e<br>
+        <strong>reCAPTCHA Site Key:</strong> 6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2<br>
+        <strong>Hostname:</strong> <span id="hostname"></span><br>
+        <strong>Modo:</strong> <span id="mode"></span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Capturar console.log para mostrar en la página
+    const consoleLogElement = document.getElementById('consoleLog');
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+
+    function addToConsole(type, ...args) {
+      const message = args.map(arg => {
+        if (typeof arg === 'object') {
+          return JSON.stringify(arg, null, 2);
+        }
+        return String(arg);
+      }).join(' ');
+
+      consoleLogElement.textContent += `[${type}] ${message}\n`;
+      consoleLogElement.scrollTop = consoleLogElement.scrollHeight;
+    }
+
+    console.log = (...args) => {
+      originalLog(...args);
+      addToConsole('LOG', ...args);
+    };
+
+    console.warn = (...args) => {
+      originalWarn(...args);
+      addToConsole('WARN', ...args);
+    };
+
+    console.error = (...args) => {
+      originalError(...args);
+      addToConsole('ERROR', ...args);
+    };
+
+    // Mostrar info del proyecto
+    document.getElementById('hostname').textContent = location.hostname;
+    const isDev = location.hostname === "localhost" ||
+                  location.hostname === "127.0.0.1" ||
+                  location.hostname.includes("192.168.");
+    document.getElementById('mode').textContent = isDev ? 'DESARROLLO (debug tokens)' : 'PRODUCCIÓN (reCAPTCHA v3)';
+
+    // Importar y verificar App Check
+    import './js/firebase-appcheck.js';
+    import { auth, db, storage } from './js/firebase-config.js';
+    import { getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { ref, getDownloadURL, uploadString } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    // Esperar a que App Check se inicialice
+    setTimeout(async () => {
+      const loadingStatus = document.getElementById('loadingStatus');
+      const appCheckStatus = document.getElementById('appCheckStatus');
+      const testControls = document.getElementById('testControls');
+      const debugTokenInfo = document.getElementById('debugTokenInfo');
+      const debugTokenDisplay = document.getElementById('debugTokenDisplay');
+
+      // Verificar si hay debug token en los logs
+      const consoleText = consoleLogElement.textContent;
+      const tokenMatch = consoleText.match(/App Check debug token: ([a-f0-9-]+)/);
+
+      if (tokenMatch) {
+        debugTokenInfo.style.display = 'block';
+        debugTokenDisplay.textContent = tokenMatch[1];
+      }
+
+      // Intentar obtener token de App Check
+      try {
+        const tokenResult = await window.getAppCheckToken();
+
+        if (tokenResult) {
+          loadingStatus.style.display = 'none';
+          appCheckStatus.style.display = 'block';
+          appCheckStatus.className = 'status-box success';
+          appCheckStatus.innerHTML = `
+            <h3><span class="icon">✅</span>App Check Funcionando</h3>
+            <p>Token obtenido exitosamente</p>
+            <div class="code-block">
+              Token (primeros 50 caracteres): ${tokenResult.token.substring(0, 50)}...<br>
+              Expira aproximadamente en: 1 hora
+            </div>
+            <p>✅ Todas las requests a Firebase incluirán este token automáticamente</p>
+          `;
+          testControls.style.display = 'block';
+        } else {
+          throw new Error('No se pudo obtener token');
+        }
+      } catch (error) {
+        loadingStatus.style.display = 'none';
+        appCheckStatus.style.display = 'block';
+        appCheckStatus.className = 'status-box error';
+        appCheckStatus.innerHTML = `
+          <h3><span class="icon">❌</span>App Check No Funcionando</h3>
+          <p><strong>Error:</strong> ${error.message}</p>
+          <p><strong>Causa más probable:</strong></p>
+          <ul>
+            <li>Debug token no registrado en Firebase Console</li>
+            <li>Enforcement activado pero token no válido</li>
+            <li>Site key incorrecta</li>
+          </ul>
+          <p><strong>Solución:</strong></p>
+          <ol>
+            <li>Registra el debug token mostrado arriba (si estás en localhost)</li>
+            <li>Desactiva Enforcement en Firebase Console → App Check</li>
+            <li>Verifica la site key en firebase-appcheck.js</li>
+            <li>Recarga esta página: Ctrl + Shift + R</li>
+          </ol>
+        `;
+      }
+    }, 3000);
+
+    // Funciones de prueba
+    window.testGetToken = async function() {
+      addTestResult('Obteniendo App Check Token...');
+      try {
+        const tokenResult = await window.getAppCheckToken();
+        if (tokenResult) {
+          addTestResult(`✅ Token obtenido: ${tokenResult.token.substring(0, 30)}...`, true);
+        } else {
+          addTestResult('❌ No se pudo obtener token', false);
+        }
+      } catch (error) {
+        addTestResult(`❌ Error: ${error.message}`, false);
+      }
+    };
+
+    window.testFirestoreRead = async function() {
+      addTestResult('Probando Firestore Read...');
+      try {
+        const testDoc = await getDoc(doc(db, 'config', 'test'));
+        addTestResult('✅ Firestore Read exitoso (sin errores 401)', true);
+        console.log('Firestore Read result:', testDoc.exists() ? testDoc.data() : 'Documento no existe');
+      } catch (error) {
+        if (error.code === 'permission-denied') {
+          addTestResult('⚠️ Firestore Read falló: Permission denied (esto es normal si no tienes permisos en este documento)', true);
+        } else if (error.message.includes('401')) {
+          addTestResult('❌ Firestore Read falló: Error 401 - App Check token no válido', false);
+        } else {
+          addTestResult(`❌ Firestore Read falló: ${error.message}`, false);
+        }
+      }
+    };
+
+    window.testFirestoreWrite = async function() {
+      addTestResult('Probando Firestore Write...');
+      try {
+        await setDoc(doc(db, 'test', 'appcheck_test'), {
+          timestamp: new Date().toISOString(),
+          message: 'App Check test'
+        });
+        addTestResult('✅ Firestore Write exitoso (sin errores 401)', true);
+      } catch (error) {
+        if (error.code === 'permission-denied') {
+          addTestResult('⚠️ Firestore Write falló: Permission denied (esto es normal sin auth)', true);
+        } else if (error.message.includes('401')) {
+          addTestResult('❌ Firestore Write falló: Error 401 - App Check token no válido', false);
+        } else {
+          addTestResult(`❌ Firestore Write falló: ${error.message}`, false);
+        }
+      }
+    };
+
+    window.testStorageRead = async function() {
+      addTestResult('Probando Storage Read...');
+      try {
+        const testRef = ref(storage, 'test/dummy.txt');
+        const url = await getDownloadURL(testRef);
+        addTestResult('✅ Storage Read exitoso (sin errores 401)', true);
+      } catch (error) {
+        if (error.code === 'storage/object-not-found') {
+          addTestResult('⚠️ Storage Read: Archivo no existe (pero no error 401)', true);
+        } else if (error.code === 'storage/unauthorized') {
+          addTestResult('⚠️ Storage Read falló: Unauthorized (puede ser normal sin auth)', true);
+        } else if (error.message.includes('401')) {
+          addTestResult('❌ Storage Read falló: Error 401 - App Check token no válido', false);
+        } else {
+          addTestResult(`⚠️ Storage Read: ${error.message}`, true);
+        }
+      }
+    };
+
+    window.runAllTests = async function() {
+      document.getElementById('testResults').innerHTML = '<h2>Resultados de Pruebas</h2>';
+      await testGetToken();
+      await new Promise(r => setTimeout(r, 1000));
+      await testFirestoreRead();
+      await new Promise(r => setTimeout(r, 1000));
+      await testFirestoreWrite();
+      await new Promise(r => setTimeout(r, 1000));
+      await testStorageRead();
+      addTestResult('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      addTestResult('🏁 Pruebas completadas. Revisa los resultados arriba.');
+    };
+
+    function addTestResult(message, passed = null) {
+      const resultsDiv = document.getElementById('testResults');
+      const resultElement = document.createElement('div');
+      resultElement.className = 'test-result';
+
+      if (passed === true) {
+        resultElement.classList.add('test-passed');
+      } else if (passed === false) {
+        resultElement.classList.add('test-failed');
+      }
+
+      resultElement.textContent = message;
+      resultsDiv.appendChild(resultElement);
+    }
+
+  </script>
+</body>
+</html>

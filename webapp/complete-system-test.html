@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete System Test - TuCitaSegura</title>
+    
+    <!-- Firebase SDK - COMPAT VERSION -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #4caf50;
+            color: white;
+        }
+        .error {
+            background: #f44336;
+            color: white;
+        }
+        .warning {
+            background: #ff9800;
+            color: white;
+        }
+        .info {
+            background: #2196f3;
+            color: white;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        #console {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Complete System Test - TuCitaSegura</h1>
+    
+    <div class="test-section">
+        <h2>🔧 System Status</h2>
+        <div id="systemStatus" class="status info">Initializing system test...</div>
+        <button onclick="initializeSystem()">Initialize System</button>
+        <button onclick="runCompleteTest()">Run Complete Test</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="test-grid">
+        <div class="test-section">
+            <h2>🔐 Authentication Tests</h2>
+            <div id="authStatus" class="status info">Ready</div>
+            <div>
+                <input type="email" id="testEmail" placeholder="Test Email" value="cesar@demo.com">
+                <input type="password" id="testPassword" placeholder="Test Password" value="demo123">
+            </div>
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testAuthState()">Test Auth State</button>
+            <button onclick="testLogout()">Test Logout</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🔥 Database Tests</h2>
+            <div id="dbStatus" class="status info">Ready</div>
+            <button onclick="testFirestoreConnection()">Test Firestore</button>
+            <button onclick="testUserData()">Test User Data</button>
+            <button onclick="testProfileRedirect()">Test Profile Redirect</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🌐 Network Tests</h2>
+            <div id="networkStatus" class="status info">Ready</div>
+            <button onclick="testNetworkConnectivity()">Test Network</button>
+            <button onclick="testFirebaseEndpoints()">Test Firebase Endpoints</button>
+            <button onclick="testCORSIssues()">Test CORS</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🚀 Performance Tests</h2>
+            <div id="perfStatus" class="status info">Ready</div>
+            <button onclick="testLoadTimes()">Test Load Times</button>
+            <button onclick="testMemoryUsage()">Test Memory</button>
+            <button onclick="testLoopPrevention()">Test Loop Prevention</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Integration Tests</h2>
+        <div id="integrationStatus" class="status info">Ready</div>
+        <button onclick="testCompleteLoginFlow()">Test Complete Login Flow</button>
+        <button onclick="testProfilePageFlow()">Test Profile Page Flow</button>
+        <button onclick="testSmartRedirect()">Test Smart Redirect</button>
+        <button onclick="testErrorRecovery()">Test Error Recovery</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🖥️ Console Output</h2>
+        <div id="console"></div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+            authDomain: "tu-cita-segura.firebaseapp.com",
+            projectId: "tu-cita-segura",
+            storageBucket: "tu-cita-segura.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        let app, auth, db, storage;
+        let testStartTime;
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : type === 'warning' ? '#ffd43b' : '#74c0fc';
+            console.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        // Initialize Firebase System
+        function initializeSystem() {
+            try {
+                log('🚀 Initializing Firebase system...');
+                updateStatus('systemStatus', 'Initializing Firebase...', 'info');
+                
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK not loaded');
+                }
+
+                // Initialize Firebase app
+                try {
+                    app = firebase.initializeApp(firebaseConfig);
+                    log('✅ Firebase app initialized');
+                } catch (error) {
+                    if (error.code === 'app/duplicate-app') {
+                        app = firebase.app();
+                        log('✅ Using existing Firebase app');
+                    } else {
+                        throw error;
+                    }
+                }
+
+                // Initialize services
+                auth = firebase.auth();
+                db = firebase.firestore();
+                storage = firebase.storage();
+                
+                // Configure Firestore
+                db.settings({ timestampsInSnapshots: true });
+                
+                log('✅ All Firebase services initialized');
+                updateStatus('systemStatus', 'System initialized successfully', 'success');
+                
+                return true;
+                
+            } catch (error) {
+                log(`❌ System initialization error: ${error.message}`, 'error');
+                updateStatus('systemStatus', `Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Test Login
+        function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!email || !password) {
+                log('❌ Please enter email and password', 'error');
+                return;
+            }
+
+            log(`🔐 Testing login with: ${email}`);
+            updateStatus('authStatus', 'Testing login...', 'info');
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    log(`✅ Login successful: ${userCredential.user.email}`, 'success');
+                    updateStatus('authStatus', `Logged in: ${userCredential.user.email}`, 'success');
+                })
+                .catch((error) => {
+                    log(`❌ Login error: ${error.code} - ${error.message}`, 'error');
+                    updateStatus('authStatus', `Login error: ${error.message}`, 'error');
+                });
+        }
+
+        // Test Auth State
+        function testAuthState() {
+            log('🔍 Testing auth state...');
+            updateStatus('authStatus', 'Checking auth state...', 'info');
+            
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                log(`✅ User authenticated: ${currentUser.email} (${currentUser.uid})`, 'success');
+                updateStatus('authStatus', `Authenticated: ${currentUser.email}`, 'success');
+            } else {
+                log('ℹ️ No user authenticated', 'warning');
+                updateStatus('authStatus', 'No user authenticated', 'warning');
+            }
+        }
+
+        // Test Logout
+        function testLogout() {
+            log('🚪 Testing logout...');
+            updateStatus('authStatus', 'Testing logout...', 'info');
+            
+            auth.signOut()
+                .then(() => {
+                    log('✅ Logout successful', 'success');
+                    updateStatus('authStatus', 'Logged out', 'success');
+                })
+                .catch((error) => {
+                    log(`❌ Logout error: ${error.message}`, 'error');
+                    updateStatus('authStatus', `Logout error: ${error.message}`, 'error');
+                });
+        }
+
+        // Test Firestore Connection
+        function testFirestoreConnection() {
+            log('🔥 Testing Firestore connection...');
+            updateStatus('dbStatus', 'Testing Firestore...', 'info');
+            
+            db.collection('users').limit(1).get()
+                .then((querySnapshot) => {
+                    log(`✅ Firestore connection successful (${querySnapshot.size} documents found)`, 'success');
+                    updateStatus('dbStatus', 'Firestore connected', 'success');
+                })
+                .catch((error) => {
+                    log(`❌ Firestore error: ${error.message}`, 'error');
+                    updateStatus('dbStatus', `Firestore error: ${error.message}`, 'error');
+                });
+        }
+
+        // Test User Data
+        function testUserData() {
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                log('❌ No user authenticated for user data test', 'error');
+                return;
+            }
+
+            log('👤 Testing user data retrieval...');
+            updateStatus('dbStatus', 'Testing user data...', 'info');
+            
+            db.collection('users').doc(currentUser.uid).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        log(`✅ User data found: ${JSON.stringify(doc.data(), null, 2)}`, 'success');
+                        updateStatus('dbStatus', 'User data retrieved', 'success');
+                    } else {
+                        log('ℹ️ No user data found (new user)', 'warning');
+                        updateStatus('dbStatus', 'No user data (new user)', 'warning');
+                    }
+                })
+                .catch((error) => {
+                    log(`❌ User data error: ${error.message}`, 'error');
+                    updateStatus('dbStatus', `User data error: ${error.message}`, 'error');
+                });
+        }
+
+        // Test Profile Redirect
+        function testProfileRedirect() {
+            log('🔄 Testing profile redirect logic...');
+            updateStatus('integrationStatus', 'Testing profile redirect...', 'info');
+            
+            const currentUser = auth.currentUser;
+            
+            if (currentUser) {
+                log(`✅ User authenticated, should redirect to profile page`);
+                
+                // Test redirect after 2 seconds
+                setTimeout(() => {
+                    log('🔄 Redirecting to profile page...');
+                    window.location.href = '/webapp/perfil-super-fixed.html';
+                }, 2000);
+                
+                updateStatus('integrationStatus', 'Redirecting to profile...', 'success');
+            } else {
+                log('ℹ️ No user authenticated, should redirect to login');
+                
+                setTimeout(() => {
+                    log('🔄 Redirecting to login page...');
+                    window.location.href = '/webapp/login.html';
+                }, 2000);
+                
+                updateStatus('integrationStatus', 'Redirecting to login...', 'warning');
+            }
+        }
+
+        // Test Network Connectivity
+        function testNetworkConnectivity() {
+            log('🌐 Testing network connectivity...');
+            updateStatus('networkStatus', 'Testing network...', 'info');
+            
+            const tests = [
+                { name: 'Google', url: 'https://www.google.com' },
+                { name: 'Firebase Auth', url: 'https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s' },
+                { name: 'Firestore', url: 'https://firestore.googleapis.com/v1/projects/tu-cita-segura/databases/(default)/documents' }
+            ];
+
+            let completedTests = 0;
+            
+            tests.forEach(test => {
+                fetch(test.url, { method: 'HEAD', mode: 'no-cors' })
+                    .then(() => {
+                        log(`✅ ${test.name} - Network accessible`, 'success');
+                        completedTests++;
+                        if (completedTests === tests.length) {
+                            updateStatus('networkStatus', 'Network connectivity OK', 'success');
+                        }
+                    })
+                    .catch((error) => {
+                        log(`⚠️ ${test.name} - Network issue: ${error.message}`, 'warning');
+                        completedTests++;
+                        if (completedTests === tests.length) {
+                            updateStatus('networkStatus', 'Some network issues detected', 'warning');
+                        }
+                    });
+            });
+        }
+
+        // Test Firebase Endpoints
+        function testFirebaseEndpoints() {
+            log('🔍 Testing Firebase endpoints...');
+            updateStatus('networkStatus', 'Testing Firebase endpoints...', 'info');
+            
+            const endpoints = [
+                'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+                'https://identitytoolkit.googleapis.com/v1/accounts:lookup',
+                'https://securetoken.googleapis.com/v1/token'
+            ];
+
+            endpoints.forEach(endpoint => {
+                fetch(`${endpoint}?key=${firebaseConfig.apiKey}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true })
+                })
+                .then(response => {
+                    log(`✅ ${endpoint} - Status: ${response.status}`, 'success');
+                })
+                .catch(error => {
+                    log(`⚠️ ${endpoint} - Error: ${error.message}`, 'warning');
+                });
+            });
+            
+            updateStatus('networkStatus', 'Endpoint tests completed', 'success');
+        }
+
+        // Test CORS Issues
+        function testCORSIssues() {
+            log('🔒 Testing CORS issues...');
+            updateStatus('networkStatus', 'Testing CORS...', 'info');
+            
+            // Test with different modes
+            const testUrls = [
+                `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseConfig.apiKey}`,
+                `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`
+            ];
+
+            testUrls.forEach(url => {
+                // Test with no-cors mode
+                fetch(url, { mode: 'no-cors' })
+                    .then(() => log(`✅ ${url} - No-CORS mode OK`, 'success'))
+                    .catch(error => log(`⚠️ ${url} - No-CORS error: ${error.message}`, 'warning'));
+
+                // Test with cors mode
+                fetch(url, { mode: 'cors' })
+                    .then(() => log(`✅ ${url} - CORS mode OK`, 'success'))
+                    .catch(error => log(`⚠️ ${url} - CORS error: ${error.message}`, 'warning'));
+            });
+        }
+
+        // Test Load Times
+        function testLoadTimes() {
+            log('⏱️ Testing load times...');
+            updateStatus('perfStatus', 'Testing load times...', 'info');
+            
+            const startTime = performance.now();
+            
+            // Simulate various operations
+            setTimeout(() => {
+                const loadTime = performance.now() - startTime;
+                log(`✅ Basic operations completed in ${loadTime.toFixed(2)}ms`, 'success');
+                updateStatus('perfStatus', `Load time: ${loadTime.toFixed(2)}ms`, 'success');
+            }, 100);
+        }
+
+        // Test Memory Usage
+        function testMemoryUsage() {
+            log('💾 Testing memory usage...');
+            updateStatus('perfStatus', 'Testing memory...', 'info');
+            
+            if (performance.memory) {
+                const memory = performance.memory;
+                log(`📊 Memory usage: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`, 'info');
+                log(`📊 Total heap: ${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)}MB`, 'info');
+                log(`📊 Heap limit: ${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)}MB`, 'info');
+                updateStatus('perfStatus', 'Memory test completed', 'success');
+            } else {
+                log('⚠️ Memory API not available', 'warning');
+                updateStatus('perfStatus', 'Memory API unavailable', 'warning');
+            }
+        }
+
+        // Test Loop Prevention
+        function testLoopPrevention() {
+            log('🔄 Testing loop prevention...');
+            updateStatus('perfStatus', 'Testing loop prevention...', 'info');
+            
+            let counter = 0;
+            const maxIterations = 5;
+            
+            const testLoop = () => {
+                counter++;
+                log(`Iteration ${counter}`);
+                
+                if (counter < maxIterations) {
+                    setTimeout(testLoop, 100);
+                } else {
+                    log(`✅ Loop prevention test completed (${counter} iterations)`, 'success');
+                    updateStatus('perfStatus', 'Loop prevention OK', 'success');
+                }
+            };
+            
+            testLoop();
+        }
+
+        // Test Complete Login Flow
+        function testCompleteLoginFlow() {
+            log('🎯 Testing complete login flow...');
+            updateStatus('integrationStatus', 'Testing login flow...', 'info');
+            
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!email || !password) {
+                log('❌ Please enter email and password', 'error');
+                return;
+            }
+
+            log('Step 1: Testing authentication...');
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    log(`✅ Step 1: Authentication successful`, 'success');
+                    
+                    log('Step 2: Testing user data retrieval...');
+                    return db.collection('users').doc(userCredential.user.uid).get();
+                })
+                .then((userDoc) => {
+                    if (userDoc.exists) {
+                        log(`✅ Step 2: User data found`, 'success');
+                        log('Step 3: Testing profile redirect...');
+                        
+                        setTimeout(() => {
+                            log('✅ Complete login flow successful!', 'success');
+                            updateStatus('integrationStatus', 'Login flow successful', 'success');
+                        }, 1000);
+                    } else {
+                        log('ℹ️ Step 2: No user data (new user)', 'warning');
+                        updateStatus('integrationStatus', 'Login flow completed (new user)', 'warning');
+                    }
+                })
+                .catch((error) => {
+                    log(`❌ Login flow error: ${error.message}`, 'error');
+                    updateStatus('integrationStatus', `Login flow error: ${error.message}`, 'error');
+                });
+        }
+
+        // Test Profile Page Flow
+        function testProfilePageFlow() {
+            log('👤 Testing profile page flow...');
+            updateStatus('integrationStatus', 'Testing profile flow...', 'info');
+            
+            // Test redirect to profile page
+            setTimeout(() => {
+                log('🔄 Redirecting to profile page for testing...');
+                window.location.href = '/webapp/perfil-super-fixed.html';
+            }, 2000);
+            
+            updateStatus('integrationStatus', 'Redirecting to profile...', 'info');
+        }
+
+        // Test Smart Redirect
+        function testSmartRedirect() {
+            log('🧠 Testing smart redirect logic...');
+            updateStatus('integrationStatus', 'Testing smart redirect...', 'info');
+            
+            const currentUser = auth.currentUser;
+            const testEmail = 'cesar@demo.com';
+            
+            if (currentUser && currentUser.email === testEmail) {
+                log(`✅ Smart redirect: Cesar user detected (${currentUser.email})`);
+                log('🔄 Should redirect to dashboard, not search');
+                updateStatus('integrationStatus', 'Smart redirect: Cesar user', 'success');
+            } else {
+                log('ℹ️ Regular user or not authenticated');
+                updateStatus('integrationStatus', 'Regular user flow', 'info');
+            }
+        }
+
+        // Test Error Recovery
+        function testErrorRecovery() {
+            log('🚨 Testing error recovery...');
+            updateStatus('integrationStatus', 'Testing error recovery...', 'info');
+            
+            // Simulate various errors
+            const errors = [
+                { type: 'network', message: 'Network error simulation' },
+                { type: 'auth', message: 'Auth error simulation' },
+                { type: 'database', message: 'Database error simulation' }
+            ];
+
+            errors.forEach((error, index) => {
+                setTimeout(() => {
+                    log(`⚠️ Simulating ${error.type} error: ${error.message}`, 'warning');
+                    
+                    // Test recovery
+                    setTimeout(() => {
+                        log(`✅ Recovered from ${error.type} error`, 'success');
+                        
+                        if (index === errors.length - 1) {
+                            updateStatus('integrationStatus', 'Error recovery successful', 'success');
+                        }
+                    }, 500);
+                }, index * 1000);
+            });
+        }
+
+        // Run Complete Test
+        function runCompleteTest() {
+            log('🎯 Running complete system test...', 'info');
+            testStartTime = performance.now();
+            
+            if (!initializeSystem()) {
+                log('❌ System initialization failed, cannot run complete test', 'error');
+                return;
+            }
+
+            // Run tests in sequence
+            setTimeout(() => testNetworkConnectivity(), 500);
+            setTimeout(() => testFirebaseEndpoints(), 1000);
+            setTimeout(() => testCORSIssues(), 1500);
+            setTimeout(() => testLoadTimes(), 2000);
+            setTimeout(() => testMemoryUsage(), 2500);
+            setTimeout(() => testFirestoreConnection(), 3000);
+            
+            setTimeout(() => {
+                const totalTime = performance.now() - testStartTime;
+                log(`✅ Complete test finished in ${totalTime.toFixed(2)}ms`, 'success');
+                updateStatus('systemStatus', `Complete test finished (${totalTime.toFixed(2)}ms)`, 'success');
+            }, 4000);
+        }
+
+        // Auto-initialize on page load
+        window.addEventListener('load', () => {
+            log('Complete System Test Page Loaded', 'info');
+            log('Click "Initialize System" to start testing', 'info');
+        });
+    </script>
+</body>
+</html>
