@@ -53,8 +53,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         """Add security headers to response."""
         response = await call_next(request)
 
-        # Get headers dict (create if doesn't exist)
-        headers = dict(response.headers)
+        # IMPORTANT: Don't overwrite existing headers, only ADD security headers
+        # This preserves CORS headers set by CORSMiddleware
+        headers = {}
 
         # 1. HSTS - Force HTTPS (only in production over HTTPS)
         if self.enable_hsts and self.environment == "production":
