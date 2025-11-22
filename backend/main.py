@@ -54,7 +54,19 @@ if environment == "production":
     base = env_origins.split(",") if env_origins else []
     cors_origins = sorted({o.strip() for o in (base + required) if o.strip()})
 else:
-    cors_origins = ["*"]  # Development - permitir todos los orígenes
+    # Development - NEVER use wildcard "*" even in dev
+    # Security: Only allow specific localhost ports
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8000",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:8080",
+    ]
+    logger.info(f"Development CORS origins: {cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
