@@ -8,6 +8,15 @@ from datetime import datetime
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+# Security Headers Middleware
+try:
+    from app.middleware.security_headers import SecurityHeadersMiddleware, get_security_headers_summary
+except Exception as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Could not import SecurityHeadersMiddleware: {e}")
+    SecurityHeadersMiddleware = None
+    get_security_headers_summary = None
 try:
     import firebase_admin
     from firebase_admin import credentials
@@ -88,6 +97,13 @@ app.add_middleware(
     max_age=3600  # Cache pre-flight requests for 1 hour
 )
 
+# Add Security Headers Middleware
+if SecurityHeadersMiddleware:
+    app.add_middleware(SecurityHeadersMiddleware, environment=environment)
+    logger.info("Security Headers Middleware added")
+else:
+    logger.warning("Security Headers Middleware not available")
+
 # Incluir routers de la API
 if payments_router:
     app.include_router(payments_router)
@@ -163,11 +179,27 @@ async def health_options():
 @limiter.limit("10/minute")
 async def debug(request: Request):
     logger.info("Debug endpoint accessed")
+    security_headers = get_security_headers_summary() if get_security_headers_summary else None
     return JSONResponse({
         "env_vars": {k: v for k, v in os.environ.items() if not k.startswith('RAILWAY')},
         "cwd": os.getcwd(),
         "port": os.getenv("PORT", "8000"),
-        "python_version": "3.11"
+        "python_version": "3.11",
+        "security_headers": security_headers
+    })
+
+@app.get("/security-info")
+@limiter.limit("30/minute")
+async def security_info(request: Request):
+    """Get information about active security features."""
+    logger.info("Security info endpoint accessed")
+    security_headers = get_security_headers_summary() if get_security_headers_summary else None
+    return JSONResponse({
+        "environment": environment,
+        "security_headers": security_headers,
+        "cors_origins": cors_origins if environment != "production" else ["[HIDDEN FOR SECURITY]"],
+        "rate_limiting": "enabled",
+        "firebase_auth": "enabled" if firebase_admin and firebase_admin._apps else "disabled"
     })
 
 @app.options("/debug")
