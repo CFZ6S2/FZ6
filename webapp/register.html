@@ -49,12 +49,19 @@
     .gender-option {
       cursor: pointer;
       transition: all 0.3s ease;
+      border: 2px solid transparent;
     }
 
     .gender-option.selected {
-      background: rgba(59, 130, 246, 0.3);
-      border-color: rgb(59, 130, 246);
+      background: rgba(59, 130, 246, 0.3) !important;
+      border-color: rgb(59, 130, 246) !important;
       transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .gender-option:hover:not(.selected) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(59, 130, 246, 0.3);
     }
   </style>
 </head>
