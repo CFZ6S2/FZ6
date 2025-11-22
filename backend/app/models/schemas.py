@@ -8,6 +8,30 @@ from pydantic import BaseModel, EmailStr, Field, validator
 
 # ========== User Models ==========
 
+class AuthenticatedUser(BaseModel):
+    """Authenticated user from Firebase JWT token"""
+    uid: str
+    email: str
+    email_verified: bool
+    role: str = "regular"  # 'admin', 'concierge', 'regular'
+    custom_claims: Dict[str, Any] = {}
+
+    @property
+    def is_admin(self) -> bool:
+        """Check if user is admin"""
+        return self.role == "admin"
+
+    @property
+    def is_concierge(self) -> bool:
+        """Check if user is concierge"""
+        return self.role in ["concierge", "admin"]
+
+    @property
+    def is_verified(self) -> bool:
+        """Check if email is verified"""
+        return self.email_verified
+
+
 class UserBase(BaseModel):
     """Base user model"""
     email: EmailStr
