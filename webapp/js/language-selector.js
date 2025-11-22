@@ -395,10 +395,16 @@ class LanguageSelector {
 if (typeof window !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      window.languageSelector = new LanguageSelector();
+      // Inicializar selector para desktop
+      window.languageSelector = new LanguageSelector('language-selector-container');
+      // Inicializar selector para mobile
+      window.languageSelectorMobile = new LanguageSelector('language-selector-mobile');
     });
   } else {
-    window.languageSelector = new LanguageSelector();
+    // Inicializar selector para desktop
+    window.languageSelector = new LanguageSelector('language-selector-container');
+    // Inicializar selector para mobile
+    window.languageSelectorMobile = new LanguageSelector('language-selector-mobile');
   }
 }
 
