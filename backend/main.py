@@ -74,6 +74,13 @@ try:
 except Exception:
     api_v1_router = None
 
+try:
+    from app.api.admin import admin_router
+except Exception:
+    logger = logging.getLogger(__name__)
+    logger.warning("Could not import admin_router")
+    admin_router = None
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -227,6 +234,11 @@ else:
 if api_v1_router:
     app.include_router(api_v1_router)
     logger.info("API v1 router incluido")
+
+# Include admin endpoints
+if admin_router:
+    app.include_router(admin_router)
+    logger.info("Admin router incluido")
 
 # Legacy endpoints (backwards compatibility)
 # These will be deprecated in favor of versioned endpoints

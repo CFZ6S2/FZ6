@@ -12,3 +12,5 @@ email-validator==2.1.0
 python-magic==0.4.27
 Pillow==10.1.0
 sentry-sdk[fastapi]==1.39.1
+google-cloud-storage==2.14.0
+google-cloud-firestore-admin==1.0.1
