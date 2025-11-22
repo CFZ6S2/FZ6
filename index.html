@@ -82,6 +82,21 @@
       animation: fadeInUp 0.8s ease-out;
     }
   </style>
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "TuCitaSegura",
+      "url": "https://tucitasegura.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://tucitasegura.com/webapp/buscar-usuarios.html?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
 </head>
 <body class="text-white">
   <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-slate-800 text-white px-3 py-2 rounded">Saltar al contenido</a>
@@ -169,20 +184,20 @@
       <div class="glass rounded-2xl p-12 mb-20 text-center">
         <h2 class="text-3xl font-bold mb-8">
           <i class="fas fa-chart-line mr-2 text-blue-400" aria-hidden="true"></i>
-          Estadísticas de la Plataforma
+          <span data-i18n="home.stats.title">Estadísticas de la Plataforma</span>
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div class="text-5xl font-bold text-blue-400 mb-2">10K+</div>
-            <div class="text-slate-300">Usuarios Activos</div>
+            <div class="text-slate-300" data-i18n="home.stats.users">Usuarios Activos</div>
           </div>
           <div>
             <div class="text-5xl font-bold text-pink-400 mb-2">5K+</div>
-            <div class="text-slate-300">Matches Exitosos</div>
+            <div class="text-slate-300" data-i18n="home.stats.matches">Matches Exitosos</div>
           </div>
           <div>
             <div class="text-5xl font-bold text-green-400 mb-2">95%</div>
-            <div class="text-slate-300">Satisfacción</div>
+            <div class="text-slate-300" data-i18n="home.stats.satisfaction">Satisfacción</div>
           </div>
         </div>
       </div>
@@ -191,42 +206,42 @@
       <div class="mb-20">
         <h2 class="text-4xl font-bold text-center mb-12">
           <i class="fas fa-lightbulb mr-2 text-yellow-400" aria-hidden="true"></i>
-          ¿Cómo Funciona?
+          <span data-i18n="home.howItWorks.title">¿Cómo Funciona?</span>
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div class="glass rounded-2xl p-6 text-center">
             <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
-            <h3 class="font-bold mb-2">Regístrate</h3>
-            <p class="text-sm text-slate-300">Crea tu perfil y verifica tu email</p>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step1.title">Regístrate</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step1.description">Crea tu perfil y verifica tu email</p>
           </div>
           <div class="glass rounded-2xl p-6 text-center">
             <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
-            <h3 class="font-bold mb-2">Explora</h3>
-            <p class="text-sm text-slate-300">Busca usuarios con filtros avanzados</p>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step2.title">Explora</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step2.description">Busca usuarios con filtros avanzados</p>
           </div>
           <div class="glass rounded-2xl p-6 text-center">
             <div class="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
-            <h3 class="font-bold mb-2">Conecta</h3>
-            <p class="text-sm text-slate-300">Envía solicitudes de cita</p>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step3.title">Conecta</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step3.description">Envía solicitudes de cita</p>
           </div>
           <div class="glass rounded-2xl p-6 text-center">
             <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
-            <h3 class="font-bold mb-2">Conoce</h3>
-            <p class="text-sm text-slate-300">Agenda citas seguras</p>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step4.title">Conoce</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step4.description">Agenda citas seguras</p>
           </div>
         </div>
       </div>
 
       <!-- CTA Section -->
       <div class="glass rounded-2xl p-12 text-center hero-gradient">
-        <h2 class="text-4xl font-bold mb-4">
+        <h2 class="text-4xl font-bold mb-4" data-i18n="home.cta2.title">
           ¿Listo para encontrar tu match perfecto?
         </h2>
-        <p class="text-xl text-slate-300 mb-8">
+        <p class="text-xl text-slate-300 mb-8" data-i18n="home.cta2.description">
           Únete a miles de personas que ya encontraron su conexión especial
         </p>
         <a href="/webapp/register.html" class="inline-block bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-10 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
-          <i class="fas fa-heart mr-2" aria-hidden="true"></i>Comenzar Ahora
+          <i class="fas fa-heart mr-2" aria-hidden="true"></i><span data-i18n="home.cta2.button">Comenzar Ahora</span>
         </a>
       </div>
 
@@ -234,29 +249,69 @@
   </main>
 
   <!-- Footer -->
-  <footer class="glass mt-20 py-8" role="contentinfo">
-    <div class="max-w-7xl mx-auto px-4 text-center">
-      <div class="flex items-center justify-center gap-2 mb-4">
-        <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
-        <span class="font-bold text-xl">TuCitaSegura</span>
+  <footer class="glass mt-20 py-12" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <!-- Brand Column -->
+        <div class="text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+            <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
+            <span class="font-bold text-xl">TuCitaSegura</span>
+          </div>
+          <p class="text-slate-400 text-sm" data-i18n="home.footer.tagline">
+            Encuentra conexiones auténticas con seguridad y respeto
+          </p>
+        </div>
+
+        <!-- Legal Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3" data-i18n="nav.help">Ayuda</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/webapp/terminos.html" class="text-slate-400 hover:text-blue-400 transition">Términos y Condiciones</a></li>
+            <li><a href="/webapp/privacidad.html" class="text-slate-400 hover:text-blue-400 transition">Política de Privacidad</a></li>
+            <li><a href="/webapp/cookies.html" class="text-slate-400 hover:text-blue-400 transition">Política de Cookies</a></li>
+            <li><a href="/webapp/ayuda.html" class="text-slate-400 hover:text-blue-400 transition" data-i18n="help.title">Central de Ayuda</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3">Compañía</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/webapp/nosotros.html" class="text-slate-400 hover:text-blue-400 transition">Sobre Nosotros</a></li>
+            <li><a href="/webapp/contacto.html" class="text-slate-400 hover:text-blue-400 transition">Contacto</a></li>
+            <li><a href="/webapp/seguridad.html" class="text-slate-400 hover:text-blue-400 transition">Consejos de Seguridad</a></li>
+            <li><a href="/webapp/blog.html" class="text-slate-400 hover:text-blue-400 transition">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Social Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3">Síguenos</h3>
+          <div class="flex justify-center md:justify-start gap-4 mb-4">
+            <a href="https://facebook.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-blue-400 transition" aria-label="Facebook">
+              <i class="fab fa-facebook text-2xl" aria-hidden="true"></i>
+            </a>
+            <a href="https://instagram.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-pink-400 transition" aria-label="Instagram">
+              <i class="fab fa-instagram text-2xl" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-blue-300 transition" aria-label="Twitter">
+              <i class="fab fa-twitter text-2xl" aria-hidden="true"></i>
+            </a>
+          </div>
+          <p class="text-sm text-slate-400">
+            <i class="fas fa-envelope mr-2" aria-hidden="true"></i>
+            <a href="mailto:hola@tucitasegura.com" class="hover:text-blue-400 transition">hola@tucitasegura.com</a>
+          </p>
+        </div>
       </div>
-      <p class="text-slate-400 mb-4">
-        Encuentra conexiones auténticas con seguridad y respeto
-      </p>
-      <div class="flex justify-center gap-6 mb-4">
-        <a href="#" class="text-slate-400 hover:text-blue-400 transition" rel="noopener noreferrer">
-          <i class="fab fa-facebook text-2xl" aria-hidden="true"></i>
-        </a>
-        <a href="#" class="text-slate-400 hover:text-pink-400 transition" rel="noopener noreferrer">
-          <i class="fab fa-instagram text-2xl" aria-hidden="true"></i>
-        </a>
-        <a href="#" class="text-slate-400 hover:text-blue-300 transition" rel="noopener noreferrer">
-          <i class="fab fa-twitter text-2xl" aria-hidden="true"></i>
-        </a>
+
+      <!-- Copyright -->
+      <div class="border-t border-slate-700 pt-6 text-center">
+        <p class="text-sm text-slate-500" data-i18n="home.footer.copyright">
+          © 2025 TuCitaSegura. Todos los derechos reservados.
+        </p>
       </div>
-      <p class="text-sm text-slate-500">
-        © 2025 TuCitaSegura. Todos los derechos reservados.
-      </p>
     </div>
   </footer>
 
@@ -411,65 +466,9 @@
       }
 
       setupEventListeners() {
-        // Add click listeners to main CTA buttons
-        const exploreButton = document.querySelector('a[href="/webapp/buscar-usuarios.html"]');
-        const registerButton = document.querySelector('a[href="/webapp/register.html"]');
-        
-        if (exploreButton) {
-          exploreButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await this.handleExploreClick();
-          });
-        }
-        
-        if (registerButton) {
-          registerButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await this.handleRegisterClick();
-          });
-        }
-      }
-
-      async handleExploreClick() {
-        try {
-          // Check if backend is available
-          const isAvailable = await apiService.isBackendAvailable();
-          
-          if (isAvailable) {
-            console.log('✅ Backend available - proceeding to explore users');
-          } else {
-            console.warn('⚠️ Backend not available - using Firebase only');
-          }
-          
-          // Navigate to explore users
-          window.location.href = '/webapp/buscar-usuarios.html';
-          
-        } catch (error) {
-          console.error('Error handling explore click:', error);
-          // Fallback to direct navigation
-          window.location.href = '/webapp/buscar-usuarios.html';
-        }
-      }
-
-      async handleRegisterClick() {
-        try {
-          // Check if backend is available
-          const isAvailable = await apiService.isBackendAvailable();
-          
-          if (isAvailable) {
-            console.log('✅ Backend available - proceeding to register');
-          } else {
-            console.warn('⚠️ Backend not available - using Firebase only');
-          }
-          
-          // Navigate to register
-          window.location.href = '/webapp/register.html';
-          
-        } catch (error) {
-          console.error('Error handling register click:', error);
-          // Fallback to direct navigation
-          window.location.href = '/webapp/register.html';
-        }
+        // Event listeners removed - buttons navigate directly via href
+        // This fixes the bug where preventDefault() was breaking navigation
+        // when Firebase auth changed button hrefs for logged-in users
       }
     }
 
@@ -516,16 +515,3 @@
 
 </body>
 </html>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "TuCitaSegura",
-      "url": "https://tucitasegura.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://tucitasegura.com/webapp/buscar-usuarios.html?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
