@@ -13,20 +13,22 @@
 
   <style>
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
       min-height: 100vh;
     }
 
     .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .glass-strong {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     .fade-in {
@@ -40,8 +42,8 @@
 
     input:focus, select:focus {
       outline: none;
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      border-color: rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .gender-option {
@@ -50,8 +52,8 @@
     }
 
     .gender-option.selected {
-      background: rgba(99, 102, 241, 0.3);
-      border-color: rgb(99, 102, 241);
+      background: rgba(59, 130, 246, 0.3);
+      border-color: rgb(59, 130, 246);
       transform: scale(1.05);
     }
   </style>
