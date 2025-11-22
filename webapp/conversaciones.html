@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Conversaciones - TuCitaSegura</title>
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/output.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .conversation-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(5px);
+    }
+
+    .conversation-item {
+      transition: all 0.3s ease;
+    }
+
+    .unread-badge {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- Header -->
+  <nav class="glass-strong sticky top-0 z-50 border-b border-white/20">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <h1 class="text-2xl font-bold">
+            <i class="fas fa-comments mr-2"></i>
+            Mis Conversaciones
+          </h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <div id="userInfo" class="flex items-center gap-3">
+            <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+              <i class="fas fa-user"></i>
+            </div>
+            <span id="userAlias" class="font-semibold hidden md:block">Usuario</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Payment Warning Banner (for users without membership) -->
+    <div id="paymentWarning" class="hidden glass-strong rounded-2xl p-6 mb-6 border-2 border-yellow-500/50">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-lock text-yellow-400 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-xl mb-2 text-yellow-400">Membresía Requerida</h3>
+          <p class="text-slate-200 mb-3">Para enviar mensajes necesitas una membresía activa.</p>
+          <a href="/webapp/suscripcion.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-xl transition">
+            Activar Membresía
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="glass-strong rounded-2xl p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 relative">
+          <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Buscar conversaciones..."
+            class="w-full pl-12 pr-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+        </div>
+        <select id="filterSelect" class="px-4 py-3 rounded-xl glass text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <option value="all">Todas</option>
+          <option value="unread">No leídas</option>
+          <option value="online">En línea</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="glass-strong rounded-2xl p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
+      <p class="text-lg">Cargando conversaciones...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden glass-strong rounded-2xl p-12 text-center">
+      <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-comments text-5xl text-white/50"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-3">No hay conversaciones</h3>
+      <p class="text-slate-300 mb-6">Comienza enviando solicitudes a otros usuarios</p>
+      <a href="/webapp/buscar-usuarios.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-xl transition">
+        Buscar Usuarios
+      </a>
+    </div>
+
+    <!-- Conversations List -->
+    <div id="conversationsList" class="space-y-4">
+      <!-- Conversations will be dynamically loaded here -->
+    </div>
+
+  </div>
+
+  <!-- Context Menu for Conversation Actions -->
+  <div id="contextMenu" class="hidden fixed bg-slate-900 glass-strong rounded-xl shadow-2xl z-50 py-2 min-w-[200px]">
+    <button onclick="hideConversation()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3">
+      <i class="fas fa-eye-slash text-yellow-400"></i>
+      <span>Ocultar conversación</span>
+    </button>
+    <button onclick="reportUser()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-orange-400">
+      <i class="fas fa-flag"></i>
+      <span>Reportar usuario</span>
+    </button>
+    <button onclick="blockUser()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-red-400">
+      <i class="fas fa-ban"></i>
+      <span>Bloquear usuario</span>
+    </button>
+  </div>
+
+  <!-- Block User Confirmation Modal -->
+  <div id="blockModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full p-8">
+      <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-ban text-4xl text-red-400"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-4 text-center">¿Bloquear Usuario?</h3>
+      <p class="text-slate-300 mb-6 text-center">
+        <span id="blockUserName"></span> no podrá enviarte más mensajes ni verte en búsquedas.
+      </p>
+      <div class="flex gap-3">
+        <button onclick="closeBlockModal()" class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
+          Cancelar
+        </button>
+        <button onclick="confirmBlock()" class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
+          Bloquear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <!-- Error Fixes -->
+  <script type="module" src="/webapp/js/error-fixes.js"></script>
+
+  <script type="module">
+    // Import App Check FIRST (must be before firebase-config.js)
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      collection,
+      query,
+      where,
+      orderBy,
+      onSnapshot,
+      doc,
+      getDoc,
+      updateDoc,
+      arrayUnion,
+      getDocs,
+      writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { showToast, calculateDistance } from './js/utils.js';
+    import { loadTheme } from './js/theme.js';
+    import { initializeNotifications } from './js/notifications.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let conversations = [];
+    let selectedConversationId = null;
+    let selectedOtherUserId = null;
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadCurrentUserData();
+        loadConversations();
+
+        // Initialize push notifications
+        try {
+          const notificationsEnabled = await initializeNotifications();
+          if (notificationsEnabled) {
+            console.log('✅ Push notifications initialized successfully');
+          }
+        } catch (error) {
+          console.error('Error initializing push notifications:', error);
+        }
+      } else {
+        window.location.href = '/login.html';
+      }
+    });
+
+    // Load current user data
+    async function loadCurrentUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+
+          // Update UI
+          const alias = currentUserData.alias || currentUser.email;
+          document.getElementById('userAlias').textContent = alias;
+
+          if (alias) {
+            document.getElementById('userAvatar').textContent = alias.charAt(0).toUpperCase();
+          }
+
+          // Check payment status
+          checkPaymentStatus();
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    // Check payment status
+    function checkPaymentStatus() {
+      const userMustPay = currentUserData.gender === 'masculino';
+
+      if (userMustPay && !currentUserData.hasActiveSubscription) {
+        document.getElementById('paymentWarning').classList.remove('hidden');
+      }
+    }
+
+    // Load conversations
+    function loadConversations() {
+      const q = query(
+        collection(db, 'conversations'),
+        where('participants', 'array-contains', currentUser.uid),
+        orderBy('lastMessageTime', 'desc')
+      );
+
+      onSnapshot(q, async (snapshot) => {
+        conversations = [];
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const conversationsList = document.getElementById('conversationsList');
+
+        if (snapshot.empty) {
+          loadingState.classList.add('hidden');
+          emptyState.classList.remove('hidden');
+          conversationsList.innerHTML = '';
+          return;
+        }
+
+        loadingState.classList.add('hidden');
+        emptyState.classList.add('hidden');
+
+        for (const docSnap of snapshot.docs) {
+          const conv = { id: docSnap.id, ...docSnap.data() };
+
+          // Skip hidden conversations
+          if (currentUserData.hiddenConversations?.includes(conv.id)) {
+            continue;
+          }
+
+          // Get other user ID
+          const otherUserId = conv.participants.find(id => id !== currentUser.uid);
+
+          // Get other user data
+          const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
+          if (otherUserDoc.exists()) {
+            conv.otherUser = { id: otherUserDoc.id, ...otherUserDoc.data() };
+
+            // Calculate distance
+            if (currentUserData.location && conv.otherUser.location) {
+              conv.distance = calculateDistance(
+                currentUserData.location.lat,
+                currentUserData.location.lng,
+                conv.otherUser.location.lat,
+                conv.otherUser.location.lng
+              );
+            }
+
+            conversations.push(conv);
+          }
+        }
+
+        renderConversations();
+      }, (error) => {
+        console.error('Error loading conversations:', error);
+        showToast('Error al cargar conversaciones', 'error');
+      });
+    }
+
+    // Render conversations
+    function renderConversations() {
+      const conversationsList = document.getElementById('conversationsList');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filter = document.getElementById('filterSelect').value;
+
+      let filtered = conversations;
+
+      // Apply search filter
+      if (searchTerm) {
+        filtered = filtered.filter(conv =>
+          conv.otherUser.alias?.toLowerCase().includes(searchTerm) ||
+          conv.lastMessage?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Apply status filter
+      if (filter === 'unread') {
+        filtered = filtered.filter(conv => conv.unreadCount > 0);
+      } else if (filter === 'online') {
+        filtered = filtered.filter(conv => conv.otherUser.isOnline);
+      }
+
+      if (filtered.length === 0) {
+        conversationsList.innerHTML = `
+          <div class="glass-strong rounded-2xl p-8 text-center">
+            <i class="fas fa-search text-4xl text-white/50 mb-4"></i>
+            <p class="text-lg text-slate-300">No se encontraron conversaciones</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Calculate 'now' once to prevent hydration mismatch across all conversations
+      const now = new Date();
+
+      conversationsList.innerHTML = filtered.map(conv => {
+        const otherUser = conv.otherUser;
+        const alias = otherUser.alias || 'Usuario';
+        const lastMessage = conv.lastMessage || 'Nueva conversación';
+        const isUnread = conv.lastMessageSenderId !== currentUser.uid && conv.unreadCount > 0;
+        const isOnline = otherUser.isOnline;
+
+        // Time ago
+        let timeAgo = 'Hace tiempo';
+        if (conv.lastMessageTime) {
+          const messageTime = conv.lastMessageTime.toDate();
+          const diffMs = now - messageTime;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+
+          if (diffMins < 1) timeAgo = 'Ahora';
+          else if (diffMins < 60) timeAgo = `Hace ${diffMins}m`;
+          else if (diffHours < 24) timeAgo = `Hace ${diffHours}h`;
+          else timeAgo = `Hace ${diffDays}d`;
+        }
+
+        // Reputation badge (for men)
+        let reputationBadge = '';
+        if (otherUser.gender === 'masculino' && otherUser.reputation) {
+          const repColors = {
+            'BRONCE': 'from-orange-700 to-orange-900',
+            'PLATA': 'from-gray-400 to-gray-600',
+            'ORO': 'from-yellow-400 to-yellow-600',
+            'PLATINO': 'from-cyan-400 to-blue-500'
+          };
+          reputationBadge = `
+            <span class="px-2 py-1 text-xs rounded-full bg-gradient-to-r ${repColors[otherUser.reputation]} text-white font-bold">
+              ${otherUser.reputation}
+            </span>
+          `;
+        }
+
+        // Availability badge (for women)
+        let availabilityBadge = '';
+        if (otherUser.gender === 'femenino' && otherUser.availability) {
+          const availColors = {
+            'verde': 'bg-green-500',
+            'amarillo': 'bg-yellow-500',
+            'rojo': 'bg-red-500'
+          };
+          availabilityBadge = `
+            <span class="w-3 h-3 rounded-full ${availColors[otherUser.availability]} inline-block" title="Disponibilidad"></span>
+          `;
+        }
+
+        // Distance badge
+        let distanceBadge = '';
+        if (conv.distance !== undefined) {
+          distanceBadge = `
+            <span class="text-xs text-slate-400">
+              <i class="fas fa-location-dot"></i> ${conv.distance.toFixed(1)} km
+            </span>
+          `;
+        }
+
+        return `
+          <div class="glass-strong rounded-xl p-4 conversation-item cursor-pointer"
+               onclick="openChat('${conv.id}', '${otherUser.id}')"
+               oncontextmenu="showContextMenu(event, '${conv.id}', '${otherUser.id}'); return false;">
+            <div class="flex items-center gap-4">
+              <!-- Avatar -->
+              <div class="relative flex-shrink-0">
+                <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-xl">
+                  ${alias.charAt(0).toUpperCase()}
+                </div>
+                ${isOnline ? '<div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-slate-900 rounded-full"></div>' : ''}
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-lg truncate">${alias}</h3>
+                    ${otherUser.emailVerified ? '<i class="fas fa-circle-check text-blue-400 text-sm"></i>' : ''}
+                    ${reputationBadge}
+                    ${availabilityBadge}
+                  </div>
+                  <span class="text-xs text-slate-400 flex-shrink-0">${timeAgo}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <p class="text-slate-300 text-sm truncate ${isUnread ? 'font-semibold' : ''}">
+                    ${conv.lastMessageSenderId === currentUser.uid ? '<i class="fas fa-reply text-xs mr-1"></i>' : ''}
+                    ${lastMessage}
+                  </p>
+                  ${distanceBadge}
+                </div>
+              </div>
+
+              <!-- Unread badge -->
+              ${isUnread ? `
+                <div class="flex-shrink-0">
+                  <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-xs font-bold unread-badge">
+                    ${conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Open chat - WITH MEMBERSHIP VALIDATION
+    window.openChat = function(conversationId, otherUserId) {
+      // Check membership requirement before opening chat
+      const userMustPay = currentUserData.gender === 'masculino';
+      if (userMustPay && !currentUserData.hasActiveSubscription) {
+        showToast('⚠️ Membresía requerida para chatear', 'error');
+        if (confirm('Necesitas una membresía activa (€29.99/mes) para acceder al chat.\n\n¿Deseas activar tu membresía ahora?')) {
+          window.location.href = '/webapp/suscripcion.html';
+        }
+        return;
+      }
+
+      window.location.href = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
+    };
+
+    // Show context menu
+    window.showContextMenu = function(event, conversationId, otherUserId) {
+      event.preventDefault();
+      selectedConversationId = conversationId;
+      selectedOtherUserId = otherUserId;
+
+      const menu = document.getElementById('contextMenu');
+      menu.classList.remove('hidden');
+      menu.style.left = event.pageX + 'px';
+      menu.style.top = event.pageY + 'px';
+    };
+
+    // Hide context menu on click outside
+    document.addEventListener('click', () => {
+      document.getElementById('contextMenu').classList.add('hidden');
+    });
+
+    // Hide conversation
+    window.hideConversation = async function() {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          hiddenConversations: arrayUnion(selectedConversationId)
+        });
+
+        currentUserData.hiddenConversations = currentUserData.hiddenConversations || [];
+        currentUserData.hiddenConversations.push(selectedConversationId);
+
+        renderConversations();
+        showToast('Conversación ocultada', 'success');
+      } catch (error) {
+        console.error('Error hiding conversation:', error);
+        showToast('Error al ocultar conversación', 'error');
+      }
+    };
+
+    // Report user
+    window.reportUser = function() {
+      if (selectedOtherUserId) {
+        window.location.href = `/webapp/reportes.html?type=user&userId=${selectedOtherUserId}`;
+      }
+    };
+
+    // Block user
+    window.blockUser = function() {
+      const conv = conversations.find(c => c.id === selectedConversationId);
+      if (conv) {
+        document.getElementById('blockUserName').textContent = conv.otherUser.alias || 'Este usuario';
+        document.getElementById('blockModal').classList.remove('opacity-0', 'pointer-events-none');
+      }
+    };
+
+    window.closeBlockModal = function() {
+      document.getElementById('blockModal').classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.confirmBlock = async function() {
+      try {
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          blockedUsers: arrayUnion(selectedOtherUserId),
+          hiddenConversations: arrayUnion(selectedConversationId)
+        });
+
+        currentUserData.blockedUsers = currentUserData.blockedUsers || [];
+        currentUserData.blockedUsers.push(selectedOtherUserId);
+        currentUserData.hiddenConversations = currentUserData.hiddenConversations || [];
+        currentUserData.hiddenConversations.push(selectedConversationId);
+
+        closeBlockModal();
+        renderConversations();
+        showToast('Usuario bloqueado', 'success');
+      } catch (error) {
+        console.error('Error blocking user:', error);
+        showToast('Error al bloquear usuario', 'error');
+      }
+    };
+
+    // Search and filter handlers
+    document.getElementById('searchInput').addEventListener('input', renderConversations);
+    document.getElementById('filterSelect').addEventListener('change', renderConversations);
+
+  </script>
+
+</body>
+</html>

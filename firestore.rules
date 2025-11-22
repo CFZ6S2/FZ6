@@ -1,0 +1,537 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============ HELPERS con CUSTOM CLAIMS ============
+    function isAuthed() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function role() { return request.auth.token.role != null ? request.auth.token.role : 'regular'; }
+    function gender() { return request.auth.token.gender; }
+
+    // Email verification check (CRITICAL for dating app security)
+    function isEmailVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    // Age validation (CRITICAL for dating app - must be 18+)
+    // birthDate must be in format YYYY-MM-DD
+    function isAdult(birthDate) {
+      // Calculate 18 years ago from today in milliseconds
+      // 18 years = 18 * 365.25 * 24 * 60 * 60 * 1000 = 568,080,000,000 ms
+      let eighteenYearsInMs = 568080000000;
+      let eighteenYearsAgo = request.time.toMillis() - eighteenYearsInMs;
+
+      // Parse birthDate string to timestamp (basic parsing)
+      // Note: Firestore Rules limitations - we use a conservative check
+      // If birthDate is YYYY-MM-DD, we convert to timestamp
+      let birthYear = int(birthDate.split('-')[0]);
+
+      // Approximate milliseconds since epoch for birth date
+      // This is a simplified calculation due to Firestore Rules limitations
+      let yearsSince1970 = birthYear - 1970;
+      let approxBirthMs = yearsSince1970 * 31557600000;  // 365.25 days in ms
+
+      // User must be born at least 18 years ago
+      return approxBirthMs < eighteenYearsAgo;
+    }
+
+    function isAdmin() { return isAuthed() && role() == 'admin'; }
+    function isConcierge() { return isAuthed() && role() == 'concierge'; }
+    function isMale() { return isAuthed() && gender() == 'masculino'; }
+    function isFemale() { return isAuthed() && gender() == 'femenino'; }
+
+    // ============ PAYMENT VALIDATION HELPERS ============
+    // ⚠️ OPTIMIZED: Using custom claims instead of get() to reduce costs
+    // Custom claims are set by Cloud Functions when payment status changes
+
+    // Verificar si el usuario tiene membresía activa
+    // OPTIMIZED: Reads from custom claims (free) instead of get() (costs money)
+    function hasActiveMembership() {
+      return request.auth.token.hasActiveSubscription == true;
+    }
+
+    // Verificar si el usuario tiene seguro anti-plantón
+    // OPTIMIZED: Reads from custom claims (free) instead of get() (costs money)
+    function hasInsurance() {
+      return request.auth.token.hasAntiGhostingInsurance == true;
+    }
+
+    // Verificar si el usuario NECESITA pagar (solo hombres por ahora)
+
+    // Validar que el usuario puede chatear (membresía requerida para hombres)
+    function canChat() {
+      return isFemale() || (isMale() && hasActiveMembership()) || isAdmin();
+    }
+
+    // Validar que el usuario puede agendar citas (seguro requerido para hombres)
+    function canSchedule() {
+      return isFemale() || (isMale() && hasActiveMembership() && hasInsurance()) || isAdmin();
+    }
+
+    // ============ USERS ============
+    match /users/{userId} {
+      // Creación: Durante registro inicial
+      // ⚠️ VALIDACIÓN DE EDAD: Solo adultos 18+ pueden registrarse
+      allow create: if isAuthed()
+                    && uid() == userId
+                    && request.resource.data.gender in ['masculino','femenino']
+                    && request.resource.data.userRole in ['regular']  // Solo pueden crear cuenta regular
+                    && request.resource.data.keys().hasAll(['alias','gender','userRole','birthDate','email','createdAt'])
+                    && isAdult(request.resource.data.birthDate);  // CRITICAL: Must be 18+
+
+      // Lectura: Usuarios autenticados pueden ver perfiles
+      // ⚠️ IMPORTANTE - FILTRADO DE GÉNERO (Business Rule Enforcement):
+      // - Backend permite leer todos los perfiles autenticados (necesario para funcionalidad)
+      // - **CRITICAL**: Frontend DEBE filtrar queries por género opuesto:
+      //   ✅ CORRECTO: db.collection('users').where('gender', '==', oppositeGender)
+      //   ❌ INCORRECTO: db.collection('users').get() // sin filtro
+      // - Aplicar filtro aquí requeriría get() costoso (€€€) por cada lectura
+      // - Trade-off aceptado: Usuarios técnicos pueden bypassear, pero:
+      //   1. Chat/citas SÍ validan género en backend (canChat/canSchedule)
+      //   2. Mayoría de usuarios usan app normal con filtros
+      //   3. Costo de get() en cada lectura > riesgo de bypass
+      allow read: if isAuthed();
+
+      // Actualización: El dueño puede actualizar su perfil (menos userRole que solo admin cambia)
+      allow update: if isAuthed() && (
+        // Usuario actualizando su propio perfil
+        (uid() == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt'])) ||
+        // Admin puede cambiar userRole y otros campos
+        isAdmin()
+      );
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ VIP EVENTS (Concierge System) ============
+    match /vip_events/{eventId} {
+      // Lectura: Solo mujeres, concierges y admins
+      allow read: if isAuthed() && (isFemale() || isConcierge() || isAdmin());
+
+      // Creación: Solo concierges aprobados
+      allow create: if isConcierge()
+                    && request.resource.data.conciergeId == uid()
+                    && request.resource.data.status == 'published';
+
+      // Actualización: Solo el concierge dueño del evento o admin
+      allow update: if isAuthed() && (
+        (isConcierge() && resource.data.conciergeId == uid()) ||
+        isAdmin()
+      );
+
+      // Borrado: Solo el concierge dueño o admin
+      allow delete: if isAuthed() && (
+        (isConcierge() && resource.data.conciergeId == uid()) ||
+        isAdmin()
+      );
+    }
+
+    // ============ VIP APPLICATIONS ============
+    match /vip_applications/{applicationId} {
+      // Lectura:
+      // - La mujer que aplicó
+      // - El concierge del evento
+      // - Admins
+      allow read: if isAuthed() && (
+        resource.data.userId == uid() ||
+        (isConcierge() && get(/databases/$(database)/documents/vip_events/$(resource.data.eventId)).data.conciergeId == uid()) ||
+        isAdmin()
+      );
+
+      // Creación: Solo mujeres aplicando a eventos
+      allow create: if isFemale()
+                    && request.resource.data.userId == uid()
+                    && request.resource.data.status == 'pending'
+                    && exists(/databases/$(database)/documents/vip_events/$(request.resource.data.eventId));
+
+      // Actualización: El concierge del evento puede cambiar status a 'selected' o 'rejected'
+      allow update: if isAuthed() && (
+        (isConcierge() &&
+         get(/databases/$(database)/documents/vip_events/$(resource.data.eventId)).data.conciergeId == uid() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']) &&
+         request.resource.data.status in ['selected','rejected']) ||
+        isAdmin()
+      );
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ MATCHES (Date Requests) ============
+    match /matches/{matchId} {
+      // Lectura: El que envió o el que recibió
+      allow read: if isAuthed() && (
+        resource.data.senderId == uid() ||
+        resource.data.receiverId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: Usuario autenticado enviando solicitud
+      // ⚠️ VALIDACIÓN DE PAGO: Hombres necesitan membresía activa
+      // ⚠️ VALIDACIÓN DE EMAIL: Email debe estar verificado
+      allow create: if isAuthed()
+                    && isEmailVerified()  // CRITICAL: Email must be verified
+                    && request.resource.data.senderId == uid()
+                    && request.resource.data.status == 'pending'
+                    && canChat();  // Requiere membresía para hombres
+
+      // Actualización: El receptor puede aceptar/rechazar
+      allow update: if isAuthed() && (
+        (resource.data.receiverId == uid() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']) &&
+         request.resource.data.status in ['accepted','rejected']) ||
+        isAdmin()
+      );
+
+      // Borrado: Solo quien envió o admin
+      allow delete: if isAuthed() && (
+        resource.data.senderId == uid() ||
+        isAdmin()
+      );
+    }
+
+    // ============ CONVERSATIONS ============
+    match /conversations/{conversationId} {
+      // Lectura: Participantes, admin, concierge
+      allow read: if isAuthed() && (
+        uid() in resource.data.participants ||
+        isAdmin() ||
+        isConcierge()
+      );
+
+      // Creación: El creador debe estar en participants
+      allow create: if isAuthed()
+                    && request.resource.data.participants is list
+                    && uid() in request.resource.data.participants;
+
+      // Actualización: Participantes, admin, concierge
+      allow update: if isAuthed() && (
+        uid() in resource.data.participants ||
+        isAdmin() ||
+        isConcierge()
+      );
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+
+      // Mensajes (si usas subcolección)
+      match /messages/{messageId} {
+        allow read: if isAuthed() && (
+          uid() in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
+          isAdmin() ||
+          isConcierge()
+        );
+
+        // Creación de mensajes
+        // ⚠️ VALIDACIÓN DE PAGO: Hombres necesitan membresía activa para chatear
+        // ⚠️ VALIDACIÓN DE EMAIL: Email debe estar verificado
+        allow create: if isAuthed() &&
+          isEmailVerified() &&  // CRITICAL: Email must be verified
+          uid() in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
+          request.resource.data.senderId == uid() &&
+          canChat();  // Requiere membresía para hombres
+
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ============ REPORTS ============
+    match /reports/{reportId} {
+      // Lectura: Solo admins y el que reportó
+      allow read: if isAuthed() && (
+        resource.data.reporterId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: Usuario autenticado reportando
+      allow create: if isAuthed()
+                    && request.resource.data.reporterId == uid()
+                    && request.resource.data.status == 'pending';
+
+      // Actualización: Solo admin (para cambiar status a 'reviewed', 'resolved', etc.)
+      allow update: if isAdmin();
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ SOS ALERTS ============
+    match /sos_alerts/{alertId} {
+      // Lectura: Solo admins y el usuario que activó SOS
+      allow read: if isAuthed() && (
+        resource.data.userId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: Usuario en emergencia
+      allow create: if isAuthed()
+                    && request.resource.data.userId == uid()
+                    && request.resource.data.status == 'active';
+
+      // Actualización: El usuario puede desactivar, admin puede todo
+      allow update: if isAuthed() && (
+        (resource.data.userId == uid() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','deactivatedAt']) &&
+         request.resource.data.status == 'deactivated') ||
+        isAdmin()
+      );
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ APPOINTMENTS (Date Scheduling) ============
+    match /appointments/{appointmentId} {
+      // Lectura: Los participantes y admin
+      allow read: if isAuthed() && (
+        uid() in resource.data.participants ||
+        isAdmin()
+      );
+
+      // Creación: Usuario autenticado agendando cita
+      // ⚠️ VALIDACIÓN DE PAGO CRÍTICA: Hombres necesitan membresía + seguro anti-plantón
+      // ⚠️ VALIDACIÓN DE EMAIL: Email debe estar verificado
+      allow create: if isAuthed()
+                    && isEmailVerified()  // CRITICAL: Email must be verified
+                    && uid() in request.resource.data.participants
+                    && request.resource.data.status in ['pending', 'confirmed']
+                    && canSchedule();  // Requiere membresía + seguro para hombres
+
+      // Actualización: Los participantes pueden actualizar estado (confirmar, cancelar)
+      allow update: if isAuthed() && (
+        (uid() in resource.data.participants &&
+         request.resource.data.diff(resource.data).affectedKeys().hasAny(['status','updatedAt','confirmedBy','canceledBy'])) ||
+        isAdmin()
+      );
+
+      // Borrado: Solo admin o participantes pueden cancelar
+      allow delete: if isAuthed() && (
+        uid() in resource.data.participants ||
+        isAdmin()
+      );
+    }
+
+    // ============ PAYMENTS / SUBSCRIPTIONS ============
+    match /subscriptions/{subscriptionId} {
+      // Lectura: Solo el dueño y admin
+      allow read: if isAuthed() && (
+        resource.data.userId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: Backend o admin (cuando procesa pago con Stripe)
+      allow create: if isAdmin();
+
+      // Actualización: Backend o admin (cuando actualiza status)
+      allow update: if isAdmin();
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ INSURANCE (Anti-Ghosting) ============
+    match /insurances/{insuranceId} {
+      // Lectura: Solo el dueño y admin
+      allow read: if isAuthed() && (
+        resource.data.userId == uid() ||
+        isAdmin()
+      );
+
+      // Creación/Actualización: Backend o admin
+      allow create, update: if isAdmin();
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ BLOCKED USERS ============
+    match /users/{userId}/blocked_users/{blockedUserId} {
+      // Lectura: Solo el dueño
+      allow read: if isAuthed() && uid() == userId;
+
+      // Creación: El usuario puede bloquear
+      allow create: if isAuthed() && uid() == userId;
+
+      // Borrado: El usuario puede desbloquear
+      allow delete: if isAuthed() && uid() == userId;
+    }
+
+    // ============ ADMIN LOGS ============
+    match /admin_logs/{logId} {
+      // Solo lectura para admins
+      allow read: if isAdmin();
+
+      // Solo creación por admin (o backend con privilegios admin)
+      allow create: if isAdmin();
+
+      // No se pueden modificar ni borrar logs
+      allow update, delete: if false;
+    }
+
+    // ============ NOTIFICATIONS ============
+    match /notifications/{notificationId} {
+      // Los usuarios solo pueden leer sus propias notificaciones
+      allow read: if isAuthed() && resource.data.userId == uid();
+
+      // Solo Cloud Functions puede crear notificaciones (sin userId en request)
+      allow create: if false; // Solo Cloud Functions via Admin SDK
+
+      // Los usuarios pueden marcar como leídas sus notificaciones
+      allow update: if isAuthed() &&
+                       resource.data.userId == uid() &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+
+      // Los usuarios pueden eliminar sus propias notificaciones
+      allow delete: if isAuthed() && resource.data.userId == uid();
+
+      // Admins pueden ver todas las notificaciones
+      allow read: if isAdmin();
+    }
+
+    // ============ FAILED PAYMENTS ============
+    match /failed_payments/{paymentId} {
+      // Solo Cloud Functions puede crear registros
+      allow create: if false; // Solo Cloud Functions via Admin SDK
+
+      // Los usuarios NO pueden ver pagos fallidos (información sensible)
+      // Solo admins pueden leer para análisis
+      allow read: if isAdmin();
+
+      // Inmutables - no se pueden modificar ni eliminar
+      allow update, delete: if false;
+    }
+
+    // ============ RATE LIMITS ============
+    match /rate_limits/{limitId} {
+      // Solo Cloud Functions puede crear/eliminar registros
+      allow create, delete: if false; // Solo Cloud Functions via Admin SDK
+
+      // Los usuarios NO pueden ver rate limits (información interna)
+      // Solo admins pueden leer para análisis
+      allow read: if isAdmin();
+
+      // Inmutables - no se pueden modificar
+      allow update: if false;
+    }
+
+    // ============ REFERRALS ============
+    match /referrals/{referralId} {
+      // Lectura: El referidor y el referido pueden ver sus referidos
+      allow read: if isAuthed() && (
+        resource.data.referrerId == uid() ||
+        resource.data.referredId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: Solo cuando alguien se registra con un código
+      allow create: if isAuthed() &&
+                       request.resource.data.referredId == uid() &&
+                       request.resource.data.keys().hasAll(['referrerId', 'referredId', 'status', 'createdAt']) &&
+                       request.resource.data.status == 'pending';
+
+      // Actualización: Solo para actualizar estado (completado, activo, etc.)
+      allow update: if isAuthed() && (
+        (resource.data.referrerId == uid() &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])) ||
+        isAdmin()
+      );
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ BADGES (Achievements) ============
+    match /badges/{badgeId} {
+      // Lectura: Todos los usuarios pueden ver los badges disponibles
+      allow read: if isAuthed();
+
+      // Creación/Actualización/Borrado: Solo admin
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============ USER BADGES (Earned) ============
+    match /users/{userId}/earned_badges/{badgeId} {
+      // Lectura: El usuario y admin
+      allow read: if isAuthed() && (
+        uid() == userId ||
+        isAdmin()
+      );
+
+      // Creación: Solo Cloud Functions o admin (cuando se cumple logro)
+      allow create: if isAdmin();
+
+      // No se pueden modificar ni borrar badges ganados
+      allow update, delete: if false;
+    }
+
+    // ============ ANALYTICS EVENTS ============
+    match /analytics_events/{eventId} {
+      // Creación: Usuarios pueden crear eventos de analytics
+      allow create: if isAuthed() &&
+                       request.resource.data.userId == uid();
+
+      // Lectura: Solo admin
+      allow read: if isAdmin();
+
+      // No se pueden modificar ni borrar eventos
+      allow update, delete: if false;
+    }
+
+    // ============ PUSH TOKENS ============
+    match /push_tokens/{tokenId} {
+      // Lectura/Escritura: Solo el dueño del token
+      allow read, write: if isAuthed() &&
+                            request.resource.data.userId == uid();
+
+      // Admin puede leer todos
+      allow read: if isAdmin();
+    }
+
+    // ============ IDENTITY VERIFICATION ============
+    match /identity_verifications/{verificationId} {
+      // Lectura: Solo el usuario y admin
+      allow read: if isAuthed() && (
+        resource.data.userId == uid() ||
+        isAdmin()
+      );
+
+      // Creación: El usuario puede iniciar verificación
+      allow create: if isAuthed() &&
+                       request.resource.data.userId == uid() &&
+                       request.resource.data.status == 'pending';
+
+      // Actualización: Solo admin (para aprobar/rechazar)
+      allow update: if isAdmin();
+
+      // Borrado: Solo admin
+      allow delete: if isAdmin();
+    }
+
+    // ============ VIDEO CHAT SESSIONS ============
+    match /video_sessions/{sessionId} {
+      // Lectura: Solo los participantes
+      allow read: if isAuthed() &&
+                     uid() in resource.data.participants;
+
+      // Creación: Los participantes pueden crear sesión
+      allow create: if isAuthed() &&
+                       uid() in request.resource.data.participants &&
+                       request.resource.data.participants.size() == 2;
+
+      // Actualización: Los participantes pueden actualizar
+      allow update: if isAuthed() &&
+                       uid() in resource.data.participants;
+
+      // Borrado: Los participantes pueden eliminar
+      allow delete: if isAuthed() &&
+                       uid() in resource.data.participants;
+    }
+
+    // ============ DEFAULT DENY ============
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

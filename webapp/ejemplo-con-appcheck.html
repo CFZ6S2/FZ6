@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejemplo con App Check - TuCitaSegura</title>
+</head>
+<body>
+  <h1>Ejemplo de inclusión de App Check</h1>
+
+  <!-- ============================================ -->
+  <!-- ORDEN CORRECTO DE IMPORTACIÓN -->
+  <!-- ============================================ -->
+
+  <script type="module">
+    // ⚠️ ORDEN MUY IMPORTANTE:
+
+    // 1️⃣ PRIMERO: Importar App Check (esto inicializa App Check)
+    import './js/firebase-appcheck.js';
+
+    // 2️⃣ SEGUNDO: Importar Firebase services (estos YA tienen App Check activo)
+    import { auth, db, storage } from './js/firebase-config.js';
+
+    // 3️⃣ TERCERO: Tu código de app
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // Ahora todas las operaciones tendrán App Check token automático
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log('✅ Usuario autenticado:', user.uid);
+
+        // Este request incluirá App Check token automáticamente
+        // No necesitas hacer nada especial
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        console.log('✅ Datos del usuario:', userDoc.data());
+      } else {
+        console.log('❌ Usuario no autenticado');
+      }
+    });
+
+    // Ejemplo: Verificar que App Check está funcionando
+    console.log('🧪 Verificando App Check...');
+    setTimeout(async () => {
+      const token = await window.getAppCheckToken();
+      if (token) {
+        console.log('✅ App Check funcionando - Todos los requests incluyen token automáticamente');
+      } else {
+        console.warn('⚠️  App Check no funcionando - Revisa la consola para ver errores');
+      }
+    }, 3000);
+  </script>
+
+  <!-- ============================================ -->
+  <!-- FORMA ALTERNATIVA (usando imports en <head>) -->
+  <!-- ============================================ -->
+
+  <!--
+  También puedes hacer los imports en el <head>:
+
+  <script type="module">
+    import './js/firebase-appcheck.js';
+  </script>
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { onAuthStateChanged } from "...";
+    // Tu código aquí
+  </script>
+  -->
+
+</body>
+</html>

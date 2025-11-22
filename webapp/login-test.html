@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test - TuCitaSegura</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Login Test - Firebase Debug</h1>
+        <p>Prueba simplificada de login para identificar errores</p>
+        
+        <div>
+            <button onclick="testFirebaseConnection()">Probar Conexión Firebase</button>
+            <button onclick="testSimpleLogin()">Probar Login Simple</button>
+            <button onclick="clearLogs()">Limpiar Logs</button>
+        </div>
+        
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script type="module">
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            
+            logsDiv.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        window.clearLogs = function() {
+            document.getElementById('logs').innerHTML = '';
+        };
+
+        window.testFirebaseConnection = async function() {
+            try {
+                log('🚀 Iniciando prueba de conexión Firebase...', 'info');
+                
+                // Import Firebase modules
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+                const { getAuth } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                
+                log('✅ Módulos Firebase importados correctamente', 'success');
+                
+                // Configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+                    authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+                    projectId: "tuscitasseguras-2d1a6",
+                    storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+                    messagingSenderId: "924208562587",
+                    appId: "1:924208562587:web:5291359426fe390b36213e"
+                };
+                
+                log('📋 Configuración Firebase cargada', 'info');
+                
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                log('✅ Firebase app inicializada', 'success');
+                
+                const auth = getAuth(app);
+                log('✅ Firebase Auth inicializado', 'success');
+                
+                // Test auth state
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        log(`✅ Usuario autenticado: ${user.email}`, 'success');
+                    } else {
+                        log('ℹ️ No hay usuario autenticado', 'info');
+                    }
+                });
+                
+                log('✅ Conexión Firebase exitosa', 'success');
+                
+            } catch (error) {
+                log(`❌ Error en conexión Firebase: ${error.message}`, 'error');
+                log(`📋 Código de error: ${error.code}`, 'error');
+                log(`🔍 Stack: ${error.stack}`, 'error');
+                
+                if (error.code === 'auth/network-request-failed') {
+                    log('📝 Error de red detectado. Posibles causas:', 'warning');
+                    log('   1. Problemas de conexión a internet', 'warning');
+                    log('   2. CORS bloqueando requests a Firebase', 'warning');
+                    log('   3. App Check bloqueando requests no verificados', 'warning');
+                    log('   4. Dominio no permitido en configuración de Firebase', 'warning');
+                    log('   5. Bloqueadores de anuncios o antivirus', 'warning');
+                }
+            }
+        };
+
+        window.testSimpleLogin = async function() {
+            try {
+                log('🔐 Iniciando prueba de login simple...', 'info');
+                
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+                const { getAuth, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+                
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+                    authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+                    projectId: "tuscitasseguras-2d1a6",
+                    storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+                    messagingSenderId: "924208562587",
+                    appId: "1:924208562587:web:5291359426fe390b36213e"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                
+                log('📧 Intentando login con credenciales de prueba...', 'info');
+                
+                // Test with dummy credentials to trigger network request
+                try {
+                    await signInWithEmailAndPassword(auth, 'test@example.com', 'test123456');
+                    log('✅ Login exitoso (inesperado)', 'success');
+                } catch (error) {
+                    if (error.code === 'auth/network-request-failed') {
+                        log('❌ Error de red confirmado', 'error');
+                        log('🔍 Detalles del error:', 'error');
+                        log(`   Código: ${error.code}`, 'error');
+                        log(`   Mensaje: ${error.message}`, 'error');
+                        log('📝 Esto confirma que el problema es de red/CORS', 'warning');
+                    } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                        log('✅ Conexión Firebase funcionando (error esperado por credenciales inválidas)', 'success');
+                    } else {
+                        log(`⚠️ Otro tipo de error: ${error.code} - ${error.message}`, 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Error en prueba de login: ${error.message}`, 'error');
+            }
+        };
+
+        // Log environment info
+        log(`🌐 Entorno: ${location.hostname} (${location.protocol})`, 'info');
+        log(`📱 Navegador: ${navigator.userAgent.substring(0, 50)}...`, 'info');
+        log(`🔌 Estado de red: ${navigator.onLine ? 'Online' : 'Offline'}`, navigator.onLine ? 'success' : 'error');
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Integración - TuCitaSegura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-running { animation: pulse 2s infinite; }
+        .test-passed { background-color: #10b981; color: white; }
+        .test-failed { background-color: #ef4444; color: white; }
+        .test-warning { background-color: #f59e0b; color: white; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-purple-400 mb-2">
+                <i class="fas fa-flask mr-3"></i>Test de Integración
+            </h1>
+            <p class="text-gray-300">Verifica que todos los componentes de TuCitaSegura estén correctamente integrados</p>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-blue-400" id="total-tests">0</div>
+                <div class="text-sm text-gray-400">Total Tests</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-green-400" id="passed-tests">0</div>
+                <div class="text-sm text-gray-400">Passed</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-red-400" id="failed-tests">0</div>
+                <div class="text-sm text-gray-400">Failed</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-4 text-center">
+                <div class="text-2xl font-bold text-yellow-400" id="warning-tests">0</div>
+                <div class="text-sm text-gray-400">Warnings</div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold mb-2">Panel de Control</h2>
+                    <p class="text-gray-400 text-sm">Ejecuta pruebas para verificar la integración del sistema</p>
+                </div>
+                <div class="flex gap-3">
+                    <button id="quick-test" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-bolt mr-2"></i>Prueba Rápida
+                    </button>
+                    <button id="full-test" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-flask mr-2"></i>Prueba Completa
+                    </button>
+                    <button id="clear-results" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-trash mr-2"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Resultados de las Pruebas</h2>
+            <div id="test-results" class="space-y-3">
+                <div class="text-gray-400 text-center py-8">
+                    <i class="fas fa-play-circle text-4xl mb-4"></i>
+                    <p>Haz clic en "Prueba Rápida" o "Prueba Completa" para comenzar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firebase Config -->
+        <script type="module">
+            import { firebaseConfig } from './js/firebase-config.js';
+            
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            
+            // Make Firebase available globally for tests
+            window.firebase = firebase;
+        </script>
+
+        <!-- Integration Tests -->
+        <script type="module">
+            import { runIntegrationTests, quickConnectivityTest } from './js/integration-tests.js';
+            
+            let currentTest = null;
+            
+            function updateStats(summary) {
+                document.getElementById('total-tests').textContent = summary.total;
+                document.getElementById('passed-tests').textContent = summary.passed;
+                document.getElementById('failed-tests').textContent = summary.failed;
+                document.getElementById('warning-tests').textContent = summary.warnings;
+            }
+            
+            function displayTestResult(test) {
+                const resultsContainer = document.getElementById('test-results');
+                
+                // Clear initial message
+                if (resultsContainer.querySelector('.text-gray-400')) {
+                    resultsContainer.innerHTML = '';
+                }
+                
+                const testElement = document.createElement('div');
+                testElement.className = `p-4 rounded-lg border ${getTestClass(test.status)}`;
+                
+                const icon = test.status === 'passed' ? '✅' : 
+                           test.status === 'warning' ? '⚠️' : '❌';
+                
+                testElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">${icon}</span>
+                            <div>
+                                <div class="font-medium">${test.name}</div>
+                                ${test.details ? `<div class="text-sm opacity-75">${test.details}</div>` : ''}
+                                ${test.error ? `<div class="text-sm text-red-300 mt-1">${test.error}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            ${new Date(test.timestamp).toLocaleTimeString()}
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(testElement);
+                resultsContainer.scrollTop = resultsContainer.scrollHeight;
+            }
+            
+            function getTestClass(status) {
+                switch (status) {
+                    case 'passed': return 'bg-green-900/20 border-green-600';
+                    case 'failed': return 'bg-red-900/20 border-red-600';
+                    case 'warning': return 'bg-yellow-900/20 border-yellow-600';
+                    default: return 'bg-gray-700 border-gray-600';
+                }
+            }
+            
+            async function runQuickTest() {
+                if (currentTest) return;
+                
+                currentTest = 'quick';
+                document.getElementById('test-results').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><p>Running quick connectivity test...</p></div>';
+                
+                try {
+                    await quickConnectivityTest();
+                    document.getElementById('test-results').innerHTML = '<div class="text-green-400 text-center py-4"><i class="fas fa-check-circle text-2xl mb-2"></i><p>Quick test completed! Check console for details.</p></div>';
+                } catch (error) {
+                    document.getElementById('test-results').innerHTML = `<div class="text-red-400 text-center py-4"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>Error: ${error.message}</p></div>`;
+                }
+                
+                currentTest = null;
+            }
+            
+            async function runFullTest() {
+                if (currentTest) return;
+                
+                currentTest = 'full';
+                document.getElementById('test-results').innerHTML = '<div class="text-center py-4 test-running"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><p>Running comprehensive integration tests...</p><div class="mt-4"><div class="bg-gray-700 rounded-full h-2 w-full"><div class="bg-purple-600 h-2 rounded-full animate-pulse" style="width: 100%"></div></div></div></div>';
+                
+                try {
+                    const results = await runIntegrationTests();
+                    
+                    // Clear loading message
+                    document.getElementById('test-results').innerHTML = '';
+                    
+                    // Display all results
+                    results.tests.forEach(test => {
+                        displayTestResult(test);
+                    });
+                    
+                    // Update stats
+                    updateStats(results.summary);
+                    
+                    // Show completion message
+                    const completionDiv = document.createElement('div');
+                    completionDiv.className = `p-4 rounded-lg border mt-4 ${results.summary.failed === 0 ? 'bg-green-900/20 border-green-600' : 'bg-red-900/20 border-red-600'}`;
+                    
+                    const icon = results.summary.failed === 0 ? '🎉' : '⚠️';
+                    const message = results.summary.failed === 0 ? 'All tests passed! System is properly integrated.' : `${results.summary.failed} tests failed. Check the details above.`;
+                    
+                    completionDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-3">${icon}</span>
+                            <div>
+                                <div class="font-medium">Integration Test Complete</div>
+                                <div class="text-sm opacity-75">${message}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('test-results').appendChild(completionDiv);
+                    
+                } catch (error) {
+                    document.getElementById('test-results').innerHTML = `<div class="text-red-400 text-center py-4"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>Error running tests: ${error.message}</p></div>`;
+                }
+                
+                currentTest = null;
+            }
+            
+            function clearResults() {
+                document.getElementById('test-results').innerHTML = `
+                    <div class="text-gray-400 text-center py-8">
+                        <i class="fas fa-play-circle text-4xl mb-4"></i>
+                        <p>Haz clic en "Prueba Rápida" o "Prueba Completa" para comenzar</p>
+                    </div>
+                `;
+                
+                // Reset stats
+                updateStats({ total: 0, passed: 0, failed: 0, warnings: 0 });
+            }
+            
+            // Event listeners
+            document.getElementById('quick-test').addEventListener('click', runQuickTest);
+            document.getElementById('full-test').addEventListener('click', runFullTest);
+            document.getElementById('clear-results').addEventListener('click', clearResults);
+            
+            // Auto-run quick test on page load
+            window.addEventListener('load', () => {
+                setTimeout(runQuickTest, 1000);
+            });
+        </script>
+    </div>
+</body>
+</html>

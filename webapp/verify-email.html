@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifica tu Email - TuCitaSegura</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-700 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto px-4">
+        <div class="max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 text-center">
+            <!-- Icono de email -->
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-envelope text-3xl text-blue-300"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">Verifica tu Email</h1>
+                <p class="text-gray-300">Para continuar, necesitas verificar tu dirección de email</p>
+            </div>
+
+            <!-- Mensaje de estado -->
+            <div id="verificationStatus" class="mb-6">
+                <div class="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 mb-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-300 mr-2"></i>
+                        <span class="text-yellow-200">Email no verificado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información -->
+            <div class="bg-white/5 rounded-lg p-4 mb-6 text-left">
+                <h3 class="text-white font-semibold mb-2">¿Por qué verificar tu email?</h3>
+                <ul class="text-gray-300 text-sm space-y-1">
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Seguridad mejorada</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Acceso completo a la plataforma</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Comunicación importante</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Recuperación de cuenta</li>
+                </ul>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="space-y-3">
+                <button id="resendEmailBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Reenviar email de verificación
+                </button>
+                
+                <button id="checkAgainBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Ya verifiqué mi email
+                </button>
+            </div>
+
+            <!-- Cerrar sesión -->
+            <div class="mt-6 pt-6 border-t border-white/20">
+                <button id="logoutBtn" class="text-gray-400 hover:text-white text-sm">
+                    <i class="fas fa-sign-out-alt mr-1"></i>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Config Firebase -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        class EmailVerification {
+            constructor() {
+                this.redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/index.html';
+                this.init();
+            }
+
+            async init() {
+                await this.checkFirebaseAuth();
+                this.bindEvents();
+                this.startVerificationCheck();
+            }
+
+            async checkFirebaseAuth() {
+                return new Promise((resolve) => {
+                    firebase.auth().onAuthStateChanged(async (user) => {
+                        if (!user) {
+                            // No hay usuario, redirigir al login
+                            window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                            return;
+                        }
+
+                        if (user.emailVerified) {
+                            // Email ya verificado, redirigir
+                            this.redirectToOriginalPage();
+                            return;
+                        }
+
+                        // Mostrar email del usuario
+                        document.getElementById('userEmail').textContent = user.email;
+                        resolve();
+                    });
+                });
+            }
+
+            bindEvents() {
+                document.getElementById('resendEmailBtn').addEventListener('click', () => this.resendVerificationEmail());
+                document.getElementById('checkAgainBtn').addEventListener('click', () => this.checkVerificationAgain());
+                document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+            }
+
+            async resendVerificationEmail() {
+                try {
+                    const user = firebase.auth().currentUser;
+                    if (!user) return;
+
+                    document.getElementById('resendEmailBtn').disabled = true;
+                    document.getElementById('resendEmailBtn').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+
+                    await user.sendEmailVerification({
+                        url: window.location.origin + '/verify-email.html?redirect=' + encodeURIComponent(this.redirectUrl),
+                        handleCodeInApp: true
+                    });
+
+                    this.showStatus('success', 'Email de verificación enviado. Por favor revisa tu bandeja de entrada.');
+                    
+                    // Deshabilitar botón por 60 segundos
+                    setTimeout(() => {
+                        document.getElementById('resendEmailBtn').disabled = false;
+                        document.getElementById('resendEmailBtn').innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Reenviar email de verificación';
+                    }, 60000);
+
+                } catch (error) {
+                    console.error('Error reenviando email:', error);
+                    this.showStatus('error', 'Error al enviar el email: ' + error.message);
+                    
+                    document.getElementById('resendEmailBtn').disabled = false;
+                    document.getElementById('resendEmailBtn').innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Reenviar email de verificación';
+                }
+            }
+
+            async checkVerificationAgain() {
+                try {
+                    const user = firebase.auth().currentUser;
+                    if (!user) return;
+
+                    // Recargar información del usuario
+                    await user.reload();
+                    
+                    if (user.emailVerified) {
+                        this.redirectToOriginalPage();
+                    } else {
+                        this.showStatus('warning', 'Email aún no verificado. Por favor revisa tu bandeja de entrada y carpeta de spam.');
+                    }
+                } catch (error) {
+                    console.error('Error verificando:', error);
+                    this.showStatus('error', 'Error al verificar el estado: ' + error.message);
+                }
+            }
+
+            startVerificationCheck() {
+                // Verificar cada 5 segundos
+                this.verificationInterval = setInterval(async () => {
+                    try {
+                        const user = firebase.auth().currentUser;
+                        if (user) {
+                            await user.reload();
+                            if (user.emailVerified) {
+                                this.redirectToOriginalPage();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error en verificación automática:', error);
+                    }
+                }, 5000);
+            }
+
+            showStatus(type, message) {
+                const statusDiv = document.getElementById('verificationStatus');
+                let icon, bgColor, textColor;
+
+                switch (type) {
+                    case 'success':
+                        icon = 'fa-check-circle';
+                        bgColor = 'bg-green-500/20';
+                        textColor = 'text-green-200';
+                        break;
+                    case 'error':
+                        icon = 'fa-exclamation-circle';
+                        bgColor = 'bg-red-500/20';
+                        textColor = 'text-red-200';
+                        break;
+                    case 'warning':
+                        icon = 'fa-exclamation-triangle';
+                        bgColor = 'bg-yellow-500/20';
+                        textColor = 'text-yellow-200';
+                        break;
+                    default:
+                        icon = 'fa-info-circle';
+                        bgColor = 'bg-blue-500/20';
+                        textColor = 'text-blue-200';
+                }
+
+                statusDiv.innerHTML = `
+                    <div class="${bgColor} border border-current/30 rounded-lg p-4 mb-4">
+                        <div class="flex items-center">
+                            <i class="fas ${icon} ${textColor} mr-2"></i>
+                            <span class="${textColor}">${message}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Limpiar después de 5 segundos
+                setTimeout(() => {
+                    statusDiv.innerHTML = `
+                        <div class="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-300 mr-2"></i>
+                                <span class="text-yellow-200">Email no verificado</span>
+                            </div>
+                        </div>
+                    `;
+                }, 5000);
+            }
+
+            redirectToOriginalPage() {
+                // Limpiar intervalo
+                if (this.verificationInterval) {
+                    clearInterval(this.verificationInterval);
+                }
+                
+                window.location.href = this.redirectUrl;
+            }
+
+            async logout() {
+                try {
+                    if (this.verificationInterval) {
+                        clearInterval(this.verificationInterval);
+                    }
+                    
+                    await firebase.auth().signOut();
+                    window.location.href = '/login.html';
+                } catch (error) {
+                    console.error('Error cerrando sesión:', error);
+                }
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            new EmailVerification();
+        });
+    </script>
+</body>
+</html>

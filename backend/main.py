@@ -1,0 +1,158 @@
+# Railway-specific FastAPI deployment
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import os
+import logging
+from datetime import datetime
+try:
+    import firebase_admin
+    from firebase_admin import credentials
+except Exception:
+    firebase_admin = None
+try:
+    from app.core.config import settings
+except Exception:
+    class _SettingsFallback:
+        API_VERSION = os.getenv("API_VERSION", "unknown")
+    settings = _SettingsFallback()
+try:
+    from app.models.schemas import HealthCheck
+except Exception:
+    HealthCheck = None
+
+try:
+    from app.api.payments import router as payments_router
+except Exception:
+    payments_router = None
+
+try:
+    from app.api.emergency_phones import router as emergency_phones_router
+except Exception:
+    emergency_phones_router = None
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="TuCitaSegura Railway")
+
+# Configuración de CORS para producción
+environment = os.getenv("ENVIRONMENT", "development")
+debug_mode = os.getenv("DEBUG", "false").lower() == "true"
+
+# CORS origins - configurar según el entorno
+if environment == "production":
+    required = [
+        "https://tucitasegura.com",
+        "https://www.tucitasegura.com",
+        "https://api.tucitasegura.com",
+        "https://tuscitasseguras-2d1a6.web.app",
+        "https://tuscitasseguras-2d1a6.firebaseapp.com",
+    ]
+    env_origins = os.getenv("CORS_ORIGINS", "")
+    base = env_origins.split(",") if env_origins else []
+    cors_origins = sorted({o.strip() for o in (base + required) if o.strip()})
+else:
+    cors_origins = ["*"]  # Development - permitir todos los orígenes
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600  # Cache pre-flight requests for 1 hour
+)
+
+# Incluir routers de la API
+if payments_router:
+    app.include_router(payments_router)
+    logger.info("Router de pagos incluido")
+
+if emergency_phones_router:
+    app.include_router(emergency_phones_router)
+    logger.info("Router de teléfonos de emergencia incluido")
+
+logger.info(f"Environment: {environment}")
+logger.info(f"CORS origins: {cors_origins}")
+logger.info(f"Debug mode: {debug_mode}")
+
+if firebase_admin and not firebase_admin._apps:
+    key_path = os.getenv("FIREBASE_PRIVATE_KEY_PATH", "./firebase-credentials.json")
+    env_json = os.getenv("FIREBASE_SERVICE_ACCOUNT", "")
+    env_b64 = os.getenv("FIREBASE_SERVICE_ACCOUNT_B64", "")
+    try:
+        if env_json or env_b64:
+            import json, tempfile
+            if env_b64:
+                import base64
+                decoded = base64.b64decode(env_b64).decode("utf-8")
+                data = json.loads(decoded)
+            else:
+                data = json.loads(env_json)
+            with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as tmp:
+                import pathlib
+                json.dump(data, tmp)
+                tmp_path = str(pathlib.Path(tmp.name))
+            cred = credentials.Certificate(tmp_path)
+            firebase_admin.initialize_app(cred)
+            logger.info("Firebase Admin inicializado desde variable de entorno")
+        elif os.path.exists(key_path):
+            cred = credentials.Certificate(key_path)
+            firebase_admin.initialize_app(cred)
+            logger.info("Firebase Admin inicializado")
+        else:
+            logger.warning("Credenciales de Firebase no encontradas")
+    except Exception as e:
+        logger.error(f"Error inicializando Firebase Admin: {e}")
+
+@app.get("/", response_model=HealthCheck if HealthCheck else None)
+@app.get("/health", response_model=HealthCheck if HealthCheck else None)
+async def health_check():
+    try:
+        firebase_connected = bool(firebase_admin._apps) if firebase_admin else False
+    except Exception:
+        firebase_connected = False
+    return {
+        "status": "healthy",
+        "version": getattr(settings, "API_VERSION", os.getenv("API_VERSION", "unknown")),
+        "timestamp": datetime.utcnow(),
+        "services": {
+            "api": "running",
+            "firebase": "connected" if firebase_connected else "unavailable",
+            "ml": "loaded",
+        },
+    }
+
+@app.options("/")
+async def root_options():
+    logger.info("Root OPTIONS request")
+    return JSONResponse({"message": "CORS pre-flight approved"})
+
+@app.options("/health")
+async def health_options():
+    logger.info("Health OPTIONS request")
+    return JSONResponse({"message": "CORS pre-flight approved"})
+
+@app.get("/debug")
+async def debug():
+    logger.info("Debug endpoint accessed")
+    return JSONResponse({
+        "env_vars": {k: v for k, v in os.environ.items() if not k.startswith('RAILWAY')},
+        "cwd": os.getcwd(),
+        "port": os.getenv("PORT", "8000"),
+        "python_version": "3.11"
+    })
+
+@app.options("/debug")
+async def debug_options():
+    logger.info("Debug OPTIONS request")
+    return JSONResponse({"message": "CORS pre-flight approved"})
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"Starting server on 0.0.0.0:{port}")
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
