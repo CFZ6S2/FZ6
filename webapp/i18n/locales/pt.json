@@ -40,8 +40,10 @@
   "home": {
     "title": "Encontrosseguros",
     "subtitle": "Encontre sua conexão perfeita com segurança, transparência e respeito",
-    "cta": "Começar Agora",
-    "exploreUsers": "Explorar Usuários",
+    "cta": {
+      "register": "Cadastro Gratuito",
+      "start": "Começar Agora"
+    },
     "learnMore": "Saiba Mais",
     "backendStatus": {
       "checking": "Verificando...",
@@ -96,6 +98,50 @@
     "footer": {
       "tagline": "Encontre conexões autênticas com segurança e respeito",
       "copyright": "© 2025 EncontrosSeguro. Todos os direitos reservados."
+    },
+    "pricing": {
+      "title": "Preços Transparentes",
+      "subtitle": "Preços justos e transparentes. As mulheres sempre têm acesso gratuito completo.",
+      "membership": {
+        "title": "Assinatura Premium",
+        "subtitle": "Acesso completo à plataforma",
+        "feature1": "Chat ilimitado com seus matches",
+        "feature2": "Envio de solicitações de encontro",
+        "feature3": "Filtros de pesquisa avançados",
+        "feature4": "Ver quem visitou seu perfil",
+        "womenFree": "Mulheres: GRÁTIS para sempre"
+      },
+      "insurance": {
+        "title": "Seguro Anti-Furo",
+        "subtitle": "Proteção garantida para seus encontros",
+        "refundable": "100% REEMBOLSÁVEL",
+        "feature1": "Reembolso total se o encontro for bem-sucedido",
+        "feature2": "Penalidade para quem não comparece sem aviso",
+        "feature3": "Sistema de reputação melhorado",
+        "feature4": "Suporte prioritário em caso de incidentes",
+        "note": "Requer Assinatura Premium ativa"
+      },
+      "securePayment": "Pagamentos 100% seguros processados pela Stripe. Cancele quando quiser, sem compromissos."
+    },
+    "verification": {
+      "title": "100% Usuários Verificados e Reais",
+      "noScams": "Com EncontrosSeguro fraudes são impossíveis",
+      "description": "Todos os nossos usuários passam por um rigoroso processo de verificação. Garantimos que cada perfil é real, autêntico e verificado.",
+      "email": {
+        "title": "Verificação de E-mail",
+        "description": "Todos os usuários devem verificar seu endereço de e-mail antes de acessar a plataforma"
+      },
+      "id": {
+        "title": "Verificação de Identidade",
+        "description": "Sistema de verificação de identidade opcional para maior segurança e confiança"
+      },
+      "reputation": {
+        "title": "Sistema de Reputação",
+        "description": "Reputação transparente baseada em comportamento real e feedback da comunidade"
+      },
+      "badge1": "Perfis Verificados",
+      "badge2": "Tolerância Zero com Falsos",
+      "badge3": "Dados Protegidos"
     }
   },
 
