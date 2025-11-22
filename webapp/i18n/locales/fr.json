@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "language": "Français",
+    "code": "fr",
+    "flag": "🇫🇷"
+  },
+
+  "common": {
+    "welcome": "Bienvenue",
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "yes": "Oui",
+    "no": "Non"
+  },
+
+  "nav": {
+    "home": "Accueil",
+    "search": "Rechercher",
+    "messages": "Messages",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "help": "Aide",
+    "logout": "Déconnexion",
+    "explore": "Explorer"
+  },
+
+  "home": {
+    "title": "RencontresSûres",
+    "subtitle": "Trouvez votre connexion parfaite avec sécurité, transparence et respect",
+    "cta": "Commencer Maintenant",
+    "exploreUsers": "Explorer les Utilisateurs",
+    "learnMore": "En Savoir Plus",
+    "backendStatus": {
+      "checking": "Vérification...",
+      "connected": "Backend Connecté",
+      "disconnected": "Backend Déconnecté"
+    },
+    "features": {
+      "title": "Fonctionnalités",
+      "secure": {
+        "title": "100% Sécurisé",
+        "description": "Vérification d'identité, réputation transparente et protection des données garantie"
+      },
+      "search": {
+        "title": "Recherche Avancée",
+        "description": "Filtres intelligents par âge, ville, réputation et plus pour trouver votre match idéal"
+      },
+      "reputation": {
+        "title": "Système de Réputation",
+        "description": "Badges Bronze, Argent, Or et Platine basés sur le comportement et les retours"
+      }
+    },
+    "stats": {
+      "title": "Statistiques de la Plateforme",
+      "users": "Utilisateurs Actifs",
+      "matches": "Matchs Réussis",
+      "satisfaction": "Satisfaction"
+    },
+    "howItWorks": {
+      "title": "Comment ça marche?",
+      "step1": {
+        "title": "Inscrivez-vous",
+        "description": "Créez votre profil et vérifiez votre email"
+      },
+      "step2": {
+        "title": "Explorez",
+        "description": "Recherchez des utilisateurs avec des filtres avancés"
+      },
+      "step3": {
+        "title": "Connectez",
+        "description": "Envoyez des demandes de rendez-vous"
+      },
+      "step4": {
+        "title": "Rencontrez",
+        "description": "Planifiez des rendez-vous sécurisés"
+      }
+    },
+    "cta2": {
+      "title": "Prêt à trouver votre match parfait?",
+      "description": "Rejoignez des milliers de personnes qui ont déjà trouvé leur connexion spéciale",
+      "button": "Commencer Maintenant"
+    },
+    "footer": {
+      "tagline": "Trouvez des connexions authentiques avec sécurité et respect",
+      "copyright": "© 2025 RencontresSûres. Tous droits réservés."
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "remember": "Se souvenir de moi",
+      "forgot": "Mot de passe oublié?",
+      "submit": "Se connecter",
+      "noAccount": "Pas de compte?",
+      "registerLink": "Inscrivez-vous ici"
+    },
+    "register": {
+      "title": "Créer un Compte",
+      "name": "Nom complet",
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "age": "Âge",
+      "gender": "Genre",
+      "city": "Ville",
+      "terms": "J'accepte les conditions générales",
+      "privacy": "J'accepte la politique de confidentialité",
+      "submit": "S'inscrire",
+      "hasAccount": "Vous avez déjà un compte?",
+      "loginLink": "Connectez-vous"
+    },
+    "verify": {
+      "title": "Vérifiez votre email",
+      "message": "Nous vous avons envoyé un email de vérification",
+      "resend": "Renvoyer l'email"
+    }
+  },
+
+  "profile": {
+    "title": "Mon Profil",
+    "edit": "Modifier le Profil",
+    "photos": "Photos",
+    "about": "À propos de moi",
+    "interests": "Intérêts",
+    "preferences": "Préférences",
+    "verification": "Vérification",
+    "badges": "Réalisations",
+    "settings": "Paramètres",
+    "stats": {
+      "matches": "Matchs",
+      "likes": "J'aime",
+      "visits": "Visites",
+      "rating": "Évaluation"
+    },
+    "info": {
+      "name": "Nom",
+      "age": "Âge",
+      "gender": "Genre",
+      "city": "Ville",
+      "bio": "Biographie"
+    }
+  },
+
+  "search": {
+    "title": "Rechercher des Utilisateurs",
+    "filters": "Filtres",
+    "age": "Âge",
+    "ageRange": "Tranche d'âge",
+    "location": "Localisation",
+    "gender": "Genre",
+    "interests": "Intérêts",
+    "verified": "Vérifiés uniquement",
+    "online": "En ligne uniquement",
+    "distance": "Distance (km)",
+    "results": "{{count}} résultats trouvés",
+    "noResults": "Aucun utilisateur trouvé",
+    "apply": "Appliquer les filtres",
+    "clear": "Effacer les filtres"
+  },
+
+  "chat": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "typeMessage": "Écrivez un message...",
+    "send": "Envoyer",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "typing": "en train d'écrire...",
+    "emptyState": "Vous n'avez pas encore de conversations",
+    "newChat": "Nouveau chat",
+    "block": "Bloquer",
+    "report": "Signaler"
+  },
+
+  "membership": {
+    "title": "Adhésion Premium",
+    "subtitle": "Débloquez toutes les fonctionnalités",
+    "current": "Votre plan actuel",
+    "upgrade": "Améliorer le plan",
+    "changePlan": "Changer de plan",
+    "cancel": "Annuler l'abonnement",
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "price": "0€/mois",
+        "description": "Parfait pour commencer",
+        "features": [
+          "Profil basique",
+          "5 j'aime par jour",
+          "Messages limités",
+          "Voir les matchs"
+        ]
+      },
+      "monthly": {
+        "name": "Premium Mensuel",
+        "price": "29,99€/mois",
+        "description": "Flexibilité maximale",
+        "features": [
+          "J'aime illimités",
+          "Messages illimités",
+          "Voir qui vous a aimé",
+          "Filtres avancés",
+          "Sans publicité",
+          "Badge Premium"
+        ]
+      },
+      "quarterly": {
+        "name": "Premium Trimestriel",
+        "price": "24,99€/mois",
+        "total": "74,97€ tous les 3 mois",
+        "savings": "Économisez 17%",
+        "description": "Meilleur rapport qualité-prix",
+        "features": [
+          "Tout du plan mensuel",
+          "Support prioritaire",
+          "Événements VIP",
+          "3 mois d'accès"
+        ]
+      },
+      "annual": {
+        "name": "Premium Annuel",
+        "price": "19,99€/mois",
+        "total": "239,88€/an",
+        "savings": "Économisez 33%",
+        "description": "Économies maximales",
+        "features": [
+          "Tout du plan trimestriel",
+          "Badge Premium Or",
+          "Service Concierge",
+          "12 mois d'accès"
+        ]
+      }
+    },
+    "select": "Sélectionner le plan",
+    "currentPlan": "Plan actuel"
+  },
+
+  "insurance": {
+    "title": "Assurance Anti-Lapin",
+    "subtitle": "Protection de 120€ contre les rendez-vous annulés",
+    "description": "Si votre rendez-vous ne se présente pas, vous recevez une compensation automatique",
+    "price": "120€ retenue (non facturé)",
+    "howItWorks": "Comment ça marche",
+    "activate": "Activer l'assurance",
+    "status": {
+      "active": "Assurance active",
+      "inactive": "Sans assurance",
+      "hold": "Retenue active"
+    }
+  },
+
+  "events": {
+    "title": "Événements VIP",
+    "upcoming": "Événements à venir",
+    "past": "Événements passés",
+    "details": "Détails de l'événement",
+    "attendees": "Participants",
+    "register": "S'inscrire",
+    "registered": "Déjà inscrit",
+    "premiumOnly": "Utilisateurs Premium uniquement"
+  },
+
+  "settings": {
+    "title": "Paramètres",
+    "account": "Compte",
+    "privacy": "Confidentialité",
+    "notifications": "Notifications",
+    "security": "Sécurité",
+    "language": "Langue",
+    "preferences": "Préférences",
+    "deleteAccount": "Supprimer le compte",
+    "logout": "Déconnexion"
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "markRead": "Marquer comme lu",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Vous n'avez pas de notifications",
+    "types": {
+      "match": "Nouveau match",
+      "message": "Nouveau message",
+      "like": "Quelqu'un vous aime",
+      "visit": "Quelqu'un a visité votre profil",
+      "event": "Nouvel événement VIP"
+    }
+  },
+
+  "help": {
+    "title": "Centre d'Aide",
+    "faq": "FAQ",
+    "contact": "Contacter le Support",
+    "guides": "Guides",
+    "safety": "Conseils de Sécurité"
+  },
+
+  "errors": {
+    "networkError": "Erreur de connexion. Veuillez vérifier votre internet.",
+    "authError": "Erreur d'authentification. Veuillez vous reconnecter.",
+    "invalidEmail": "Email invalide",
+    "invalidPassword": "Le mot de passe doit contenir au moins 6 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "requiredField": "Ce champ est obligatoire",
+    "generic": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "notFound": "Non trouvé",
+    "unauthorized": "Non autorisé",
+    "serverError": "Erreur du serveur"
+  },
+
+  "success": {
+    "profileUpdated": "Profil mis à jour avec succès",
+    "messageSent": "Message envoyé",
+    "matchCreated": "Nouveau match!",
+    "subscriptionUpdated": "Abonnement mis à jour",
+    "saved": "Enregistré avec succès",
+    "deleted": "Supprimé avec succès",
+    "registered": "Inscription réussie",
+    "loginSuccess": "Connexion réussie"
+  },
+
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "email": "Email invalide",
+    "minLength": "Minimum {{min}} caractères",
+    "maxLength": "Maximum {{max}} caractères",
+    "passwordStrength": "Le mot de passe doit contenir des lettres et des chiffres",
+    "ageBetween": "L'âge doit être entre {{min}} et {{max}} ans"
+  }
+}
