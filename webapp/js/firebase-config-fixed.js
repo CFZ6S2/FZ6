@@ -1,10 +1,10 @@
 // Firebase Configuration - FIXED FOR BROWSER COMPATIBILITY
-const FIREBASE_API_KEY = "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s";
-const FIREBASE_AUTH_DOMAIN = "tu-cita-segura.firebaseapp.com";
-const FIREBASE_PROJECT_ID = "tu-cita-segura";
-const FIREBASE_STORAGE_BUCKET = "tu-cita-segura.appspot.com";
-const FIREBASE_MESSAGING_SENDER_ID = "123456789";
-const FIREBASE_APP_ID = "1:123456789:web:abcdef123456";
+const FIREBASE_API_KEY = "AIzaSyBU0Q8RYHSOVS9ugm8IOwxJSTNWHOG48OA";
+const FIREBASE_AUTH_DOMAIN = "tuscitasseguras-2d1a6.firebaseapp.com";
+const FIREBASE_PROJECT_ID = "tuscitasseguras-2d1a6";
+const FIREBASE_STORAGE_BUCKET = "tuscitasseguras-2d1a6.firebasestorage.app";
+const FIREBASE_MESSAGING_SENDER_ID = "924208562587";
+const FIREBASE_APP_ID = "1:924208562587:web:5291359426fe390b36213e";
 
 // Firebase SDK URLs - FIXED VERSIONS
 const FIREBASE_SDK_VERSION = "10.12.2";
