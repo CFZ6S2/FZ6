@@ -1,5 +1,5 @@
 // Firebase Configuration - FIXED FOR BROWSER COMPATIBILITY
-const FIREBASE_API_KEY = "AIzaSyBU0Q8RYHSOVS9ugm8IOwxJSTNWHOG48OA";
+const FIREBASE_API_KEY = "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s";
 const FIREBASE_AUTH_DOMAIN = "tuscitasseguras-2d1a6.firebaseapp.com";
 const FIREBASE_PROJECT_ID = "tuscitasseguras-2d1a6";
 const FIREBASE_STORAGE_BUCKET = "tuscitasseguras-2d1a6.firebasestorage.app";

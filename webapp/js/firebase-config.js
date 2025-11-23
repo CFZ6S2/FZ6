@@ -2,6 +2,7 @@
 // ============================================================================
 // IMPORTANTE: Esta es la configuración de producción del proyecto
 // Project ID: tuscitasseguras-2d1a6
+// API Key: Browser key con restricciones HTTP configuradas
 // ============================================================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -11,7 +12,7 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-
 import { getFunctions } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 export const firebaseConfig = {
-    apiKey: "AIzaSyBU0Q8RYHSOVS9ugm8IOwxJSTNWHOG48OA",
+    apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
     authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
     projectId: "tuscitasseguras-2d1a6",
     storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
