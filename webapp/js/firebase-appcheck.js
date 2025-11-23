@@ -3,6 +3,7 @@
 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 import app from './firebase-config.js';
+import { logger } from './logger.js';
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
@@ -50,11 +51,11 @@ const isProductionVercel = location.hostname.includes('vercel.app') ||
                           location.hostname.includes('traext5oyy6q');
 
 if (isDevelopment) {
-  console.log('🔧 Modo DESARROLLO detectado');
-  console.log('💡 App Check se desactivará para evitar errores');
+  logger.info('🔧 Modo DESARROLLO detectado');
+  logger.info('💡 App Check se desactivará para evitar errores');
 } else if (isProductionVercel) {
-  console.log('🚀 Producción en Vercel detectada');
-  console.log('🔒 App Check será configurado con medidas de seguridad adicionales');
+  logger.info('🚀 Producción en Vercel detectada');
+  logger.info('🔒 App Check será configurado con medidas de seguridad adicionales');
 }
 
 // ============================================================================
@@ -64,37 +65,20 @@ let appCheck = null;
 
 // Solo inicializar App Check si el dominio está permitido
 if (!isAllowedDomain) {
-  console.warn('⚠️  App Check DESACTIVADO');
-  console.warn(`📍 Dominio actual: ${location.hostname}`);
-  console.warn('');
-  console.warn('🔧 Para activar App Check en este dominio:');
-  console.warn('');
-  console.warn('1. Ve a Google Cloud Console:');
-  console.warn('   https://console.cloud.google.com/security/recaptcha?project=tuscitasseguras-2d1a6');
-  console.warn('');
-  console.warn('2. Click en la key: 6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2');
-  console.warn('');
-  console.warn(`3. En "Domains", añade: ${location.hostname}`);
-  console.warn('');
-  console.warn('4. Guarda y espera 2-3 minutos');
-  console.warn('');
-  console.warn('5. Añade el dominio a ALLOWED_DOMAINS en firebase-appcheck.js');
-  console.warn('');
-  console.warn('💡 Mientras tanto, la app funcionará sin App Check');
-  console.warn('');
+  logger.warn('⚠️  App Check DESACTIVADO');
+  logger.warn(`📍 Dominio actual: ${location.hostname}`);
+  logger.info('🔧 Para activar App Check: Ver documentación en firebase-appcheck.js');
+  // NO inicializar App Check
+  appCheck = null;
 } else if (isDevelopment) {
-  console.log('⚠️  App Check COMPLETAMENTE DESACTIVADO en modo desarrollo');
-  console.log('💡 La app funcionará sin App Check en localhost');
-  console.log('✅ Todas las operaciones funcionarán sin restricciones');
-  console.log('🔧 Esto evita el baneo temporal de App Check');
+  logger.info('⚠️  App Check COMPLETAMENTE DESACTIVADO en modo desarrollo');
+  logger.info('💡 La app funcionará sin App Check en localhost');
   // NO inicializar App Check en desarrollo
   appCheck = null;
 } else if (isProductionVercel) {
-  console.log('⚠️  App Check DESACTIVADO temporalmente en Vercel');
-  console.log('💡 Para evitar errores de red, App Check se desactivará');
-  console.log('🔧 Configura App Check correctamente en Firebase Console');
-  console.log('📋 Pasos: https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck');
-  // Temporalmente desactivar App Check en Vercel hasta configuración completa
+  logger.warn('⚠️  App Check DESACTIVADO temporalmente en Vercel');
+  logger.info('🔧 Configura App Check en Firebase Console para producción');
+  // Temporalmente desactivar App Check en Vercel
   appCheck = null;
 } else {
   // Dominio permitido y en producción
@@ -105,18 +89,18 @@ if (!isAllowedDomain) {
     }
 
     // Inicializar App Check con reCAPTCHA ENTERPRISE
-    console.log('🔐 Inicializando App Check...');
+    logger.info('🔐 Inicializando App Check...');
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
       isTokenAutoRefreshEnabled: true // Auto-refresh tokens antes de expirar
     });
 
-    console.log('✅ App Check inicializado correctamente');
-    console.log(`📍 Modo: PRODUCCIÓN (${location.hostname})`);
-    console.log('🔑 Provider: reCAPTCHA Enterprise');
+    logger.success('✅ App Check inicializado correctamente');
+    logger.info(`📍 Modo: PRODUCCIÓN (${location.hostname})`);
+    logger.info('🔑 Provider: reCAPTCHA Enterprise');
   } catch (error) {
-    console.error('❌ Error inicializando App Check:', error.message);
-    console.warn('💡 La app continuará sin App Check');
+    logger.error('❌ Error inicializando App Check:', error.message);
+    logger.warn('💡 La app continuará sin App Check');
   }
 }
 
@@ -128,7 +112,7 @@ window._appCheckInstance = appCheck;
 // ============================================================================
 window.getAppCheckToken = async function() {
   if (!appCheck) {
-    console.error('App Check no está inicializado');
+    logger.error('App Check no está inicializado');
     return null;
   }
 
@@ -136,35 +120,18 @@ window.getAppCheckToken = async function() {
     const { getToken } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js");
     const tokenResult = await getToken(appCheck, /* forceRefresh */ false);
 
-    console.log('✅ App Check Token obtenido:');
-    console.log('   Token:', tokenResult.token.substring(0, 50) + '...');
-    console.log('   Expira en:', new Date(Date.now() + 3600000)); // ~1 hora
+    logger.success('✅ App Check Token obtenido');
+    logger.debug('Token:', tokenResult.token.substring(0, 50) + '...');
+    logger.debug('Expira en:', new Date(Date.now() + 3600000)); // ~1 hora
 
     return tokenResult;
   } catch (error) {
-    console.error('❌ Error obteniendo token:', error);
-    console.error('   Code:', error.code);
-    console.error('   Message:', error.message);
+    logger.error('❌ Error obteniendo token:', error);
+    logger.error('Code:', error.code);
+    logger.error('Message:', error.message);
 
     if (error.message.includes('400')) {
-      console.error('');
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('🚨 400 BAD REQUEST');
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.error('');
-      console.error('Causas comunes:');
-      console.error('  1. Site key no registrada en Firebase Console App Check');
-      console.error('  2. Dominio (localhost) no autorizado en reCAPTCHA');
-      console.error('  3. Enforcement activado sin configuración correcta');
-      console.error('');
-      console.error('SOLUCIÓN RÁPIDA:');
-      console.error('  1. Firebase Console → App Check → Overview');
-      console.error('  2. Desactiva Enforcement en:');
-      console.error('     - Authentication → Unenforced');
-      console.error('     - Cloud Firestore → Unenforced');
-      console.error('     - Cloud Storage → Unenforced');
-      console.error('  3. Recarga la página (Ctrl + Shift + R)');
-      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.error('🚨 400 BAD REQUEST - Ver documentación de App Check para solución');
     }
 
     return null;
@@ -177,34 +144,15 @@ window.getAppCheckToken = async function() {
 if (!isDevelopment && appCheck) {
   // Esperar un momento para que App Check se inicialice
   setTimeout(async () => {
-    console.log('🧪 Verificando App Check...');
+    logger.info('🧪 Verificando App Check...');
     const tokenResult = await window.getAppCheckToken();
 
     if (tokenResult) {
-      console.log('');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ App Check funcionando correctamente');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('✅ Todas las requests incluirán App Check tokens');
-      console.log('✅ NO deberías ver errores 401 o 403');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.success('✅ App Check funcionando correctamente');
+      logger.info('✅ Todas las requests incluirán App Check tokens');
     } else {
-      console.log('');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('⚠️  App Check no pudo obtener token');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('');
-      console.log('Posibles causas:');
-      console.log('  ❌ Debug token no añadido en Firebase Console');
-      console.log('  ❌ Site key no registrada en Firebase Console App Check');
-      console.log('  ❌ Enforcement activado pero configuración incorrecta');
-      console.log('');
-      console.log('Pasos para solucionar:');
-      console.log('  1. Busca "App Check debug token:" arriba y copia el token');
-      console.log('  2. Registra el token en Firebase Console');
-      console.log('  3. Verifica que Enforcement está desactivado (Unenforced)');
-      console.log('  4. Recarga esta página');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      logger.warn('⚠️  App Check no pudo obtener token');
+      logger.info('Ver documentación de App Check para solucionar');
     }
   }, 2000);
 }
