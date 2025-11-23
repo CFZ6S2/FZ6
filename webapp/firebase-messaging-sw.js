@@ -8,7 +8,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 // Firebase configuration (same as firebase-config.js)
 const firebaseConfig = {
-  apiKey: "AIzaSyBU0Q8RYHSOVS9ugm8IOwxJSTNWHOG48OA",
+  apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
   authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
   projectId: "tuscitasseguras-2d1a6",
   storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
