@@ -95,6 +95,13 @@ async function getAndSaveFCMToken(getTokenFunction) {
     return;
   }
 
+  // Check if VAPID key is configured
+  if (!VAPID_PUBLIC_KEY) {
+    console.warn('📵 VAPID key not configured - push notifications disabled');
+    console.log('💡 Configure VAPID_PUBLIC_KEY in firebase-config.js to enable push notifications');
+    return;
+  }
+
   try {
     const token = await getTokenFunction(messaging, {
       vapidKey: VAPID_PUBLIC_KEY
