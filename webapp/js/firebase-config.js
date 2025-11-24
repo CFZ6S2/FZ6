@@ -32,16 +32,10 @@ export const functions = getFunctions(app);
 // ============================================================================
 // Firebase Cloud Messaging (FCM) - VAPID Key for Web Push Notifications
 // ============================================================================
-// IMPORTANTE: Para activar las notificaciones push, necesitas generar un
-// par de claves web push en Firebase Console:
-// 1. Ve a Project Settings > Cloud Messaging
-// 2. En la sección "Web Push certificates", genera un nuevo par de claves
-// 3. Copia la clave pública (Public key) y reemplaza el valor null abajo
-//
-// Por ahora, las notificaciones funcionarán en modo degradado (sin push)
-// hasta que se configure una clave VAPID válida.
+// Clave pública VAPID para notificaciones push web
+// NOTA: La clave privada debe mantenerse segura en el backend
 // ============================================================================
-export const VAPID_PUBLIC_KEY = null;
+export const VAPID_PUBLIC_KEY = "BJW5I1B7KSEvM1q8FuwNokyu4sgoUy0u93C2XSQ8kpDVUdw6jv1UgYo9k_lIRjs-Rpte-YUkFqM7bbOYAD32T-w";
 
 // Default export
 export default app;
