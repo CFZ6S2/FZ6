@@ -947,11 +947,9 @@
       const saveButton = document.getElementById('saveButton');
       const originalText = saveButton.innerHTML;
 
-      // IMMUTABLE FIELDS: Use existing values from database (cannot be changed)
-      const alias = currentUserData.alias;  // ← From DB, not from input (readonly)
-      const gender = currentUserData.gender; // ← From DB, not from input (disabled)
-
-      // EDITABLE FIELDS: Read from form inputs
+      // EDITABLE FIELDS: Read all from form inputs (including alias and gender)
+      const alias = document.getElementById('alias').value.trim();
+      const gender = document.getElementById('gender').value;
       const birthDate = document.getElementById('birthDate').value;
       const city = document.getElementById('city').value.trim();
       const profession = document.getElementById('profession').value.trim();
