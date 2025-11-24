@@ -711,17 +711,21 @@
   </script>
 
   <!-- Firebase Integration -->
-  <script type="module">
-    let cfg = null;
-    try {
-      const mod = await import('./webapp/js/firebase-config.js?v=3');
-      cfg = mod.firebaseConfig || mod.default || null;
-    } catch (e) {
-      cfg = null;
-    }
-    if (cfg && typeof firebase !== 'undefined') {
+  <script>
+    // Firebase config for compat version
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+      projectId: "tuscitasseguras-2d1a6",
+      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+      messagingSenderId: "924208562587",
+      appId: "1:924208562587:web:5291359426fe390b36213e"
+    };
+
+    // Initialize Firebase compat
+    if (typeof firebase !== 'undefined') {
       try {
-        firebase.initializeApp(cfg);
+        firebase.initializeApp(firebaseConfig);
         firebase.auth().onAuthStateChanged(async (user) => {
           if (user) {
             const loginButton = document.querySelector('a[href="/webapp/login.html"]');
@@ -736,7 +740,9 @@
             });
           }
         });
-      } catch {}
+      } catch (err) {
+        console.error('Firebase initialization error:', err);
+      }
     }
   </script>
 
