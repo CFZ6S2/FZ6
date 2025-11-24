@@ -171,8 +171,11 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configuración de CORS para producción
-environment = os.getenv("ENVIRONMENT", "development")
+# Railway uses RAILWAY_ENVIRONMENT, render uses ENVIRONMENT
+environment = os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("ENVIRONMENT", "development")
 debug_mode = os.getenv("DEBUG", "false").lower() == "true"
+
+logger.info(f"🌍 Environment detected: {environment} (debug={debug_mode})")
 
 # CORS origins - configurar según el entorno
 if environment == "production":
@@ -186,6 +189,7 @@ if environment == "production":
     env_origins = os.getenv("CORS_ORIGINS", "")
     base = env_origins.split(",") if env_origins else []
     cors_origins = sorted({o.strip() for o in (base + required) if o.strip()})
+    logger.info(f"Production CORS origins: {cors_origins}")
 else:
     # Development - NEVER use wildcard "*" even in dev
     # Security: Only allow specific localhost ports
