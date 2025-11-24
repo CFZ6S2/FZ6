@@ -12,8 +12,7 @@ cmds = [
 cmds = ['chmod +x backend/start.sh']
 
 # Prevent nixpacks from auto-detecting and running additional pip install commands
-[providers]
-python = false
+providers = []
 
 [start]
 cmd = "cd backend && ./start.sh"
