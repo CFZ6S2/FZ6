@@ -11,5 +11,9 @@ cmds = [
 [phases.build]
 cmds = ['chmod +x backend/start.sh']
 
+# Prevent nixpacks from auto-detecting and running additional pip install commands
+[providers]
+python = false
+
 [start]
 cmd = "cd backend && ./start.sh"
