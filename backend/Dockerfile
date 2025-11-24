@@ -11,11 +11,11 @@ RUN apt-get update && apt-get install -y \
 ENV RAILWAY_DOCKERFILE=1
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY backend/ .
 
 # Expose port
 EXPOSE 8000
