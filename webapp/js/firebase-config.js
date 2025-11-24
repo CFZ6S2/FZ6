@@ -29,10 +29,18 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
 
+// ============================================================================
+// Firebase Cloud Messaging (FCM) - VAPID Key for Web Push Notifications
+// ============================================================================
+// Clave pública VAPID para notificaciones push web
+// NOTA: La clave privada debe mantenerse segura en el backend
+// ============================================================================
+export const VAPID_PUBLIC_KEY = "BJW5I1B7KSEvM1q8FuwNokyu4sgoUy0u93C2XSQ8kpDVUdw6jv1UgYo9k_lIRjs-Rpte-YUkFqM7bbOYAD32T-w";
+
 // Default export
 export default app;
 
 // Export for CommonJS modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { firebaseConfig, app, auth, db, storage, functions };
+    module.exports = { firebaseConfig, app, auth, db, storage, functions, VAPID_PUBLIC_KEY };
 }
