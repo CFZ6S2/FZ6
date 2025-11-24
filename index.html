@@ -113,7 +113,6 @@
 
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center gap-4">
-        <div id="backend-status-badge" aria-live="polite" class="px-2 py-1 rounded-lg text-xs font-semibold bg-slate-700 text-slate-200" data-i18n="home.backendStatus.checking">Comprobando...</div>
         <div id="language-selector-container"></div>
         <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold px-4 py-3" data-i18n="common.login">
           Iniciar Sesión
@@ -147,11 +146,6 @@
           <a href="/webapp/register.html" class="block text-center text-2xl font-semibold py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl transition" data-i18n="common.register">
             <i class="fas fa-user-plus mr-3"></i>Registrarse
           </a>
-
-          <!-- Backend Status -->
-          <div class="text-center pt-6">
-            <div id="backend-status-mobile" class="inline-block px-4 py-2 rounded-lg text-sm font-semibold bg-slate-700 text-slate-200"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -576,14 +570,12 @@
 
       async init() {
         try {
-          // Test backend connection
-          await this.testBackendConnection();
-          
-          // Update UI based on backend status
+          // Backend status removed per user request
+          // await this.testBackendConnection();
+          // await this.updateBackendStatus();
+
+          // Wait for Firebase and setup event listeners
           await this.waitForFirebaseReady();
-          await this.updateBackendStatus();
-          
-          // Setup event listeners
           this.setupEventListeners();
           
         } catch (error) {
@@ -711,17 +703,21 @@
   </script>
 
   <!-- Firebase Integration -->
-  <script type="module">
-    let cfg = null;
-    try {
-      const mod = await import('./webapp/js/firebase-config.js?v=3');
-      cfg = mod.firebaseConfig || mod.default || null;
-    } catch (e) {
-      cfg = null;
-    }
-    if (cfg && typeof firebase !== 'undefined') {
+  <script>
+    // Firebase config for compat version
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+      projectId: "tuscitasseguras-2d1a6",
+      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+      messagingSenderId: "924208562587",
+      appId: "1:924208562587:web:5291359426fe390b36213e"
+    };
+
+    // Initialize Firebase compat
+    if (typeof firebase !== 'undefined') {
       try {
-        firebase.initializeApp(cfg);
+        firebase.initializeApp(firebaseConfig);
         firebase.auth().onAuthStateChanged(async (user) => {
           if (user) {
             const loginButton = document.querySelector('a[href="/webapp/login.html"]');
@@ -736,7 +732,9 @@
             });
           }
         });
-      } catch {}
+      } catch (err) {
+        console.error('Firebase initialization error:', err);
+      }
     }
   </script>
 
@@ -908,26 +906,7 @@
         }
       });
 
-      // Sync backend status to mobile menu
-      const observer = new MutationObserver(() => {
-        const desktopStatus = document.getElementById('backend-status-badge');
-        const mobileStatus = document.getElementById('backend-status-mobile');
-        if (desktopStatus && mobileStatus) {
-          mobileStatus.textContent = desktopStatus.textContent;
-          mobileStatus.className = desktopStatus.className;
-        }
-      });
-
-      const desktopBadge = document.getElementById('backend-status-badge');
-      if (desktopBadge) {
-        observer.observe(desktopBadge, {
-          childList: true,
-          characterData: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['class']
-        });
-      }
+      // Backend status observer removed per user request
 
       // Clone language selector to mobile menu
       function syncLanguageSelector() {
