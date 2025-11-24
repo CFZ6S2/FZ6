@@ -4,8 +4,11 @@
 // Manages push notifications for TuCitaSegura
 
 import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { auth, db, VAPID_PUBLIC_KEY } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { showToast } from './utils.js';
+
+// VAPID key - use environment variable or hardcoded fallback
+const VAPID_PUBLIC_KEY = "BJW5I1B7KSEvM1q8FuwNokyu4sgoUy0u93C2XSQ8kpDVUdw6jv1UgYo9k_lIRjs-Rpte-YUkFqM7bbOYAD32T-w";
 
 let messaging = null;
 let currentToken = null;
