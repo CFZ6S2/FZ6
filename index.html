@@ -539,6 +539,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 
   <!-- i18n System -->
   <script type="module" src="/webapp/i18n/i18n.js"></script>
@@ -578,6 +579,33 @@
       try {
         firebase.initializeApp(firebaseConfig);
         console.log('[Firebase] Initialized successfully');
+
+        // Initialize App Check in debug mode for development
+        const isDevelopment = window.location.hostname === 'localhost' ||
+                             window.location.hostname === '127.0.0.1';
+
+        if (typeof firebase.appCheck !== 'undefined') {
+          try {
+            if (isDevelopment) {
+              // Use debug token provider in development
+              const appCheckDebugToken = self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+              firebase.appCheck().activate(
+                new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2'),
+                true // isTokenAutoRefreshEnabled
+              );
+              console.log('[App Check] Initialized in DEBUG mode');
+            } else {
+              // Production mode
+              firebase.appCheck().activate(
+                new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2'),
+                true
+              );
+              console.log('[App Check] Initialized in PRODUCTION mode');
+            }
+          } catch (appCheckError) {
+            console.warn('[App Check] Could not initialize:', appCheckError.message);
+          }
+        }
 
         // Handle authentication state
         firebase.auth().onAuthStateChanged(async (user) => {
