@@ -23,7 +23,8 @@
     "next": "Siguiente",
     "previous": "Anterior",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "offline": "Sin conexión"
   },
 
   "nav": {

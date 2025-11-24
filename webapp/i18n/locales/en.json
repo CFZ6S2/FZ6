@@ -23,7 +23,8 @@
     "next": "Next",
     "previous": "Previous",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "offline": "Offline"
   },
 
   "nav": {
