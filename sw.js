@@ -64,12 +64,14 @@ self.addEventListener('fetch', (event) => {
   // Ignorar requests no HTTP/HTTPS
   if (!event.request.url.startsWith('http')) return;
 
-  // Ignorar requests a APIs externas (Firebase, Google, etc)
+  // Ignorar requests a APIs externas (Firebase, Google, CDNs, etc)
   if (
     event.request.url.includes('firebase') ||
     event.request.url.includes('googleapis') ||
     event.request.url.includes('gstatic') ||
-    event.request.url.includes('railway.app')
+    event.request.url.includes('railway.app') ||
+    event.request.url.includes('cdnjs.cloudflare.com') ||
+    event.request.url.includes('cdn.jsdelivr.net')
   ) {
     return;
   }
