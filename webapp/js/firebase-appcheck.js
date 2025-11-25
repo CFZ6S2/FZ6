@@ -106,11 +106,6 @@ async function clearIndexedDBDatabases() {
 }
 
 async function clearAppCheckStorage() {
-  if (!isDevelopment) {
-    logger.warn('⚠️  clearAppCheckStorage llamada fuera de desarrollo — abortando');
-    return false;
-  }
-
   const lsKeys = keysToRemoveFromStorage();
   lsKeys.forEach(k => {
     try { localStorage.removeItem(k); logger.debug('Removed localStorage:', k); } catch (e) { logger.debug('Could not remove localStorage key', k, e.message); }
@@ -134,11 +129,7 @@ async function clearAppCheckStorage() {
 }
 
 window.clearAppCheckThrottle = async function({ reload = true } = {}) {
-  if (!isDevelopment) {
-    logger.warn('⚠️  clearAppCheckThrottle is allowed only in development');
-    return false;
-  }
-  logger.info('🧹 Clearing App Check state (development only)...');
+  logger.info('🧹 Clearing App Check state...');
   await clearAppCheckStorage();
   logger.success('✅ App Check state cleared locally. Si enforcement estaba activo, recuérdalo en Firebase Console.');
 
@@ -183,7 +174,7 @@ async function initAppCheck() {
   }
 
   // Si estamos en desarrollo y parece throttleado, no lo inicializamos hasta limpiar
-  const throttled = isDevelopment && window.detectAppCheckThrottled();
+  const throttled = window.detectAppCheckThrottled && window.detectAppCheckThrottled();
   if (throttled) {
     logger.error('🚨 App Check parece throttled (bloqueo 24h). Llama a clearAppCheckThrottle() o abre /webapp/clear-appcheck-throttle.html para limpiar estado local.');
     window._appCheckInstance = null;
