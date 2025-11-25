@@ -499,16 +499,23 @@
           lastActivity: serverTimestamp()
         });
 
-        showToast('¡Cuenta creada exitosamente!', 'success');
-        showToast('Revisa tu correo para verificar tu cuenta', 'info');
+        // Success! Show clear feedback
+        registerButton.disabled = true;
+        registerButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i>¡Cuenta Creada!';
+        registerButton.classList.remove('from-blue-500', 'to-blue-700');
+        registerButton.classList.add('from-green-500', 'to-green-700');
+
+        showToast('✅ ¡Cuenta creada exitosamente!', 'success');
+        showToast('📧 Revisa tu correo para verificar tu cuenta', 'info');
+        showToast('⏳ Redirigiendo en 5 segundos...', 'info');
 
         // Sign out user (they must verify email first)
         await auth.signOut();
 
-        // Redirect to login after 3 seconds
+        // Redirect to login after 5 seconds (más tiempo para leer los mensajes)
         setTimeout(() => {
-          window.location.href = '/webapp/login.html';
-        }, 3000);
+          window.location.href = '/webapp/login.html?registered=true';
+        }, 5000);
 
       } catch (error) {
         logger.error('Registration error:', error);
