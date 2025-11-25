@@ -1,6 +1,25 @@
 // Firebase App Check Configuration
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
+// ============================================================================
+// DEBUG TOKEN - Para evitar bloqueos de reCAPTCHA durante desarrollo
+// ============================================================================
+// IMPORTANTE: Debe configurarse ANTES de importar firebase-app-check
+// Token de depuración de reCAPTCHA - regenerar cada 24h en:
+// https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck/apps
+const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
+
+// TEMPORAL: Activar debug token incluso en producción para evitar throttling
+// TODO: Quitar esto cuando App Check esté configurado correctamente
+const enableDebugToken = true; // Siempre activado temporalmente
+
+if (enableDebugToken && DEBUG_TOKEN) {
+  console.log('🔧 Activando App Check Debug Token ANTES de importar SDK');
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+  globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+  window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+}
+
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 import app from './firebase-config.js';
 import { logger } from './logger.js';
@@ -63,6 +82,13 @@ if (isDevelopment) {
 // ============================================================================
 let appCheck = null;
 
+// DESACTIVADO TEMPORALMENTE - App Check causando errores 403
+logger.warn('⚠️  App Check COMPLETAMENTE DESACTIVADO');
+logger.info('💡 La app funcionará sin App Check en todos los entornos');
+appCheck = null;
+
+// Código original comentado para referencia futura
+/*
 // Solo inicializar App Check si el dominio está permitido
 if (!isAllowedDomain) {
   logger.warn('⚠️  App Check DESACTIVADO');
@@ -103,6 +129,7 @@ if (!isAllowedDomain) {
     logger.warn('💡 La app continuará sin App Check');
   }
 }
+*/
 
 // Hacer appCheck disponible globalmente (útil para debugging)
 window._appCheckInstance = appCheck;
