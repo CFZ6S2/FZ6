@@ -9,6 +9,7 @@ webapp/.env.development
 backend/.env
 backend/.env.local
 backend/.env.production
+backend/.env.railway
 
 # Service account keys and credentials
 **/serviceAccountKey.json
