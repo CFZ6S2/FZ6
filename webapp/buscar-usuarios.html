@@ -719,6 +719,16 @@
     import { showToast, calculateAge, getReputationBadge, calculateDistance } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
+    // ⚠️ PROFILE GUARD: Bloquea acceso sin perfil completo
+    import { guardPage } from './js/profile-guard.js';
+
+    // Verificar perfil completo ANTES de cargar la página
+    await guardPage({
+      requireEmailVerification: true,
+      requireCompleteProfile: true,
+      silent: false
+    });
+
     // DOM Elements
     const userGrid = document.getElementById('userGrid');
     const loading = document.getElementById('loading');
