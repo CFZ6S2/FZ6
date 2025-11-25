@@ -73,10 +73,10 @@ service cloud.firestore {
     match /users/{userId} {
       // Creación: Durante registro inicial
       // ⚠️ VALIDACIÓN DE EDAD: Solo adultos 18+ pueden registrarse
-      // ⚠️ EMAIL VERIFICATION: Requerido para prevenir cuentas falsas
+      // ✅ EMAIL VERIFICATION: NO requerido para creación inicial, pero SÍ para funcionalidades
       allow create: if isAuthed()
                     && uid() == userId
-                    && isEmailVerified()  // CRITICAL: Email must be verified
+                    // ✅ REMOVED: isEmailVerified() - No podemos verificar email antes de registrar
                     && request.resource.data.gender in ['masculino','femenino']
                     && request.resource.data.userRole in ['regular']  // Solo pueden crear cuenta regular
                     && request.resource.data.keys().hasAll(['alias','gender','userRole','birthDate','email','createdAt'])
