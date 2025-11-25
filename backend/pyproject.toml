@@ -21,7 +21,8 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "security: marks tests as security tests",
-    "performance: marks tests as performance tests"
+    "performance: marks tests as performance tests",
+    "asyncio: marks tests that need the asyncio event loop"
 ]
 asyncio_mode = "auto"
 

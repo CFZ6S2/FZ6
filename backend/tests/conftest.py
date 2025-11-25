@@ -8,6 +8,8 @@ from typing import AsyncGenerator
 from httpx import AsyncClient
 from main import app
 
+pytest_plugins = ["tests.cov_stub", "tests.asyncio_stub"]
+
 @pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for the test session."""

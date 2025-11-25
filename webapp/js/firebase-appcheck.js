@@ -1,20 +1,70 @@
 // Firebase App Check Configuration
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
-// ============================================================================
+// ============================================================================ 
 // DEBUG TOKEN - Para evitar bloqueos de reCAPTCHA durante desarrollo
-// ============================================================================
-// IMPORTANTE: Debe configurarse ANTES de importar firebase-app-check
-// Token de depuración de reCAPTCHA - regenerar cada 24h en:
-// https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck/apps
-const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
+// ============================================================================ 
+// El token de debug caduca cada ~24h. Para no redeployar, se puede inyectar de
+// varias formas:
+// - Query param: ?appcheck_debug_token=<TOKEN>
+// - localStorage/sessionStorage: clave APP_CHECK_DEBUG_TOKEN
+// - Variable global definida antes de importar este archivo: window.APP_CHECK_DEBUG_TOKEN
+// - Marcado inline en el HTML: <script>window.APP_CHECK_DEBUG_TOKEN = '...'</script>
+// Si ningún token está presente, no se activará el modo debug.
+const DEBUG_TOKEN_STORAGE_KEY = 'APP_CHECK_DEBUG_TOKEN';
+const DEBUG_TOKEN_EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24h (límite de Firebase)
 
-// TEMPORAL: Activar debug token incluso en producción para evitar throttling
-// TODO: Quitar esto cuando App Check esté configurado correctamente
-const enableDebugToken = true; // Siempre activado temporalmente
+const parseStoredDebugToken = () => {
+  try {
+    const raw = localStorage.getItem(DEBUG_TOKEN_STORAGE_KEY) || sessionStorage.getItem(DEBUG_TOKEN_STORAGE_KEY);
+    if (!raw) return null;
 
-if (enableDebugToken && DEBUG_TOKEN) {
-  console.log('🔧 Activando App Check Debug Token ANTES de importar SDK');
+    const parsed = JSON.parse(raw);
+    if (!parsed.token) return null;
+
+    const isExpired = parsed.savedAt && (Date.now() - parsed.savedAt) > DEBUG_TOKEN_EXPIRATION_MS;
+    if (isExpired) {
+      console.warn('⚠️  App Check debug token expirado. Genera uno nuevo en Firebase Console.');
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    console.warn('⚠️  No se pudo leer el debug token almacenado:', error);
+    return null;
+  }
+};
+
+const resolveDebugToken = () => {
+  const fromQuery = new URLSearchParams(window.location.search).get('appcheck_debug_token');
+  const fromWindow = window.APP_CHECK_DEBUG_TOKEN;
+  const stored = parseStoredDebugToken();
+
+  // Prioridad: query > window var > almacenado
+  const token = fromQuery || fromWindow || (stored ? stored.token : null);
+  const source = fromQuery ? 'querystring' : fromWindow ? 'window.APP_CHECK_DEBUG_TOKEN' : stored ? 'storage' : null;
+
+  if (!token) return null;
+
+  const payload = { token, savedAt: stored?.savedAt || Date.now(), source };
+
+  // Persistir para no depender del querystring tras el primer uso
+  try {
+    localStorage.setItem(DEBUG_TOKEN_STORAGE_KEY, JSON.stringify({ token: payload.token, savedAt: payload.savedAt }));
+  } catch (error) {
+    console.warn('⚠️  No se pudo guardar el debug token en localStorage:', error);
+  }
+
+  return payload;
+};
+
+const debugTokenPayload = resolveDebugToken();
+const DEBUG_TOKEN = debugTokenPayload?.token;
+const enableDebugToken = Boolean(DEBUG_TOKEN);
+
+if (enableDebugToken) {
+  console.log(`🔧 Activando App Check Debug Token (${debugTokenPayload?.source || 'desconocido'})`);
+  console.log('💡 El token expira en ~24h; reemplázalo desde Firebase Console → App Check → Debug tokens.');
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
   globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
   window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
@@ -33,11 +83,10 @@ import { logger } from './logger.js';
 const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2';
 
 // Forzar modo desarrollo en localhost (deshabilita App Check completamente)
-const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' || 
-                               location.hostname === '127.0.0.1' || 
+const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
+                               location.hostname === '127.0.0.1' ||
                                location.hostname === '' || // file:// protocol
-                               location.protocol === 'file:' ||
-                               location.hostname.includes('vercel.app'); // Also disable on Vercel for now
+                               location.protocol === 'file:';
 
 // ============================================================================
 // 1. DETECTAR ENTORNO
@@ -60,21 +109,21 @@ const ALLOWED_DOMAINS = [
 ];
 
 const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
-  location.hostname === domain || location.hostname.includes(domain)
+  location.hostname === domain || location.hostname.endsWith(`.${domain}`) || location.hostname.includes(domain)
 );
 
 // ============================================================================
 // PRODUCTION SAFETY CHECK
 // ============================================================================
-const isProductionVercel = location.hostname.includes('vercel.app') || 
+const isProductionVercel = location.hostname.includes('vercel.app') ||
                           location.hostname.includes('traext5oyy6q');
 
-if (isDevelopment) {
+if (isDevelopment && !enableDebugToken) {
   logger.info('🔧 Modo DESARROLLO detectado');
-  logger.info('💡 App Check se desactivará para evitar errores');
+  logger.info('💡 App Check se desactivará salvo que uses un debug token');
 } else if (isProductionVercel) {
   logger.info('🚀 Producción en Vercel detectada');
-  logger.info('🔒 App Check será configurado con medidas de seguridad adicionales');
+  logger.info('🔒 App Check activo con reCAPTCHA Enterprise');
 }
 
 // ============================================================================
@@ -82,39 +131,23 @@ if (isDevelopment) {
 // ============================================================================
 let appCheck = null;
 
-// DESACTIVADO TEMPORALMENTE - App Check causando errores 403
-logger.warn('⚠️  App Check COMPLETAMENTE DESACTIVADO');
-logger.info('💡 La app funcionará sin App Check en todos los entornos');
-appCheck = null;
-
-// Código original comentado para referencia futura
-/*
-// Solo inicializar App Check si el dominio está permitido
-if (!isAllowedDomain) {
-  logger.warn('⚠️  App Check DESACTIVADO');
+// Solo inicializar App Check si el dominio está permitido o si existe debug token
+if (!isAllowedDomain && !enableDebugToken) {
+  logger.warn('⚠️  App Check DESACTIVADO (dominio no permitido)');
   logger.warn(`📍 Dominio actual: ${location.hostname}`);
-  logger.info('🔧 Para activar App Check: Ver documentación en firebase-appcheck.js');
-  // NO inicializar App Check
+  logger.info('💡 Añade el dominio a ALLOWED_DOMAINS o usa un debug token temporal');
   appCheck = null;
-} else if (isDevelopment) {
-  logger.info('⚠️  App Check COMPLETAMENTE DESACTIVADO en modo desarrollo');
-  logger.info('💡 La app funcionará sin App Check en localhost');
-  // NO inicializar App Check en desarrollo
-  appCheck = null;
-} else if (isProductionVercel) {
-  logger.warn('⚠️  App Check DESACTIVADO temporalmente en Vercel');
-  logger.info('🔧 Configura App Check en Firebase Console para producción');
-  // Temporalmente desactivar App Check en Vercel
+} else if (isDevelopment && !enableDebugToken) {
+  logger.info('⚠️  App Check desactivado en desarrollo');
+  logger.info('💡 Usa ?appcheck_debug_token=<TOKEN> para probar sin esperar 24h');
   appCheck = null;
 } else {
-  // Dominio permitido y en producción
+  // Dominio permitido o modo debug explícito
   try {
-    // Validar site key
     if (!RECAPTCHA_ENTERPRISE_SITE_KEY || RECAPTCHA_ENTERPRISE_SITE_KEY === 'YOUR_RECAPTCHA_SITE_KEY') {
       throw new Error('reCAPTCHA Enterprise site key no configurada');
     }
 
-    // Inicializar App Check con reCAPTCHA ENTERPRISE
     logger.info('🔐 Inicializando App Check...');
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
@@ -122,14 +155,16 @@ if (!isAllowedDomain) {
     });
 
     logger.success('✅ App Check inicializado correctamente');
-    logger.info(`📍 Modo: PRODUCCIÓN (${location.hostname})`);
-    logger.info('🔑 Provider: reCAPTCHA Enterprise');
+    logger.info(`📍 Dominio: ${location.hostname}`);
+
+    if (enableDebugToken) {
+      logger.info('🧪 Modo debug activo (token válido por ~24h)');
+    }
   } catch (error) {
     logger.error('❌ Error inicializando App Check:', error.message);
     logger.warn('💡 La app continuará sin App Check');
   }
 }
-*/
 
 // Hacer appCheck disponible globalmente (útil para debugging)
 window._appCheckInstance = appCheck;
