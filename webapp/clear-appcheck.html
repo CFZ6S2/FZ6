@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Limpiar App Check Throttling</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .container {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    h1 { color: #60a5fa; margin-top: 0; }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 5px;
+    }
+    button:hover { background: #2563eb; }
+    button:active { background: #1d4ed8; }
+    #log {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 4px 0;
+    }
+    .info { color: #60a5fa; }
+    .success { color: #34d399; }
+    .error { color: #f87171; }
+    .warning { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 Limpiar App Check Throttling</h1>
+    <p>Esta herramienta elimina el bloqueo de 24 horas de Firebase App Check.</p>
+
+    <button onclick="detectThrottling()">🔍 Detectar Throttling</button>
+    <button onclick="clearThrottling()">🧹 Limpiar Throttling</button>
+    <button onclick="clearAndReload()">🔄 Limpiar y Recargar</button>
+
+    <div id="log"></div>
+  </div>
+
+  <script>
+    const logDiv = document.getElementById('log');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logDiv.appendChild(entry);
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function keysToRemoveFromStorage() {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') ||
+            k.includes('heartbeat') || k.includes('firebaseLocalStorage')) {
+          keys.push(k);
+        }
+      }
+      return keys;
+    }
+
+    async function clearIndexedDBDatabases() {
+      if (!window.indexedDB) {
+        log('⚠️ IndexedDB no disponible', 'warning');
+        return [];
+      }
+
+      const dbs = [
+        'firebaseLocalStorageDb',
+        'firebase-app-check-database',
+        'firebase-heartbeat-database',
+        'firebase-installations-database'
+      ];
+
+      const promises = dbs.map(name => {
+        return new Promise((resolve) => {
+          const req = indexedDB.deleteDatabase(name);
+          req.onsuccess = () => {
+            log(`✅ Eliminado: ${name}`, 'success');
+            resolve({ name, ok: true });
+          };
+          req.onerror = () => {
+            log(`❌ Error eliminando: ${name}`, 'error');
+            resolve({ name, ok: false });
+          };
+          req.onblocked = () => {
+            log(`⚠️ Bloqueado: ${name}`, 'warning');
+            resolve({ name, ok: false });
+          };
+        });
+      });
+
+      return Promise.all(promises);
+    }
+
+    async function clearAppCheckStorage() {
+      log('🧹 Iniciando limpieza de App Check...', 'info');
+
+      // Limpiar localStorage
+      const lsKeys = keysToRemoveFromStorage();
+      log(`📦 Encontradas ${lsKeys.length} claves en localStorage`, 'info');
+      lsKeys.forEach(k => {
+        try {
+          localStorage.removeItem(k);
+          log(`🗑️ Eliminado de localStorage: ${k}`, 'success');
+        } catch (e) {
+          log(`❌ Error eliminando ${k}: ${e.message}`, 'error');
+        }
+      });
+
+      // Limpiar sessionStorage
+      const ssKeys = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (!k) continue;
+        if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat')) {
+          ssKeys.push(k);
+        }
+      }
+      log(`📦 Encontradas ${ssKeys.length} claves en sessionStorage`, 'info');
+      ssKeys.forEach(k => {
+        try {
+          sessionStorage.removeItem(k);
+          log(`🗑️ Eliminado de sessionStorage: ${k}`, 'success');
+        } catch (e) {
+          log(`❌ Error eliminando ${k}: ${e.message}`, 'error');
+        }
+      });
+
+      // Limpiar IndexedDB
+      log('🗄️ Limpiando IndexedDB...', 'info');
+      const dbResults = await clearIndexedDBDatabases();
+      const successCount = dbResults.filter(r => r.ok).length;
+      log(`✅ IndexedDB: ${successCount}/${dbResults.length} bases eliminadas`, 'success');
+
+      return true;
+    }
+
+    function detectThrottling() {
+      log('🔍 Detectando throttling...', 'info');
+      let found = false;
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        const val = localStorage.getItem(key) || '';
+        if (val.includes('appCheck/throttled') || val.includes('Requests throttled')) {
+          log(`⚠️ THROTTLING DETECTADO en: ${key}`, 'warning');
+          log(`   Valor: ${val.substring(0, 100)}...`, 'warning');
+          found = true;
+        }
+      }
+
+      if (!found) {
+        log('✅ No se detectó throttling activo', 'success');
+      }
+    }
+
+    async function clearThrottling() {
+      await clearAppCheckStorage();
+      log('✅ Limpieza completada. Recarga la página manualmente.', 'success');
+    }
+
+    async function clearAndReload() {
+      await clearAppCheckStorage();
+      log('🔁 Recargando página en 2 segundos...', 'info');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    }
+
+    // Detectar automáticamente al cargar
+    log('🚀 Herramienta de limpieza cargada', 'success');
+    detectThrottling();
+  </script>
+</body>
+</html>
