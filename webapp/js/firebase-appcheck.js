@@ -10,7 +10,7 @@ import { logger } from './logger.js';
 // ============================================================================
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2';
+const RECAPTCHA_ENTERPRISE_SITE_KEY = '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
