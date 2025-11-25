@@ -12,9 +12,9 @@ import { logger } from './logger.js';
 // https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck/apps
 const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
 
-// Activar debug token en desarrollo o cuando el hostname no sea producción
-const enableDebugToken = location.hostname !== 'tucitasegura.com' &&
-                         location.hostname !== 'tuscitasseguras-2d1a6.web.app';
+// TEMPORAL: Activar debug token incluso en producción para evitar throttling
+// TODO: Quitar esto cuando App Check esté configurado correctamente
+const enableDebugToken = true; // Siempre activado temporalmente
 
 if (enableDebugToken && DEBUG_TOKEN) {
   logger.info('🔧 Activando App Check Debug Token');
