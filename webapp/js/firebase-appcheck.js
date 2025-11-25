@@ -1,13 +1,10 @@
 // Firebase App Check Configuration
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
-import app from './firebase-config.js';
-import { logger } from './logger.js';
-
 // ============================================================================
 // DEBUG TOKEN - Para evitar bloqueos de reCAPTCHA durante desarrollo
 // ============================================================================
+// IMPORTANTE: Debe configurarse ANTES de importar firebase-app-check
 // Token de depuración de reCAPTCHA - regenerar cada 24h en:
 // https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck/apps
 const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
@@ -17,9 +14,15 @@ const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
 const enableDebugToken = true; // Siempre activado temporalmente
 
 if (enableDebugToken && DEBUG_TOKEN) {
-  logger.info('🔧 Activando App Check Debug Token');
+  console.log('🔧 Activando App Check Debug Token ANTES de importar SDK');
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+  globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+  window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
 }
+
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+import app from './firebase-config.js';
+import { logger } from './logger.js';
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
