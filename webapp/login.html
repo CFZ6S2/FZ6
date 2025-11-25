@@ -178,7 +178,7 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    import './js/firebase-appcheck.js';
+    // DISABLED: import './js/firebase-appcheck.js';
     import { auth, db } from './js/firebase-config.js';
     import { logger } from './js/logger.js';
     import { handleFirebaseNetworkError, showNetworkError } from './js/network-error-handler.js';
@@ -191,10 +191,6 @@
       browserLocalPersistence
     } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
     import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    
-    // Importar auth proxy como fallback
-    const authProxyAvailable = typeof authProxy !== 'undefined';
-    const authUltraAvailable = typeof authUltra !== 'undefined';
 
     // Check if already logged in
     auth.onAuthStateChanged((user) => {
@@ -341,43 +337,7 @@
           
           const errorInfo = handleFirebaseNetworkError(error, 'inicio de sesión');
           showNetworkError(errorInfo, showToast);
-          
-          // Intentar con proxy auth si está disponible
-          if (authProxyAvailable) {
-            showToast('Intentando método alternativo de autenticación...', 'info');
-            try {
-              const proxyResult = await loginWithProxy(email, password);
-              if (proxyResult.success) {
-                showToast('✅ Login exitoso con método alternativo!', 'success');
-                setTimeout(() => {
-                  window.location.href = '/webapp/buscar-usuarios.html';
-                }, 1000);
-                return;
-              }
-            } catch (proxyError) {
-              logger.error('Proxy login error:', proxyError);
-              showToast('Método alternativo también falló: ' + proxyError.message, 'error');
-            }
-          }
-          
-          // Intentar con sistema ultra-resistente como último recurso
-          if (authUltraAvailable) {
-            showToast('Intentando sistema ultra-resistente...', 'info');
-            try {
-              const ultraResult = await loginUltra(email, password);
-              if (ultraResult.success) {
-                showToast('✅ Login exitoso con sistema ultra!', 'success');
-                setTimeout(() => {
-                  window.location.href = '/webapp/buscar-usuarios.html';
-                }, 1000);
-                return;
-              }
-            } catch (ultraError) {
-              logger.error('Ultra login error:', ultraError);
-              showToast('Sistema ultra también falló: ' + ultraError.message, 'error');
-            }
-          }
-          
+
           // Log additional debugging information
           console.error('[LOGIN NETWORK ERROR]', {
             code: error.code,
@@ -467,9 +427,6 @@
   </script>
 
   <!-- Auth Proxy Fallback -->
-  <script src="js/firebase-auth-proxy.js"></script>
-  <!-- Auth Ultra Fallback -->
-  <script src="js/firebase-auth-ultra.js"></script>
 
 </body>
 </html>

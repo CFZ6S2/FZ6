@@ -191,7 +191,7 @@
     document.getElementById('mode').textContent = isDev ? 'DESARROLLO (debug tokens)' : 'PRODUCCIÓN (reCAPTCHA v3)';
 
     // Importar y verificar App Check
-    import './js/firebase-appcheck.js';
+    // DISABLED: import './js/firebase-appcheck.js';
     import { auth, db, storage } from './js/firebase-config.js';
     import { getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, getDownloadURL, uploadString } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
