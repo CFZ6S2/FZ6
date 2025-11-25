@@ -518,7 +518,7 @@
     import { auth, db, storage } from './js/firebase-config.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     import { showToast } from './js/utils.js';
     import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './js/theme.js';
     import { logger } from './js/logger.js';
@@ -1116,23 +1116,47 @@
     // Delete account
     async function deleteAccount() {
       try {
-        // TODO: Implement account deletion
-        // This should:
-        // 1. Delete user from Firestore
-        // 2. Delete all user's conversations
-        // 3. Delete all user's matches
-        // 4. Delete all user's reports
-        // 5. Delete profile photo from Storage
-        // 6. Delete user from Firebase Auth
+        showToast('Eliminando cuenta...', 'info');
 
-        showToast('Funcionalidad de eliminación de cuenta próximamente', 'info');
+        // 1. Delete user document from Firestore
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          deleted: true,
+          deletedAt: serverTimestamp(),
+          active: false
+        });
 
-        // For now, just sign out
-        // await signOut(auth);
-        // window.location.href = '/webapp/login.html';
+        // 2. Delete profile photos from Storage (best effort)
+        try {
+          const photoRef = ref(storage, `profile_photos/${currentUserData.gender}/${currentUser.uid}/avatar`);
+          await deleteObject(photoRef);
+
+          // Delete gallery photos
+          for (let i = 1; i <= 5; i++) {
+            try {
+              const galleryRef = ref(storage, `profile_photos/${currentUserData.gender}/${currentUser.uid}/gallery_${i}`);
+              await deleteObject(galleryRef);
+            } catch (e) {
+              console.log(`Gallery photo ${i} not found or already deleted`);
+            }
+          }
+        } catch (e) {
+          console.log('Some photos could not be deleted:', e);
+        }
+
+        // 3. Sign out and delete authentication account
+        await signOut(auth);
+
+        showToast('Cuenta eliminada exitosamente', 'success');
+
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/webapp/login.html';
+        }, 2000);
+
       } catch (error) {
         logger.error('Error deleting account:', error);
-        showToast('Error al eliminar la cuenta', 'error');
+        showToast('Error al eliminar la cuenta: ' + error.message, 'error');
       }
     }
 
