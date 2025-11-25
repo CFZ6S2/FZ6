@@ -348,11 +348,12 @@
             id="bio"
             rows="6"
             class="w-full px-4 py-3 rounded-xl resize-none"
-            placeholder="Escribe una descripción sobre ti, tus intereses, qué te gusta hacer, qué buscas... (Mínimo 120 palabras)"
+            placeholder="Escribe una descripción sobre ti, tus intereses, qué te gusta hacer, qué buscas... (Mínimo 100 caracteres)"
+            minlength="100"
           ></textarea>
           <p class="text-xs text-slate-400 mt-2">
-            <span id="bioCount">0</span> palabras (<span id="bioCharCount">0</span> caracteres)
-            <span id="bioMinWarning" class="text-yellow-400 hidden"> - <i class="fas fa-exclamation-triangle"></i> Mínimo 120 palabras</span>
+            <span id="bioCharCount">0</span> caracteres
+            <span id="bioMinWarning" class="text-yellow-400 hidden"> - <i class="fas fa-exclamation-triangle"></i> Mínimo 100 caracteres</span>
             <span id="bioMinSuccess" class="text-green-400 hidden"> - <i class="fas fa-check-circle"></i> Descripción completa</span>
           </p>
         </div>
@@ -823,25 +824,22 @@
       showToast('Tema aplicado. Guarda los cambios para conservarlo.', 'info');
     }
 
-    // Bio counter (words and characters)
+    // Bio counter (characters)
     document.getElementById('bio').addEventListener('input', updateBioCounter);
 
     function updateBioCounter() {
       const bio = document.getElementById('bio').value;
-      const words = bio.trim().split(/\s+/).filter(word => word.length > 0);
-      const wordCount = words.length;
       const charCount = bio.length;
 
-      document.getElementById('bioCount').textContent = wordCount;
       document.getElementById('bioCharCount').textContent = charCount;
 
       const minWarning = document.getElementById('bioMinWarning');
       const minSuccess = document.getElementById('bioMinSuccess');
 
-      if (wordCount < 120 && wordCount > 0) {
+      if (charCount < 100 && charCount > 0) {
         minWarning.classList.remove('hidden');
         minSuccess.classList.add('hidden');
-      } else if (wordCount >= 120) {
+      } else if (charCount >= 100) {
         minWarning.classList.add('hidden');
         minSuccess.classList.remove('hidden');
       } else {
@@ -958,10 +956,9 @@
         return;
       }
 
-      // Validate bio (minimum 120 words)
-      const words = bio.split(/\s+/).filter(word => word.length > 0);
-      if (words.length < 120) {
-        showToast(`La autodescripción debe tener al menos 120 palabras. Actualmente tiene ${words.length}`, 'warning');
+      // Validate bio (minimum 100 characters)
+      if (bio.length < 100) {
+        showToast(`La autodescripción debe tener al menos 100 caracteres. Actualmente tiene ${bio.length}`, 'warning');
         return;
       }
 
