@@ -82,6 +82,13 @@ if (isDevelopment) {
 // ============================================================================
 let appCheck = null;
 
+// DESACTIVADO TEMPORALMENTE - App Check causando errores 403
+logger.warn('⚠️  App Check COMPLETAMENTE DESACTIVADO');
+logger.info('💡 La app funcionará sin App Check en todos los entornos');
+appCheck = null;
+
+// Código original comentado para referencia futura
+/*
 // Solo inicializar App Check si el dominio está permitido
 if (!isAllowedDomain) {
   logger.warn('⚠️  App Check DESACTIVADO');
@@ -122,6 +129,7 @@ if (!isAllowedDomain) {
     logger.warn('💡 La app continuará sin App Check');
   }
 }
+*/
 
 // Hacer appCheck disponible globalmente (útil para debugging)
 window._appCheckInstance = appCheck;
