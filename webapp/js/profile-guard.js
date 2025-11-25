@@ -50,12 +50,18 @@ export async function checkProfileComplete() {
     const missingFields = [];
 
     // 3. Verificar campos requeridos del perfil
-    // CAMPOS INMUTABLES (ya establecidos en registro):
-    // - alias (nombre de usuario)
-    // - gender (género)
+    // CAMPOS INMUTABLES (establecidos en registro):
     // - birthDate (fecha de nacimiento)
 
-    // CAMPOS QUE DEBEN COMPLETARSE:
+    // CAMPOS QUE DEBEN COMPLETARSE EN EL PERFIL:
+    if (!userData.alias || userData.alias.trim() === '') {
+      missingFields.push('alias');
+    }
+
+    if (!userData.gender || userData.gender === '') {
+      missingFields.push('gender');
+    }
+
     if (!userData.photoURL || userData.photoURL === '') {
       missingFields.push('photo');
     }
@@ -173,6 +179,8 @@ function getIncompleteProfileMessage(missingFields) {
   }
 
   const messages = {
+    alias: 'nombre de usuario',
+    gender: 'género',
     photo: 'foto de perfil',
     photos: 'al menos una foto',
     bio: 'biografía',
@@ -238,10 +246,13 @@ export async function getProfileCompletionPercentage() {
     return 0;
   }
 
-  const requiredFields = ['photoURL', 'bio', 'municipio', 'photos'];
+  const requiredFields = ['alias', 'gender', 'photoURL', 'bio', 'municipio', 'photos'];
   const completedFields = requiredFields.filter(field => {
     if (field === 'photos') {
       return profileCheck.userData.photos && profileCheck.userData.photos.length > 0;
+    }
+    if (field === 'alias' || field === 'gender') {
+      return profileCheck.userData[field] && profileCheck.userData[field].trim() !== '';
     }
     return profileCheck.userData[field] && profileCheck.userData[field] !== '';
   });
