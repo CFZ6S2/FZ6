@@ -16,7 +16,7 @@
     // ⚠️ ORDEN MUY IMPORTANTE:
 
     // 1️⃣ PRIMERO: Importar App Check (esto inicializa App Check)
-    import './js/firebase-appcheck.js';
+    // DISABLED: import './js/firebase-appcheck.js';
 
     // 2️⃣ SEGUNDO: Importar Firebase services (estos YA tienen App Check activo)
     import { auth, db, storage } from './js/firebase-config.js';
@@ -58,7 +58,7 @@
   También puedes hacer los imports en el <head>:
 
   <script type="module">
-    import './js/firebase-appcheck.js';
+    // DISABLED: import './js/firebase-appcheck.js';
   </script>
   <script type="module">
     import { auth, db } from './js/firebase-config.js';
