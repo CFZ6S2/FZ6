@@ -6,6 +6,22 @@ import app from './firebase-config.js';
 import { logger } from './logger.js';
 
 // ============================================================================
+// DEBUG TOKEN - Para evitar bloqueos de reCAPTCHA durante desarrollo
+// ============================================================================
+// Token de depuración de reCAPTCHA - regenerar cada 24h en:
+// https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck/apps
+const DEBUG_TOKEN = '8279043B-00B6-486C-86E1-83C06DA57DBA';
+
+// Activar debug token en desarrollo o cuando el hostname no sea producción
+const enableDebugToken = location.hostname !== 'tucitasegura.com' &&
+                         location.hostname !== 'tuscitasseguras-2d1a6.web.app';
+
+if (enableDebugToken && DEBUG_TOKEN) {
+  logger.info('🔧 Activando App Check Debug Token');
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+}
+
+// ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
 // ============================================================================
 
