@@ -45,33 +45,6 @@
       border-color: rgba(59, 130, 246, 0.5);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-
-    .gender-option {
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-
-    /* Masculino seleccionado - Verde */
-    .gender-option[data-gender="masculino"].selected {
-      background: rgba(34, 197, 94, 0.3) !important;
-      border-color: rgb(34, 197, 94) !important;
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
-    }
-
-    /* Femenino seleccionado - Rosa */
-    .gender-option[data-gender="femenino"].selected {
-      background: rgba(236, 72, 153, 0.3) !important;
-      border-color: rgb(236, 72, 153) !important;
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
-    }
-
-    .gender-option:hover:not(.selected) {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
   </style>
 </head>
 <body class="text-white">
@@ -102,24 +75,6 @@
 
       <!-- Registration Form -->
       <form id="registerForm" class="space-y-6">
-
-        <!-- Alias (Username) -->
-        <div>
-          <label for="alias" class="block text-sm font-medium mb-2">
-            <i class="fas fa-user mr-2"></i>Nombre de Usuario / Alias
-          </label>
-          <input
-            type="text"
-            id="alias"
-            name="alias"
-            required
-            minlength="3"
-            maxlength="30"
-            placeholder="Tu nombre o apodo"
-            class="w-full px-4 py-3 rounded-lg glass text-white placeholder-slate-400 transition"
-          >
-          <p class="text-xs text-slate-400 mt-1">Este nombre será visible para otros usuarios</p>
-        </div>
 
         <!-- Email -->
         <div>
@@ -175,31 +130,6 @@
             placeholder="Repite tu contraseña"
             class="w-full px-4 py-3 rounded-lg glass text-white placeholder-slate-400 transition"
           >
-        </div>
-
-        <!-- Gender Selection -->
-        <div>
-          <label class="block text-sm font-medium mb-3">
-            <i class="fas fa-venus-mars mr-2"></i>Género
-          </label>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="gender-option glass rounded-lg p-4 text-center" data-gender="masculino">
-              <i class="fas fa-mars text-4xl text-blue-400 mb-2"></i>
-              <p class="font-semibold">Masculino</p>
-            </div>
-            <div class="gender-option glass rounded-lg p-4 text-center" data-gender="femenino">
-              <i class="fas fa-venus text-4xl text-pink-400 mb-2"></i>
-              <p class="font-semibold">Femenino</p>
-            </div>
-          </div>
-          <input type="hidden" id="gender" name="gender" required>
-          <p id="genderError" class="text-xs text-red-400 mt-1 hidden">Por favor selecciona tu género</p>
-          <div class="mt-3 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
-            <p class="text-xs text-blue-300">
-              <i class="fas fa-info-circle mr-1"></i>
-              <strong>Plataforma exclusivamente heterosexual:</strong> Hombres buscan mujeres, mujeres buscan hombres
-            </p>
-          </div>
         </div>
 
         <!-- Birth Date -->
@@ -260,7 +190,7 @@
           <p class="font-semibold mb-1">Después de registrarte:</p>
           <ul class="list-disc list-inside space-y-1 text-xs">
             <li>Recibirás un correo de verificación</li>
-            <li>Deberás completar tu perfil con fotos y biografía</li>
+            <li>Deberás completar tu perfil con nombre, género, fotos y biografía</li>
             <li>Podrás comenzar a buscar tu match ideal</li>
           </ul>
         </div>
@@ -333,15 +263,6 @@
       }, 5000);
     }
 
-    // Gender selection
-    document.querySelectorAll('.gender-option').forEach(option => {
-      option.addEventListener('click', function() {
-        document.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('gender').value = this.dataset.gender;
-        document.getElementById('genderError').classList.add('hidden');
-      });
-    });
 
     // Toggle password visibility
     document.getElementById('togglePassword').addEventListener('click', function() {
@@ -421,20 +342,11 @@
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const alias = document.getElementById('alias').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      const gender = document.getElementById('gender').value;
       const birthDate = document.getElementById('birthDate').value;
       const registerButton = document.getElementById('registerButton');
-
-      // Validate gender
-      if (!gender) {
-        document.getElementById('genderError').classList.remove('hidden');
-        showToast('Por favor selecciona tu género', 'warning');
-        return;
-      }
 
       // Validate passwords match
       if (password !== confirmPassword) {
@@ -465,8 +377,8 @@
         await setDoc(doc(db, 'users', user.uid), {
           uid: user.uid,
           email: email,
-          alias: alias,
-          gender: gender,
+          alias: '',  // To be completed in profile
+          gender: '',  // To be completed in profile
           birthDate: birthDate,
           userRole: 'regular',
 
@@ -549,7 +461,7 @@
               const demoUserData = {
                 uid: demoUserId,
                 email: email,
-                displayName: `${firstName} ${lastName}`,
+                displayName: email.split('@')[0],
                 role: 'user',
                 subscription: 'free',
                 createdAt: new Date().toISOString(),
