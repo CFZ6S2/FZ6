@@ -1,107 +1,253 @@
-// Firebase App Check initialization with dynamic providers
-// ============================================================================
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, ReCaptchaV3Provider, getToken, onTokenChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
+// Firebase App Check Configuration
+// Importar ANTES de firebase-config.js en todos los archivos HTML
+
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 import app from './firebase-config.js';
 import { logger } from './logger.js';
 
-// Configuration helpers
-function getScriptDataset() {
-  const currentScript = document.currentScript;
-  return currentScript?.dataset || {};
-}
+// ============================================================================
+// CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
+// ============================================================================
 
-function parseList(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  return String(value)
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
+// IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
+const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2';
 
-// Load configuration from window or data-* attributes
-const scriptDataset = getScriptDataset();
-const APP_CHECK_PROVIDER = (window.APP_CHECK_PROVIDER || scriptDataset.appCheckProvider || (window.USE_RECAPTCHA_V3 ? 'V3' : null) || 'ENTERPRISE').toUpperCase();
-const SITE_KEY_V3 = window.RECAPTCHA_V3_SITE_KEY || scriptDataset.recaptchaV3SiteKey || scriptDataset.siteKey;
-const SITE_KEY_ENTERPRISE = window.RECAPTCHA_ENTERPRISE_SITE_KEY || scriptDataset.recaptchaEnterpriseSiteKey;
-const ALLOWED_DOMAINS_CONFIG = parseList(window.APP_CHECK_ALLOWED_DOMAINS || scriptDataset.appCheckAllowedDomains);
+// Detectar entorno
+const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
+                               location.hostname === '127.0.0.1' ||
+                               location.hostname === '' ||  // file://
+                               location.protocol === 'file:';
 
-const DEFAULT_ALLOWED_DOMAINS = [
+const isDevelopment = FORCE_DEVELOPMENT_MODE ||
+                      location.hostname === "localhost" ||
+                      location.hostname === "127.0.0.1" ||
+                      location.hostname.includes("192.168.");
+
+// Dominios configurados en reCAPTCHA Enterprise
+const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  '[::1]',
-  'tucitasegura.com',
-  'www.tucitasegura.com',
-  'tucitasegura.app',
+  'tuscitasseguras-2d1a6.web.app',
+  'tuscitasseguras-2d1a6.firebaseapp.com',
+  'traext5oyy6q.vercel.app',
+  'vercel.app',
+  'tucitasegura.com'
 ];
 
-const ALLOWED_DOMAINS = Array.from(new Set([...DEFAULT_ALLOWED_DOMAINS, ...ALLOWED_DOMAINS_CONFIG]));
+const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
+  location.hostname === domain || location.hostname.includes(domain)
+);
 
-function isAllowedDomain(hostname) {
-  return ALLOWED_DOMAINS.some((allowed) => {
-    if (allowed === hostname) return true;
-    return hostname.endsWith(`.${allowed}`);
-  });
+if (isDevelopment) {
+  logger.info('🔧 Modo DESARROLLO detectado');
+} else {
+  logger.info(`🚀 Entorno: ${location.hostname}`);
 }
 
-const hostname = window.location.hostname;
-let appCheckInstance = null;
+// ============================================================================
+// DEBUG TOKEN: sólo en desarrollo
+// - No dejar enabled en producción.
+// - Para desarrollo: establece window.__FIREBASE_APPCHECK_DEBUG_TOKEN antes de cargar
+//   este archivo o en la consola, y registra el token en Firebase Console.
+// ============================================================================
+const DEBUG_TOKEN =
+  (typeof window !== 'undefined' &&
+    (window.__FIREBASE_APPCHECK_DEBUG_TOKEN || window.FIREBASE_APPCHECK_DEBUG_TOKEN)) ||
+  null;
 
-if (!isAllowedDomain(hostname)) {
-  logger.warn('⚠️  App Check no se inicializó: dominio no permitido', { hostname, ALLOWED_DOMAINS });
-} else {
-  function getProvider() {
-    if (APP_CHECK_PROVIDER === 'V3' || APP_CHECK_PROVIDER === 'RECAPTCHAV3') {
-      if (!SITE_KEY_V3) {
-        throw new Error('Falta la site key para ReCaptcha v3');
-      }
-      return new ReCaptchaV3Provider(SITE_KEY_V3);
-    }
+const enableDebugToken = isDevelopment && !!DEBUG_TOKEN;
 
-    const siteKey = SITE_KEY_ENTERPRISE || SITE_KEY_V3;
-    if (!siteKey) {
-      throw new Error('Falta la site key para ReCaptcha Enterprise o v3');
+if (enableDebugToken) {
+  logger.info('🔧 Activando App Check Debug Token (DESARROLLO) ANTES de inicializar SDK');
+  try {
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
+  } catch (e) {
+    logger.warn('⚠️  No se pudo establecer debug token globalmente:', e.message);
+  }
+} else if (DEBUG_TOKEN && !isDevelopment) {
+  logger.warn('⚠️  Debug token detectado pero NO estamos en desarrollo — ignorándolo para producción');
+}
+
+// ============================================================================
+// Funciones para detectar y limpiar el throttling de App Check (24h)
+// Sólo ejecutarlas en desarrollo (no borrar datos en producción)
+// ============================================================================
+function keysToRemoveFromStorage() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat') || k.includes('firebaseLocalStorage')) {
+      keys.push(k);
     }
-    return new ReCaptchaEnterpriseProvider(siteKey);
+  }
+  return keys;
+}
+
+async function clearIndexedDBDatabases() {
+  if (!window.indexedDB) return;
+  const dbs = [
+    'firebaseLocalStorageDb',
+    'firebase-app-check-database',
+    'firebase-heartbeat-database',
+    'firebase-installations-database'
+  ];
+  const promises = dbs.map(name => {
+    return new Promise((resolve) => {
+      const req = indexedDB.deleteDatabase(name);
+      req.onsuccess = () => resolve({ name, ok: true });
+      req.onerror = () => resolve({ name, ok: false });
+      req.onblocked = () => resolve({ name, ok: false });
+    });
+  });
+  return Promise.all(promises);
+}
+
+async function clearAppCheckStorage() {
+  if (!isDevelopment) {
+    logger.warn('⚠️  clearAppCheckStorage llamada fuera de desarrollo — abortando');
+    return false;
+  }
+
+  const lsKeys = keysToRemoveFromStorage();
+  lsKeys.forEach(k => {
+    try { localStorage.removeItem(k); logger.debug('Removed localStorage:', k); } catch (e) { logger.debug('Could not remove localStorage key', k, e.message); }
+  });
+
+  const ssKeys = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i);
+    if (!k) continue;
+    if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat')) {
+      ssKeys.push(k);
+    }
+  }
+  ssKeys.forEach(k => {
+    try { sessionStorage.removeItem(k); logger.debug('Removed sessionStorage:', k); } catch (e) { logger.debug('Could not remove sessionStorage key', k, e.message); }
+  });
+
+  const dbResults = await clearIndexedDBDatabases();
+  logger.info('🧹 IndexedDB cleared results:', dbResults);
+  return true;
+}
+
+window.clearAppCheckThrottle = async function({ reload = true } = {}) {
+  if (!isDevelopment) {
+    logger.warn('⚠️  clearAppCheckThrottle is allowed only in development');
+    return false;
+  }
+  logger.info('🧹 Clearing App Check state (development only)...');
+  await clearAppCheckStorage();
+  logger.success('✅ App Check state cleared locally. Si enforcement estaba activo, recuérdalo en Firebase Console.');
+
+  if (reload) {
+    logger.info('🔁 Reloading page to apply changes...');
+    setTimeout(() => location.reload(), 800);
+  }
+  return true;
+};
+
+window.detectAppCheckThrottled = function() {
+  // Detecta indicios de throttling en localStorage (busca el texto 'appCheck/throttled')
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    const val = localStorage.getItem(key) || '';
+    if (val.includes('appCheck/throttled') || val.includes('Requests throttled')) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// ============================================================================
+// Inicializar App Check (solo si dominio permitido y en producción
+// o con debug token en dev)
+// ============================================================================
+let appCheck = null;
+
+async function initAppCheck() {
+  if (!isAllowedDomain) {
+    logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
+    window._appCheckInstance = null;
+    return;
+  }
+
+  // En desarrollo sin debug token: no inicializar App Check
+  if (isDevelopment && !enableDebugToken) {
+    logger.info('⚠️  App Check DESACTIVADO en desarrollo (no hay debug token configurado).');
+    window._appCheckInstance = null;
+    return;
+  }
+
+  // Si estamos en desarrollo y parece throttleado, no lo inicializamos hasta limpiar
+  const throttled = isDevelopment && window.detectAppCheckThrottled();
+  if (throttled) {
+    logger.error('🚨 App Check parece throttled (bloqueo 24h). Llama a clearAppCheckThrottle() o abre /webapp/clear-appcheck-throttle.html para limpiar estado local.');
+    window._appCheckInstance = null;
+    return;
   }
 
   try {
-    const provider = getProvider();
-    appCheckInstance = initializeAppCheck(app, {
-      provider,
-      isTokenAutoRefreshEnabled: true,
-    });
-    logger.info('✅ App Check inicializado', {
-      provider: APP_CHECK_PROVIDER,
-      hostname,
+    if (!RECAPTCHA_ENTERPRISE_SITE_KEY || RECAPTCHA_ENTERPRISE_SITE_KEY === 'YOUR_RECAPTCHA_SITE_KEY') {
+      throw new Error('reCAPTCHA Enterprise site key no configurada');
+    }
+
+    logger.info('🔐 Inicializando App Check...');
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
+      isTokenAutoRefreshEnabled: true
     });
 
-    onTokenChanged(appCheckInstance, (token) => {
-      if (token) {
-        logger.debug('🔄 App Check token actualizado', {
-          expirationTimeMillis: token.expireTimeMillis,
-        });
-      }
-    });
-  } catch (error) {
-    logger.error('❌ Error al inicializar App Check', error);
-    appCheckInstance = null;
+    logger.success('✅ App Check inicializado correctamente');
+    logger.info(`📍 Modo: ${isDevelopment ? 'DESARROLLO' : 'PRODUCCIÓN'} (${location.hostname})`);
+
+  } catch (e) {
+    logger.error('❌ Error inicializando App Check:', e.message);
+    appCheck = null;
   }
+
+  window._appCheckInstance = appCheck;
 }
 
-export const appCheck = appCheckInstance;
-window._appCheckInstance = appCheckInstance;
+(async function bootstrap() {
+  await initAppCheck();
 
-window.getAppCheckToken = async function (forceRefresh = false) {
-  if (!appCheckInstance) {
-    logger.error('❌ App Check no está disponible');
+  // En producción, prueba a conseguir un token automáticamente
+  if (!isDevelopment && appCheck) {
+    setTimeout(async () => {
+      try {
+        const { getToken } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js");
+        const tokenResult = await getToken(appCheck, false);
+        if (tokenResult && tokenResult.token) {
+          logger.success('✅ App Check token obtenido (producción)');
+        } else {
+          logger.warn('⚠️  No fue posible obtener App Check token en producción');
+        }
+      } catch (err) {
+        logger.error('❌ Error al verificar App Check en producción:', err.message || err);
+      }
+    }, 2000);
+  }
+})();
+
+// Helper: obtener token manualmente (si appCheck inicializado)
+window.getAppCheckToken = async function() {
+  if (!window._appCheckInstance) {
+    logger.error('App Check no está inicializado');
     return null;
   }
-
   try {
-    return await getToken(appCheckInstance, forceRefresh);
-  } catch (error) {
-    logger.error('❌ Error al obtener App Check token', error);
+    const { getToken } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js");
+    const tokenResult = await getToken(window._appCheckInstance, false);
+    logger.success('✅ App Check Token obtenido');
+    return tokenResult;
+  } catch (e) {
+    logger.error('❌ Error obteniendo token:', e.message || e);
     return null;
   }
 };
+
+export { appCheck };
