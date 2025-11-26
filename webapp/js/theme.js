@@ -96,6 +96,45 @@ export const themes = {
       end: 'rgba(74, 85, 104, 0.3)'
     },
     isDark: true  // Flag to identify dark mode
+  },
+  red: {
+    name: 'Rojo Pasión',
+    icon: '❤️',
+    gradient: 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)',
+    primary: '#eb3349',
+    secondary: '#f45c43',
+    accent: '#ff0844',
+    background: {
+      start: 'rgba(235, 51, 73, 0.3)',
+      middle: 'rgba(244, 92, 67, 0.3)',
+      end: 'rgba(255, 8, 68, 0.2)'
+    }
+  },
+  gold: {
+    name: 'Dorado Elegante',
+    icon: '⭐',
+    gradient: 'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+    primary: '#f7971e',
+    secondary: '#ffd200',
+    accent: '#ffaa00',
+    background: {
+      start: 'rgba(247, 151, 30, 0.3)',
+      middle: 'rgba(255, 210, 0, 0.3)',
+      end: 'rgba(255, 170, 0, 0.2)'
+    }
+  },
+  violet: {
+    name: 'Violeta Místico',
+    icon: '🔮',
+    gradient: 'linear-gradient(135deg, #5f2c82 0%, #49a09d 100%)',
+    primary: '#5f2c82',
+    secondary: '#49a09d',
+    accent: '#8e44ad',
+    background: {
+      start: 'rgba(95, 44, 130, 0.3)',
+      middle: 'rgba(73, 160, 157, 0.3)',
+      end: 'rgba(142, 68, 173, 0.2)'
+    }
   }
 };
 
