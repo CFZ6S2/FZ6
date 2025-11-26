@@ -11,6 +11,9 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- Leaflet CSS for Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
   <style>
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -74,6 +77,41 @@
       margin-bottom: 0.5rem;
       display: block;
       color: #e2e8f0;
+    }
+
+    /* Map Styles */
+    #locationMap {
+      height: 300px;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .location-button {
+      background: rgba(102, 126, 234, 0.9);
+      border: none;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .location-button:hover {
+      background: rgba(102, 126, 234, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .location-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -304,23 +342,36 @@
           </div>
         </div>
 
-        <!-- Municipio -->
+        <!-- Municipio con Mapa -->
         <div>
           <label class="label">
             <i class="fas fa-map-marker-alt text-purple-400 mr-2"></i>
-            Municipio
+            Ubicación (Municipio)
           </label>
-          <input
-            type="text"
-            id="city"
-            class="w-full px-4 py-3 rounded-xl"
-            placeholder="Tu municipio"
-            required
-          >
-          <p class="text-xs text-slate-400 mt-2">
-            <i class="fas fa-info-circle mr-1"></i>
-            Solo indica el municipio, no tu dirección completa por seguridad
-          </p>
+          <div class="space-y-3">
+            <input
+              type="text"
+              id="city"
+              class="w-full px-4 py-3 rounded-xl"
+              placeholder="Tu municipio"
+              required
+              readonly
+            >
+            <input type="hidden" id="latitude" value="">
+            <input type="hidden" id="longitude" value="">
+
+            <button type="button" id="getLocationBtn" class="location-button w-full justify-center">
+              <i class="fas fa-location-crosshairs"></i>
+              Usar mi ubicación actual
+            </button>
+
+            <div id="locationMap" class="hidden"></div>
+
+            <p class="text-xs text-slate-400">
+              <i class="fas fa-shield-halved mr-1"></i>
+              <strong>Privacidad protegida:</strong> Solo se mostrará tu municipio, nunca tu dirección exacta
+            </p>
+          </div>
         </div>
 
         <!-- Profesión -->
@@ -502,9 +553,12 @@
 
   <!-- Error Fixes -->
   <script type="module" src="/webapp/js/error-fixes.js"></script>
-  
+
   <!-- Demo Mode Banner -->
   <script src="/webapp/js/demo-banner.js"></script>
+
+  <!-- Leaflet JS for Maps -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -533,6 +587,158 @@
     let selectedTheme = 'purple';
     let isLoadingProfile = false; // PREVENT INFINITE LOOP
     let hasLoadedProfile = false; // TRACK IF PROFILE ALREADY LOADED
+
+    // Map variables
+    let map = null;
+    let marker = null;
+    let userLatitude = null;
+    let userLongitude = null;
+
+    // Initialize map
+    function initializeMap(lat, lon) {
+      const mapContainer = document.getElementById('locationMap');
+
+      // Show map container
+      mapContainer.classList.remove('hidden');
+
+      // If map already exists, update the view
+      if (map) {
+        map.setView([lat, lon], 13);
+        if (marker) {
+          marker.setLatLng([lat, lon]);
+        } else {
+          marker = L.marker([lat, lon]).addTo(map);
+        }
+        return;
+      }
+
+      // Create new map
+      map = L.map('locationMap').setView([lat, lon], 13);
+
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
+
+      // Add marker
+      marker = L.marker([lat, lon], {
+        draggable: true
+      }).addTo(map);
+
+      // Update location when marker is dragged
+      marker.on('dragend', async function(event) {
+        const position = marker.getLatLng();
+        userLatitude = position.lat;
+        userLongitude = position.lng;
+        await reverseGeocode(position.lat, position.lng);
+      });
+
+      // Update location when map is clicked
+      map.on('click', async function(e) {
+        marker.setLatLng(e.latlng);
+        userLatitude = e.latlng.lat;
+        userLongitude = e.latlng.lng;
+        await reverseGeocode(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    // Get user's current location
+    async function getUserLocation() {
+      const btn = document.getElementById('getLocationBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Obteniendo ubicación...';
+
+      try {
+        if (!navigator.geolocation) {
+          showToast('Tu navegador no soporta geolocalización', 'error');
+          return;
+        }
+
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+
+        userLatitude = position.coords.latitude;
+        userLongitude = position.coords.longitude;
+
+        // Save to hidden inputs
+        document.getElementById('latitude').value = userLatitude;
+        document.getElementById('longitude').value = userLongitude;
+
+        // Initialize or update map
+        initializeMap(userLatitude, userLongitude);
+
+        // Get municipality name
+        await reverseGeocode(userLatitude, userLongitude);
+
+        showToast('Ubicación obtenida correctamente', 'success');
+
+      } catch (error) {
+        console.error('Error getting location:', error);
+        let errorMsg = 'Error al obtener la ubicación';
+
+        if (error.code === 1) {
+          errorMsg = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación.';
+        } else if (error.code === 2) {
+          errorMsg = 'No se pudo determinar tu ubicación. Intenta de nuevo.';
+        } else if (error.code === 3) {
+          errorMsg = 'Tiempo de espera agotado. Intenta de nuevo.';
+        }
+
+        showToast(errorMsg, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Usar mi ubicación actual';
+      }
+    }
+
+    // Reverse geocode to get municipality only (privacy)
+    async function reverseGeocode(lat, lon) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`,
+          {
+            headers: {
+              'Accept': 'application/json',
+              'User-Agent': 'TuCitaSegura'
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Error en reverse geocoding');
+        }
+
+        const data = await response.json();
+
+        // Get municipality/city name only (PRIVACY: no street, no postal code)
+        const address = data.address;
+        let municipality = address.city || address.town || address.village ||
+                          address.municipality || address.county ||
+                          address.state || 'Ubicación desconocida';
+
+        // Update city input
+        document.getElementById('city').value = municipality;
+
+        // Save coordinates to hidden inputs
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+
+        console.log('📍 Municipio obtenido:', municipality);
+
+      } catch (error) {
+        console.error('Error in reverse geocoding:', error);
+        showToast('No se pudo obtener el nombre del municipio', 'warning');
+      }
+    }
+
+    // Event listener for location button
+    document.getElementById('getLocationBtn').addEventListener('click', getUserLocation);
 
     // Auth State - FIXED TO PREVENT INFINITE LOOPS
     let authStateChangeCount = 0;
@@ -724,13 +930,24 @@
           const cityInput = document.getElementById('city');
           const professionInput = document.getElementById('profession');
           const bioInput = document.getElementById('bio');
-          
+
           if (aliasInput) aliasInput.value = currentUserData.alias || '';
           if (birthDateInput) birthDateInput.value = currentUserData.birthDate || '';
           if (genderInput) genderInput.value = currentUserData.gender || '';
           if (cityInput) cityInput.value = currentUserData.city || '';
           if (professionInput) professionInput.value = currentUserData.profession || '';
           if (bioInput) bioInput.value = currentUserData.bio || '';
+
+          // Load geolocation data if available
+          if (currentUserData.latitude && currentUserData.longitude) {
+            userLatitude = currentUserData.latitude;
+            userLongitude = currentUserData.longitude;
+            document.getElementById('latitude').value = userLatitude;
+            document.getElementById('longitude').value = userLongitude;
+
+            // Initialize map with saved location
+            initializeMap(userLatitude, userLongitude);
+          }
 
           // Load gallery photos - SAFE ELEMENT ACCESS
           if (currentUserData.galleryPhotos && Array.isArray(currentUserData.galleryPhotos)) {
@@ -1037,6 +1254,10 @@
           }
         }
 
+        // Get geolocation data
+        const latitude = document.getElementById('latitude').value;
+        const longitude = document.getElementById('longitude').value;
+
         // Update Firestore
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
@@ -1044,6 +1265,8 @@
           birthDate: birthDate,
           gender: gender,
           city: city,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
           profession: profession,
           bio: bio,
           relationshipStatus: relationshipStatus,
