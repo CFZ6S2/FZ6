@@ -15,7 +15,7 @@
  * - Geocoding API
  */
 
-export const GOOGLE_MAPS_API_KEY = 'TU_API_KEY_AQUI';
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s';
 
 // Configuración del mapa
 export const MAP_CONFIG = {
