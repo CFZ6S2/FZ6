@@ -15,18 +15,32 @@ load_dotenv()
 
 # Initialize Firebase Admin SDK
 cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-if not cred_path or not os.path.exists(cred_path):
-    raise RuntimeError(
-        f"⚠️ Firebase credentials file not found at: {cred_path}\n"
-        "Please ensure serviceAccountKey.json exists and GOOGLE_APPLICATION_CREDENTIALS is set correctly in .env"
-    )
+service_account_json = os.getenv("SERVICE_ACCOUNT_JSON")
 
-try:
-    cred = credentials.Certificate(cred_path)
-    initialize_app(cred)
-    print(f"✅ Firebase Admin SDK initialized successfully")
-except Exception as e:
-    raise RuntimeError(f"❌ Failed to initialize Firebase Admin SDK: {str(e)}")
+# Try to load from JSON string first (for Railway/cloud deployment)
+if service_account_json:
+    try:
+        import json
+        service_account_dict = json.loads(service_account_json)
+        cred = credentials.Certificate(service_account_dict)
+        initialize_app(cred)
+        print(f"✅ Firebase Admin SDK initialized from JSON variable")
+    except Exception as e:
+        raise RuntimeError(f"❌ Failed to parse SERVICE_ACCOUNT_JSON: {str(e)}")
+# Otherwise load from file path (for local development)
+elif cred_path and os.path.exists(cred_path):
+    try:
+        cred = credentials.Certificate(cred_path)
+        initialize_app(cred)
+        print(f"✅ Firebase Admin SDK initialized from file: {cred_path}")
+    except Exception as e:
+        raise RuntimeError(f"❌ Failed to initialize from file: {str(e)}")
+else:
+    raise RuntimeError(
+        f"⚠️ Firebase credentials not found.\n"
+        "Please set SERVICE_ACCOUNT_JSON environment variable (JSON string)\n"
+        "OR set GOOGLE_APPLICATION_CREDENTIALS to file path with serviceAccountKey.json"
+    )
 
 # HTTP Bearer security scheme
 security = HTTPBearer(auto_error=False)
