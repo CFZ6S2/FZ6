@@ -1,0 +1,74 @@
+/* lazy-loading.css - Estilos para lazy loading de imágenes */
+
+/* Estado de carga */
+img[data-src],
+img[data-srcset] {
+  /* Placeholder mientras carga */
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Imagen cargando */
+img.lazy-loading {
+  opacity: 0.6;
+  filter: blur(5px);
+  transition: opacity 0.3s, filter 0.3s;
+}
+
+/* Imagen cargada */
+img.lazy-loaded {
+  opacity: 1;
+  filter: blur(0);
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Error al cargar */
+img.lazy-error {
+  opacity: 0.3;
+  filter: grayscale(100%);
+}
+
+/* Responsive images */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* WebP support indicator (solo para debug) */
+.webp-supported::after {
+  content: "WebP ✓";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 255, 0, 0.7);
+  color: white;
+  padding: 2px 5px;
+  font-size: 10px;
+  border-radius: 3px;
+  display: none; /* Oculto por defecto */
+}
+
+/* Mostrar en modo debug */
+body.debug-mode .webp-supported::after {
+  display: block;
+}

@@ -1,5 +1,6 @@
 // logger.js - Conditional logging system for production
 // Only logs in development mode, silent in production
+// Includes data sanitization for sensitive information
 
 /**
  * Check if we're in development mode
@@ -21,7 +22,123 @@ function isDevelopment() {
 }
 
 /**
- * Logger object with conditional methods
+ * Campos sensibles que deben redactarse completamente
+ */
+const REDACT_FIELDS = new Set([
+  'password',
+  'passwd',
+  'pwd',
+  'secret',
+  'apiKey',
+  'api_key',
+  'accessToken',
+  'access_token',
+  'refreshToken',
+  'refresh_token',
+  'privateKey',
+  'private_key',
+  'cvv',
+  'cvc',
+  'cardNumber',
+  'card_number',
+  'ssn',
+  'authorization',
+  'cookie',
+  'sessionId',
+  'session_id'
+]);
+
+/**
+ * Campos que deben parcialmente enmascararse
+ */
+const MASK_FIELDS = new Set([
+  'email',
+  'phone',
+  'telefono',
+  'mobile',
+  'dni',
+  'nif'
+]);
+
+/**
+ * Sanitizar valor según tipo de dato sensible
+ * @param {string} key - Nombre del campo
+ * @param {any} value - Valor a sanitizar
+ * @returns {any} Valor sanitizado
+ */
+function sanitizeValue(key, value) {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  const keyLower = key.toLowerCase();
+
+  // Redactar completamente campos sensibles
+  if (REDACT_FIELDS.has(key) || REDACT_FIELDS.has(keyLower)) {
+    return '[REDACTED]';
+  }
+
+  // Enmascarar parcialmente ciertos campos
+  if (MASK_FIELDS.has(key) || MASK_FIELDS.has(keyLower)) {
+    const str = String(value);
+    if (str.length <= 4) {
+      return '****';
+    }
+    return '****' + str.slice(-4);
+  }
+
+  // Sanitizar emails
+  if (typeof value === 'string' && value.includes('@') && value.includes('.')) {
+    const parts = value.split('@');
+    if (parts.length === 2 && parts[0].length > 2) {
+      return parts[0].substring(0, 2) + '****@' + parts[1];
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Sanitizar objeto recursivamente
+ * @param {any} obj - Objeto a sanitizar
+ * @param {number} depth - Profundidad actual
+ * @returns {any} Objeto sanitizado
+ */
+function sanitizeObject(obj, depth = 0) {
+  // Prevenir recursión infinita
+  if (depth > 10) {
+    return '[MAX_DEPTH]';
+  }
+
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  // Tipos primitivos
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+
+  // Arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObject(item, depth + 1));
+  }
+
+  // Objetos
+  const sanitized = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeObject(value, depth + 1);
+    } else {
+      sanitized[key] = sanitizeValue(key, value);
+    }
+  }
+
+  return sanitized;
+}
+
+/**
+ * Logger object with conditional methods and sanitization
  */
 export const logger = {
   /**
@@ -30,7 +147,10 @@ export const logger = {
    */
   debug(...args) {
     if (isDevelopment()) {
-      console.log('[DEBUG]', ...args);
+      const sanitized = args.map(arg =>
+        typeof arg === 'object' ? sanitizeObject(arg) : arg
+      );
+      console.log('[DEBUG]', ...sanitized);
     }
   },
 
@@ -40,24 +160,41 @@ export const logger = {
    */
   info(...args) {
     if (isDevelopment()) {
-      console.info('[INFO]', ...args);
+      const sanitized = args.map(arg =>
+        typeof arg === 'object' ? sanitizeObject(arg) : arg
+      );
+      console.info('[INFO]', ...sanitized);
     }
   },
 
   /**
-   * Log warnings (always shown)
+   * Log warnings (always shown, sanitized)
    * @param {...any} args - Arguments to log
    */
   warn(...args) {
-    console.warn('[WARN]', ...args);
+    const sanitized = args.map(arg =>
+      typeof arg === 'object' ? sanitizeObject(arg) : arg
+    );
+    console.warn('[WARN]', ...sanitized);
   },
 
   /**
-   * Log errors (always shown)
+   * Log errors (always shown, sanitized)
    * @param {...any} args - Arguments to log
    */
   error(...args) {
-    console.error('[ERROR]', ...args);
+    const sanitized = args.map(arg => {
+      if (arg instanceof Error) {
+        return {
+          message: arg.message,
+          name: arg.name,
+          code: arg.code,
+          stack: isDevelopment() ? arg.stack : undefined
+        };
+      }
+      return typeof arg === 'object' ? sanitizeObject(arg) : arg;
+    });
+    console.error('[ERROR]', ...sanitized);
   },
 
   /**
@@ -66,7 +203,10 @@ export const logger = {
    */
   success(...args) {
     if (isDevelopment()) {
-      console.log('%c[SUCCESS]', 'color: green; font-weight: bold', ...args);
+      const sanitized = args.map(arg =>
+        typeof arg === 'object' ? sanitizeObject(arg) : arg
+      );
+      console.log('%c[SUCCESS]', 'color: green; font-weight: bold', ...sanitized);
     }
   },
 
@@ -77,7 +217,10 @@ export const logger = {
    */
   styled(style, ...args) {
     if (isDevelopment()) {
-      console.log(`%c${args[0]}`, style, ...args.slice(1));
+      const sanitized = args.map(arg =>
+        typeof arg === 'object' ? sanitizeObject(arg) : arg
+      );
+      console.log(`%c${sanitized[0]}`, style, ...sanitized.slice(1));
     }
   },
 
@@ -97,12 +240,13 @@ export const logger = {
   },
 
   /**
-   * Log table data (only in development)
+   * Log table data (only in development, sanitized)
    * @param {any} data - Data to display as table
    */
   table(data) {
     if (isDevelopment()) {
-      console.table(data);
+      const sanitized = sanitizeObject(data);
+      console.table(sanitized);
     }
   },
 
@@ -124,6 +268,16 @@ export const logger = {
     if (isDevelopment()) {
       console.timeEnd(label);
     }
+  },
+
+  /**
+   * Log security event (always logged, highly sanitized)
+   * @param {string} event - Event description
+   * @param {Object} context - Context information
+   */
+  security(event, context = {}) {
+    const sanitized = sanitizeObject(context);
+    console.warn('[SECURITY]', event, sanitized);
   }
 };
 
