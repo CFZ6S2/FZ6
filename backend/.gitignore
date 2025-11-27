@@ -79,3 +79,4 @@ docker-compose.override.yml
 tmp/
 temp/
 *.tmp
+firebase-credentials.json
