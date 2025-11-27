@@ -1,307 +1,133 @@
 /**
- * Push Notifications System for TuCitaSegura
- * Firebase Cloud Messaging (FCM) integration
+ * Push Notifications with Firebase Cloud Messaging
+ * TuCitaSegura - Real-time notifications for matches, messages, and appointments
  */
 
-import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
-import { doc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+import { app, VAPID_PUBLIC_KEY } from "./firebase-config.js";
+import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Notification types
-export const NOTIFICATION_TYPES = {
-  NEW_MATCH: 'new_match',
-  NEW_MESSAGE: 'new_message',
-  DATE_REQUEST: 'date_request',
-  DATE_CONFIRMED: 'date_confirmed',
-  DATE_REMINDER: 'date_reminder',
-  PAYMENT_SUCCESS: 'payment_success',
-  PAYMENT_FAILED: 'payment_failed',
-  PROFILE_VERIFIED: 'profile_verified',
-  NEW_BADGE: 'new_badge',
-  REFERRAL_COMPLETED: 'referral_completed',
-  VIP_EVENT: 'vip_event',
-  ADMIN_MESSAGE: 'admin_message'
-};
-
-// Notification icons based on type
-const NOTIFICATION_ICONS = {
-  new_match: '💕',
-  new_message: '💬',
-  date_request: '📅',
-  date_confirmed: '✅',
-  date_reminder: '⏰',
-  payment_success: '💳',
-  payment_failed: '❌',
-  profile_verified: '✓',
-  new_badge: '🏆',
-  referral_completed: '🎁',
-  vip_event: '🎉',
-  admin_message: '📢'
-};
-
-let messaging = null;
-let currentToken = null;
-
-/**
- * Initialize Firebase Cloud Messaging
- * @param {Object} app - Firebase app instance
- * @returns {Object} Messaging instance
- */
-export function initializeMessaging(app) {
-  try {
-    messaging = getMessaging(app);
-    return messaging;
-  } catch (error) {
-    console.error('Error initializing messaging:', error);
-    return null;
-  }
-}
+const messaging = getMessaging(app);
+const db = getFirestore(app);
 
 /**
  * Request notification permission and get FCM token
- * @param {Object} db - Firestore instance
  * @param {string} userId - User ID
- * @returns {Object} Result with token or error
+ * @returns {Promise<string|null>} FCM token
  */
-export async function requestNotificationPermission(db, userId) {
+export async function requestNotificationPermission(userId) {
   try {
-    // Check if browser supports notifications
+    // Check if notifications are supported
     if (!('Notification' in window)) {
-      return {
-        success: false,
-        error: 'Este navegador no soporta notificaciones'
-      };
+      console.log('This browser does not support notifications');
+      return null;
     }
 
     // Request permission
     const permission = await Notification.requestPermission();
 
-    if (permission !== 'granted') {
-      return {
-        success: false,
-        error: 'Permisos de notificación denegados'
-      };
+    if (permission === 'granted') {
+      console.log('✅ Notification permission granted');
+
+      // Get FCM token
+      const token = await getToken(messaging, {
+        vapidKey: VAPID_PUBLIC_KEY
+      });
+
+      if (token) {
+        console.log('📱 FCM Token obtained');
+
+        // Save token to Firestore
+        await saveTokenToFirestore(userId, token);
+
+        return token;
+      } else {
+        console.log('⚠️ No registration token available');
+        return null;
+      }
+    } else {
+      console.log('❌ Notification permission denied');
+      return null;
     }
-
-    // Get FCM token
-    // VAPID key from firebase-config.js
-    const { VAPID_PUBLIC_KEY } = await import('./firebase-config.js');
-
-    if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.includes('xxx')) {
-      console.error('VAPID key not configured in firebase-config.js');
-      return {
-        success: false,
-        error: 'VAPID key no configurada. Contacta al administrador.'
-      };
-    }
-
-    const token = await getToken(messaging, {
-      vapidKey: VAPID_PUBLIC_KEY
-    });
-
-    if (!token) {
-      return {
-        success: false,
-        error: 'No se pudo obtener el token de notificaciones'
-      };
-    }
-
-    // Save token to Firestore
-    await saveTokenToFirestore(db, userId, token);
-
-    currentToken = token;
-
-    return {
-      success: true,
-      token: token
-    };
 
   } catch (error) {
-    console.error('Error requesting notification permission:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('Error getting notification permission:', error);
+    return null;
   }
 }
 
 /**
  * Save FCM token to Firestore
- * @param {Object} db - Firestore instance
  * @param {string} userId - User ID
  * @param {string} token - FCM token
  */
-async function saveTokenToFirestore(db, userId, token) {
+async function saveTokenToFirestore(userId, token) {
   try {
-    const tokenRef = doc(db, 'push_tokens', token);
-    await setDoc(tokenRef, {
-      userId: userId,
-      token: token,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      platform: 'web',
-      userAgent: navigator.userAgent
-    }, { merge: true });
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
 
-    console.log('FCM token saved to Firestore');
-  } catch (error) {
-    console.error('Error saving token to Firestore:', error);
-  }
-}
+    if (userDoc.exists()) {
+      const currentTokens = userDoc.data().fcmTokens || [];
 
-/**
- * Delete FCM token from Firestore
- * @param {Object} db - Firestore instance
- * @param {string} token - FCM token
- */
-export async function deleteTokenFromFirestore(db, token) {
-  try {
-    const tokenRef = doc(db, 'push_tokens', token);
-    await deleteDoc(tokenRef);
-    console.log('FCM token deleted from Firestore');
+      if (!currentTokens.includes(token)) {
+        await updateDoc(userRef, {
+          fcmTokens: arrayUnion(token),
+          updatedAt: new Date()
+        });
+
+        console.log('✅ FCM token saved');
+      }
+    }
   } catch (error) {
-    console.error('Error deleting token from Firestore:', error);
+    console.error('Error saving token:', error);
   }
 }
 
 /**
  * Setup foreground message listener
- * @param {Function} callback - Callback function for received messages
+ * @param {Function} callback - Callback for received messages
  */
-export function setupForegroundMessageListener(callback) {
-  if (!messaging) {
-    console.error('Messaging not initialized');
-    return;
-  }
-
+export function setupMessageListener(callback) {
   onMessage(messaging, (payload) => {
-    console.log('Foreground message received:', payload);
+    console.log('📬 Message received:', payload);
 
-    const { notification, data } = payload;
+    const { title, body, icon } = payload.notification || {};
+    const data = payload.data || {};
 
-    // Show browser notification
-    if (notification) {
-      showBrowserNotification(notification.title, notification.body, notification.icon, data);
+    if (Notification.permission === 'granted' && title) {
+      const notification = new Notification(title, {
+        body: body,
+        icon: icon || '/webapp/assets/icon-192x192.png',
+        badge: '/webapp/assets/badge-72x72.png',
+        data: data
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
     }
 
-    // Call custom callback
-    if (callback && typeof callback === 'function') {
-      callback(payload);
-    }
+    if (callback) callback(payload);
   });
 }
 
 /**
- * Show browser notification
- * @param {string} title - Notification title
- * @param {string} body - Notification body
- * @param {string} icon - Notification icon URL
- * @param {Object} data - Additional data
+ * Send test notification
+ * @returns {Promise<Object>} Result
  */
-function showBrowserNotification(title, body, icon, data = {}) {
-  if (!('Notification' in window) || Notification.permission !== 'granted') {
-    return;
-  }
-
-  const options = {
-    body: body,
-    icon: icon || '/assets/icon.png',
-    badge: '/assets/badge.png',
-    vibrate: [200, 100, 200],
-    data: data,
-    requireInteraction: false,
-    tag: data.type || 'general'
-  };
-
-  const notification = new Notification(title, options);
-
-  notification.onclick = function(event) {
-    event.preventDefault();
-
-    // Handle notification click based on type
-    handleNotificationClick(data);
-
-    notification.close();
-  };
-}
-
-/**
- * Handle notification click
- * @param {Object} data - Notification data
- */
-function handleNotificationClick(data) {
-  const type = data.type;
-  const targetUrl = data.url;
-
-  if (targetUrl) {
-    window.location.href = targetUrl;
-    return;
-  }
-
-  // Default navigation based on type
-  switch (type) {
-    case NOTIFICATION_TYPES.NEW_MATCH:
-      window.location.href = '/webapp/conversaciones.html';
-      break;
-
-    case NOTIFICATION_TYPES.NEW_MESSAGE:
-      if (data.conversationId) {
-        window.location.href = `/webapp/chat.html?id=${data.conversationId}`;
-      }
-      break;
-
-    case NOTIFICATION_TYPES.DATE_REQUEST:
-    case NOTIFICATION_TYPES.DATE_CONFIRMED:
-    case NOTIFICATION_TYPES.DATE_REMINDER:
-      if (data.appointmentId) {
-        window.location.href = `/webapp/cita-detalle.html?id=${data.appointmentId}`;
-      }
-      break;
-
-    case NOTIFICATION_TYPES.NEW_BADGE:
-      window.location.href = '/webapp/logros.html';
-      break;
-
-    case NOTIFICATION_TYPES.VIP_EVENT:
-      window.location.href = '/webapp/eventos-vip.html';
-      break;
-
-    default:
-      window.location.href = '/webapp/perfil.html';
+export async function sendTestNotification() {
+  try {
+    const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js");
+    const functions = getFunctions(app);
+    const sendTest = httpsCallable(functions, 'sendTestNotification');
+    const result = await sendTest();
+    return result.data;
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 }
 
-/**
- * Get notification icon for type
- * @param {string} type - Notification type
- * @returns {string} Icon emoji
- */
-export function getNotificationIcon(type) {
-  return NOTIFICATION_ICONS[type] || '🔔';
-}
-
-/**
- * Check if notifications are supported
- * @returns {boolean} Whether notifications are supported
- */
-export function areNotificationsSupported() {
-  return 'Notification' in window && 'serviceWorker' in navigator;
-}
-
-/**
- * Get current notification permission status
- * @returns {string} Permission status
- */
-export function getNotificationPermission() {
-  if (!('Notification' in window)) {
-    return 'unsupported';
-  }
-  return Notification.permission;
-}
-
-/**
- * Check if user has granted notification permission
- * @returns {boolean} Whether permission is granted
- */
-export function hasNotificationPermission() {
-  return getNotificationPermission() === 'granted';
+export function areNotificationsEnabled() {
+  return 'Notification' in window && Notification.permission === 'granted';
 }

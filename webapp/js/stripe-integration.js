@@ -3,8 +3,8 @@
  * Alternative payment provider to PayPal
  */
 
-// Stripe publishable key (replace with your actual key)
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY'; // TODO: Replace with actual key
+// Stripe publishable key
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51R31JLHdpQPdr46sNZC55TNFxpuiexwtSMHVYzukiU3936dBBsnG8kYzfx9tqUNItjhpXGgJ6ulALdSeJ6d4ji1T00OtMh8MXV';
 
 let stripe = null;
 let elements = null;
