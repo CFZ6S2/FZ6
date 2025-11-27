@@ -6,7 +6,7 @@
 
 ---
 
-## ✅ COMPONENTES IMPLEMENTADOS (4/12)
+## ✅ COMPONENTES IMPLEMENTADOS (5/12)
 
 ### 1. ✅ Structured Logger (Backend + Frontend)
 
@@ -283,15 +283,14 @@ if (safeUrl) {
 
 ---
 
-## ⚠️ COMPONENTES EXISTENTES NO ACTIVADOS (2)
-
-### 1. ⚠️ Firebase App Check (Frontend)
+### 5. ✅ Firebase App Check (Frontend)
 
 **Archivo**: `webapp/js/firebase-appcheck.js`
-**Estado**: ⚠️ **IMPLEMENTADO PERO DESACTIVADO**
-**Problema**: Comentado en TODOS los archivos HTML
+**Estado**: ✅ **COMPLETADO Y ACTIVADO GLOBALMENTE**
+**Líneas**: 217 líneas
+**Valor**: 🌟🌟🌟🌟🌟 (5/5)
 
-**Archivos afectados** (todos tienen `// DISABLED:`):
+**Activado en 24+ archivos HTML**:
 ```
 webapp/admin/dashboard.html
 webapp/ayuda.html
@@ -299,23 +298,57 @@ webapp/buscar-usuarios.html
 webapp/chat.html
 webapp/cita-detalle.html
 webapp/concierge-dashboard.html
+webapp/concierge-solicitudes.html
 webapp/conversaciones.html
+webapp/cuenta-configuracion.html
+webapp/cuenta-notificaciones.html
 webapp/cuenta-pagos.html
+webapp/cuenta-privacidad.html
+webapp/cuenta.html
 webapp/ejemplo-con-appcheck.html
+webapp/evento-detalle.html
+webapp/eventos-vip.html
+webapp/historial-citas.html
+webapp/login.html
+webapp/notificaciones.html
+webapp/perfil.html
+webapp/register.html
+webapp/seguro.html
+webapp/usuario-detalle.html
+webapp/videollamada.html
 ```
 
-**Características implementadas**:
-- reCAPTCHA Enterprise integration
-- Debug tokens para desarrollo
-- Auto-limpieza de throttling
-- Detección de entorno
-- Dominios permitidos configurados
+**Características**:
+- ✅ reCAPTCHA Enterprise integration
+- ✅ Debug tokens para desarrollo
+- ✅ Auto-limpieza de throttling cada 15 minutos
+- ✅ Detección automática de entorno (localhost, 127.0.0.1, firebase hosting)
+- ✅ Dominios autorizados configurados
+- ✅ Protección contra bots y abuso
+- ✅ Integración con Firebase Functions middleware
 
-**⚠️ ACCIÓN REQUERIDA**: Descomentar imports para activar protección
+**Middleware Backend**: `functions/middleware/app-check.js` (119 líneas)
+- ✅ `requireAppCheck()` para proteger endpoints
+- ✅ `verifyAppCheckHTTP()` para HTTP functions
+- ✅ Logging de verificación
+- ✅ Error handling robusto
 
-**Razón probable de desactivación**: Problemas con throttling o configuración en desarrollo
+**Configuración**:
+```javascript
+// reCAPTCHA Enterprise site key
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaEnterpriseProvider('6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'),
+  isTokenAutoRefreshEnabled: true
+});
+```
 
-**Valor potencial**: 🌟🌟🌟🌟🌟 (5/5)
+**Documentación**: Ver `FIREBASE_APPCHECK_ACTIVADO.md`
+
+**Commit**: `d8b462f - feat: activate Firebase App Check globally (24+ pages)`
+
+---
+
+## ⚠️ COMPONENTES EXISTENTES NO ACTIVADOS (1)
 
 ---
 
@@ -342,71 +375,395 @@ if CSRFProtection and enable_csrf:
 
 ---
 
-## 📋 COMPONENTES PENDIENTES (8/12)
+## 📋 COMPONENTES VERIFICADOS - PENDIENTES ACTIVACIÓN (4/12)
 
-### 1. 🔄 File Validator Service
+### 1. 🔍 File Validator Service - VERIFICADO
 
-**Origen**: `backend/app/services/security/file_validator.py`
-**Estado**: Existe (386 líneas)
+**Archivo**: `backend/app/services/security/file_validator.py`
+**Estado**: ✅ **IMPLEMENTADO** ⚠️ **NO USADO**
+**Líneas**: 387 líneas
 **Valor**: 🌟🌟🌟🌟🌟 (5/5)
 **Prioridad**: 🟠 **ALTA**
+**Uso Actual**: Solo en el propio archivo (instancia global), no importado en otros módulos
 
-**Features**:
-- Magic byte validation
-- Validación de tamaño máximo
-- Detección de tipos maliciosos
-- Sanitización de nombres de archivo
+**Características Implementadas**:
 
-**Acción**: Verificar si está en uso, documentar
+#### Validación Completa
+- ✅ **MIME type detection real** (usando `python-magic`, no solo extensión)
+- ✅ **Validación de tamaño** (configurable por categoría)
+- ✅ **Whitelist de formatos** (images: jpg, png, webp, gif; docs: pdf, docx, txt)
+- ✅ **Blacklist de tipos peligrosos**:
+  ```python
+  DANGEROUS_TYPES = {
+      'application/x-executable', 'application/x-dosexec',
+      'application/x-shellscript', 'text/x-script.python',
+      'text/x-php', 'application/javascript'
+  }
+  ```
+- ✅ **Blacklist de extensiones**:
+  ```python
+  DANGEROUS_EXTENSIONS = {
+      '.exe', '.bat', '.sh', '.js', '.jar', '.apk',
+      '.py', '.php', '.asp', '.jsp'
+  }
+  ```
+
+#### Validación de Imágenes
+- ✅ Uso de **PIL/Pillow** para verificación real
+- ✅ Detección de dimensiones (width, height)
+- ✅ Validación de aspect ratio (previene imágenes distorsionadas)
+- ✅ Detección de imágenes corruptas (`.verify()`)
+- ✅ Warnings para imágenes muy pequeñas (< 100x100)
+- ✅ Warnings para imágenes muy grandes (> 8000x8000)
+
+#### Validación de Documentos
+- ✅ Detección de scripts embebidos (`<script>`, `javascript:`)
+- ✅ Validación de MIME type
+
+#### API
+```python
+# Async para FastAPI UploadFile
+result = await file_validator.validate_upload_file(
+    file=upload_file,
+    category='image',  # o 'document'
+    max_size=5*1024*1024  # opcional
+)
+
+# Sync para archivos locales
+result = file_validator.validate_file_sync(
+    file_path='/path/to/file.jpg',
+    category='image'
+)
+```
+
+#### Resultado
+```python
+@dataclass
+class FileValidationResult:
+    is_valid: bool
+    mime_type: str
+    extension: str
+    size_bytes: int
+    errors: List[str]        # Errores críticos
+    warnings: List[str]      # Warnings no bloqueantes
+    metadata: Dict[str, Any] # width, height, format, etc.
+```
+
+**Configuración** (desde `settings`):
+- `CV_MAX_IMAGE_SIZE`: 5MB default
+- `CV_ALLOWED_FORMATS`: "jpg,jpeg,png,webp,gif"
+
+**⚠️ ACCIÓN REQUERIDA**:
+- Integrar en endpoints de upload de fotos
+- Usar en `perfil.html`, `register.html`, etc.
+- Documentar uso
+
+**Instancia global disponible**: `from app.services.security.file_validator import file_validator`
 
 ---
 
-### 2. 🔄 Encryption Service
+### 2. 🔍 Encryption Service - VERIFICADO
 
-**Origen**: `backend/app/services/security/encryption_service.py`
-**Estado**: Existe (217 líneas)
+**Archivo**: `backend/app/services/security/encryption_service.py`
+**Estado**: ✅ **IMPLEMENTADO** ✅ **EN USO**
+**Líneas**: 218 líneas
 **Valor**: 🌟🌟🌟🌟🌟 (5/5)
-**Prioridad**: 🟠 **ALTA**
+**Prioridad**: 🟢 **BAJA** (ya está activo)
+**Uso Actual**: ✅ `backend/app/services/firestore/emergency_phones_service.py`
 
-**Features**:
-- Encriptación E2E de mensajes
-- Key rotation support
-- Protección de datos sensibles
+**Características Implementadas**:
 
-**Acción**: Verificar si está en uso, documentar
+#### Encriptación Simétrica
+- ✅ **Fernet (AES-128)** de cryptography library
+- ✅ **Environment variable**: `ENCRYPTION_KEY`
+- ✅ Generación automática de clave temporal en desarrollo (con warning)
+- ✅ Validación de clave en producción
+
+#### API Completa
+```python
+from app.services.security.encryption_service import encryption_service
+
+# Encriptar/Desencriptar
+encrypted = encryption_service.encrypt("+34123456789")
+# Output: "gAAAAABl..."
+
+decrypted = encryption_service.decrypt(encrypted)
+# Output: "+34123456789"
+
+# Encriptar campos específicos de un dict
+data = {"name": "John", "phone": "+34123456789"}
+encrypted_data = encryption_service.encrypt_dict_fields(
+    data,
+    fields_to_encrypt=["phone"]
+)
+# Output: {"name": "John", "phone": "gAAAAABl...", "_encrypted_fields": ["phone"]}
+
+# Desencriptar (usa _encrypted_fields automáticamente)
+decrypted_data = encryption_service.decrypt_dict_fields(encrypted_data)
+# Output: {"name": "John", "phone": "+34123456789"}
+
+# Generar nueva clave
+key = EncryptionService.generate_key()
+print(f"ENCRYPTION_KEY={key}")
+```
+
+#### Error Handling
+- ✅ `InvalidToken` exception para datos corruptos
+- ✅ Logging de errores
+- ✅ Fallback a `[ENCRYPTED]` si falla desencriptación
+
+#### CLI Helper
+```bash
+python backend/app/services/security/encryption_service.py generate-key
+# Genera nueva ENCRYPTION_KEY
+```
+
+**Uso Actual Verificado**:
+```python
+# En emergency_phones_service.py:10-11
+from app.services.security.encryption_service import encryption_service
+self.encryption = encryption_service
+```
+
+**⚠️ ACCIÓN REQUERIDA**:
+- Documentar casos de uso
+- Considerar encriptar más campos sensibles (tarjetas de crédito, direcciones, etc.)
+- Implementar key rotation si es necesario
 
 ---
 
-### 3. 🔄 Fraud Detection Service
+### 3. 🔍 Fraud Detection Service - VERIFICADO
 
-**Origen**: `backend/app/services/security/fraud_detector.py`
-**Estado**: Existe (421 líneas)
+**Archivo**: `backend/app/services/security/fraud_detector.py`
+**Estado**: ✅ **IMPLEMENTADO** ⚠️ **NO USADO**
+**Líneas**: 422 líneas
 **Valor**: 🌟🌟🌟🌟🌟 (5/5)
-**Prioridad**: 🟠 **ALTA**
+**Prioridad**: 🔴 **CRÍTICA** (fraud detection importante para dating app)
+**Uso Actual**: Solo en `backend/tests/test_services.py` (tests)
 
-**Features**:
-- Análisis de perfil (completitud, consistencia)
-- Análisis de comportamiento
-- Análisis de red
-- Scoring de riesgo 0-100
+**Características Implementadas**:
 
-**Acción**: Verificar si está en uso, documentar
+#### Sistema de Scoring Completo
+Análisis multi-dimensional con pesos configurables:
+
+**1. Análisis de Perfil (25% del score)**
+- ✅ Detección de **emails temporales** (tempmail, 10minutemail, guerrillamail, etc.)
+- ✅ Validación de **nombre** (longitud, patrones repetitivos)
+- ✅ Validación de **edad** (18-80 años)
+- ✅ Verificación de **fotos** (sin fotos = sospechoso)
+- ✅ **Completitud del perfil** (bio, location, interests, occupation, education)
+  - Threshold: < 30% completitud = riesgo
+
+**2. Análisis de Comportamiento (35% del score)**
+- ✅ **Rate limiting detection**:
+  - Max 50 mensajes/hora
+  - Max 100 likes/hora
+- ✅ **Reportes recibidos** (>= 3 reportes = alto riesgo)
+- ✅ **Mensajes duplicados** (ratio > 70% = bot)
+- ✅ **Velocidad de respuesta** (< 2 segundos promedio = posible bot)
+
+**3. Análisis de Red (20% del score)**
+- ✅ **Múltiples ubicaciones** (> 5 ubicaciones distintas)
+- ✅ **Múltiples dispositivos** (> 3 dispositivos)
+- ✅ **VPN/Proxy detection** (ip_info.is_vpn, is_proxy)
+- ✅ **Conexiones sospechosas** (> 50% de conexiones con usuarios reportados)
+
+**4. Análisis de Contenido (20% del score)**
+- ✅ **Biografía genérica** ("looking for", "seeking", "nice person")
+- ✅ **Enlaces en biografía** (http, www, .com)
+- ✅ **Longitud anormal** (< 10 o > 500 caracteres)
+- ✅ **Intereses genéricos** (100% generic = sospechoso)
+- ✅ **Fotos muy similares** (< 50% unique hashes = posible bot)
+
+#### Risk Levels
+```python
+risk_thresholds = {
+    'low': 0.3,      # 30% score
+    'medium': 0.6,   # 60% score
+    'high': 0.8      # 80% score
+}
+# < 0.3 = "minimal"
+```
+
+#### Output
+```python
+@dataclass
+class FraudScore:
+    total_score: float           # 0.0 - 1.0
+    risk_level: str             # "minimal", "low", "medium", "high"
+    indicators: List[str]       # ["Email temporal detectado", ...]
+    recommendations: List[str]  # ["Suspender cuenta", ...]
+    confidence: float           # 0.0 - 1.0 (basado en datos disponibles)
+```
+
+#### API
+```python
+from app.services.security.fraud_detector import detect_user_fraud
+
+result = detect_user_fraud(
+    user_data={
+        'id': '123',
+        'email': 'test@tempmail.com',
+        'displayName': 'John',
+        'birthDate': '1995-05-15',
+        'photos': [],
+        'bio': 'Looking for someone nice',
+        'interests': ['music', 'movies']
+    },
+    user_history={
+        'messages': [...],
+        'likes': [...],
+        'reports_received': [...],
+        'login_sessions': [...],
+        'devices': [...],
+        'connections': [...]
+    }
+)
+
+# Output:
+{
+    'fraud_score': 0.75,
+    'risk_level': 'high',
+    'indicators': [
+        'Email temporal detectado',
+        'Sin fotos de perfil',
+        'Biografía genérica',
+        'Intereses demasiado genéricos'
+    ],
+    'recommendations': [
+        'Monitorear actividad de cerca',
+        'Limitar interacciones temporales',
+        'Verificar información del perfil',
+        'Solicitar verificación de email permanente'
+    ],
+    'confidence': 0.68,
+    'analyzed_at': '2025-11-27T...'
+}
+```
+
+#### Recomendaciones Automáticas por Score
+- **Score >= 0.8**: Suspender cuenta, revisar manualmente, verificar identidad
+- **Score >= 0.6**: Monitorear de cerca, limitar interacciones
+- **Score >= 0.3**: Aumentar supervisión
+- **Score < 0.3**: Monitoreo normal
+
+**⚠️ ACCIÓN REQUERIDA**:
+- Integrar en proceso de registro
+- Ejecutar periódicamente para usuarios existentes
+- Mostrar en admin dashboard
+- Crear endpoint API protegido para consultas
+
+**Instancia**: `from app.services.security.fraud_detector import FraudDetector` o usar función `detect_user_fraud()`
 
 ---
 
-### 4. 🔄 Firebase App Check (Backend - Functions)
+### 4. 🔍 Image Optimizer - VERIFICADO
 
-**Origen**: `functions/middleware/app-check.js`
-**Estado**: Existe
+**Archivo**: `webapp/js/image-optimizer.js`
+**Estado**: ✅ **IMPLEMENTADO** ⚠️ **NO USADO**
+**Líneas**: 338 líneas
 **Valor**: 🌟🌟🌟🌟🌟 (5/5)
-**Prioridad**: 🔴 **CRÍTICA**
+**Prioridad**: 🟡 **MEDIA** (mejora performance)
+**Uso Actual**: No importado en ningún HTML
 
-**Acción**:
-- Activar en frontend (descomentar imports)
-- Verificar integración con backend
-- Configurar reCAPTCHA correctamente
+**Características Implementadas**:
+
+#### 1. WebP Support Detection
+```javascript
+const hasWebP = await supportsWebP();
+// Detecta si el navegador soporta WebP usando createImageBitmap()
+```
+
+#### 2. Lazy Loading Avanzado
+- ✅ **IntersectionObserver** para carga cuando es visible
+- ✅ **MutationObserver** para imágenes añadidas dinámicamente
+- ✅ Fallback a carga inmediata si no hay soporte
+- ✅ Configuración flexible:
+  ```javascript
+  const loader = new LazyImageLoader({
+      rootMargin: '50px',     // Cargar 50px antes
+      threshold: 0.01,        // 1% visible = trigger
+      loadingClass: 'lazy-loading',
+      loadedClass: 'lazy-loaded',
+      errorClass: 'lazy-error'
+  });
+  ```
+
+#### 3. Auto-Inicialización
+- ✅ Se inicializa automáticamente al cargar el módulo
+- ✅ Busca todas las `img[data-src]` y `img[data-srcset]`
+- ✅ Disponible globalmente: `window.lazyImageLoader`
+
+#### 4. Responsive Images
+```javascript
+// Generar srcset
+const srcset = generateSrcset(baseUrl, [320, 640, 960, 1280, 1920]);
+// Output: "url 320w, url 640w, url 960w, ..."
+
+// Crear imagen responsive
+const img = createResponsiveImage({
+    src: 'photo.jpg',
+    alt: 'User photo',
+    className: 'profile-pic',
+    widths: [320, 640, 1280],
+    sizes: '(max-width: 600px) 100vw, 50vw',
+    lazy: true
+});
+```
+
+#### 5. API Completa
+```javascript
+import {
+    supportsWebP,
+    getOptimizedImageUrl,
+    LazyImageLoader,
+    initLazyLoading,
+    generateSrcset,
+    createResponsiveImage
+} from './js/image-optimizer.js';
+
+// Lazy loading manual
+const loader = new LazyImageLoader();
+loader.observe(imgElement);
+loader.observeAll(document.querySelectorAll('.gallery img'));
+
+// Cleanup
+loader.destroy();
+```
+
+#### HTML Usage
+```html
+<!-- Lazy image básica -->
+<img
+    data-src="photo.jpg"
+    alt="Photo"
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"
+/>
+
+<!-- Lazy image con srcset -->
+<img
+    data-src="photo.jpg"
+    data-srcset="photo-320.jpg 320w, photo-640.jpg 640w"
+    sizes="(max-width: 600px) 100vw, 50vw"
+    alt="Photo"
+/>
+```
+
+**⚠️ ACCIÓN REQUERIDA**:
+- Importar en páginas con imágenes (perfil, búsqueda, eventos)
+- Convertir `<img src=` a `<img data-src=` para lazy loading
+- Configurar srcset para imágenes responsive
+- Medir impacto en performance (LCP, FCP)
+
+**Beneficios**:
+- Reducción de carga inicial de página
+- Ahorro de ancho de banda
+- Mejora de Core Web Vitals
+- Mejor UX en conexiones lentas
 
 ---
+
+## 📋 COMPONENTES RESTANTES (4/12)
 
 ### 5. 🔄 Optimizar Firestore Rules
 
@@ -425,24 +782,7 @@ if CSRFProtection and enable_csrf:
 
 ---
 
-### 6. 🔄 Image Optimizer
-
-**Origen**: `webapp/js/image-optimizer.js`
-**Estado**: Existe (9,066 líneas según estudio)
-**Valor**: 🌟🌟🌟🌟🌟 (5/5)
-**Prioridad**: 🟡 **MEDIA**
-
-**Features**:
-- Lazy loading
-- WebP support con fallback
-- Compresión automática
-- Responsive images
-
-**Acción**: Verificar uso y activación
-
----
-
-### 7. 🔄 Error Handler (Frontend)
+### 6. 🔄 Error Handler (Frontend)
 
 **Origen**: `webapp/js/error-handler.js`
 **Estado**: Existe
@@ -460,7 +800,7 @@ if CSRFProtection and enable_csrf:
 
 ---
 
-### 8. 🔄 Security Workflow CI/CD
+### 7. 🔄 Security Workflow CI/CD
 
 **Origen**: `.github/workflows/security.yml`
 **Estado**: Existe pero necesita activación
@@ -485,86 +825,229 @@ if CSRFProtection and enable_csrf:
 
 ---
 
-## 📈 ESTADÍSTICAS
+## 📈 ESTADÍSTICAS ACTUALIZADAS
 
 ### Progreso General
 ```
-✅ Completados:       4/12 (33%)
-⚠️  Existentes:       2/12 (17%)
-📋 Pendientes:        6/12 (50%)
+✅ Completados y Activados:    5/12 (42%)
+✅ Implementados (en uso):     1/12 (8%)   [Encryption Service]
+⚠️  Implementados (no usados): 3/12 (25%)  [File Validator, Fraud Detection, Image Optimizer]
+⚠️  Existentes no activados:   1/12 (8%)   [CSRF Protection]
+📋 Pendientes:                 4/12 (33%)  [Error Handler, Security CI/CD, Firestore Rules docs, +1]
+────────────────────────────────────────
+Total verificado:             9/12 (75%)
 ```
+
+### Componentes por Estado
+
+#### ✅ ACTIVOS (5)
+1. Structured Logger (Backend + Frontend)
+2. Security Headers Middleware
+3. Sanitizer XSS Protection (Backend)
+4. Sanitizer XSS Protection (Frontend)
+5. **Firebase App Check** ← **NUEVO: Activado en 24+ páginas**
+
+#### ✅ IMPLEMENTADOS Y EN USO (1)
+6. Encryption Service (usado en emergency_phones_service.py)
+
+#### ⚠️ IMPLEMENTADOS PERO NO USADOS (3)
+7. File Validator Service (387 líneas - esperando integración)
+8. Fraud Detection Service (422 líneas - esperando integración)
+9. Image Optimizer (338 líneas - esperando importación en HTML)
+
+#### ⚠️ PARCIALMENTE ACTIVOS (1)
+10. CSRF Protection (solo en production)
+
+#### 📋 PENDIENTES VERIFICACIÓN (3)
+11. Error Handler (Frontend)
+12. Security Workflow CI/CD
+13. Firestore Rules (documentar optimizaciones existentes)
 
 ### Valor Implementado
 ```
-Structured Logger:          ~2 semanas
-Security Headers:           ~3 días
-Sanitizer:                  ~1 semana
--------------------------------------
-Total ahorrado:            ~3.5 semanas
+✅ Structured Logger:          ~2 semanas
+✅ Security Headers:           ~3 días
+✅ Sanitizer (Backend+Front):  ~1 semana
+✅ Firebase App Check:         ~1 semana    ← NUEVO
+✅ Encryption Service:         ~1 semana    ← VERIFICADO
+─────────────────────────────────────────
+Total implementado:           ~5.5 semanas
 ```
 
-### Valor Potencial Restante
+### Valor Potencial Disponible (solo requiere activación)
 ```
-Firebase App Check:         ~1 semana
-File Validator:            ~3 días
-Encryption Service:        ~1 semana
-Fraud Detection:           ~2 semanas
-Image Optimizer:           ~1 semana
-Error Handler:             ~3 días
-Security CI/CD:            ~2 semanas
--------------------------------------
-Total restante:            ~7.5 semanas
+⚠️  File Validator:           ~3 días       [ya implementado, solo activar]
+⚠️  Fraud Detection:          ~2 semanas    [ya implementado, solo integrar]
+⚠️  Image Optimizer:          ~1 semana     [ya implementado, solo importar]
+─────────────────────────────────────────
+Disponible inmediato:        ~3.5 semanas
 ```
 
-**Total proyecto**: ~11 semanas de desarrollo ahorradas 🎉
+### Valor Pendiente
+```
+📋 Error Handler:             ~3 días
+📋 Security CI/CD:            ~2 semanas
+📋 Documentación:             ~2 días
+─────────────────────────────────────────
+Pendiente verificar:         ~2.5 semanas
+```
+
+**Total proyecto**: ~11.5 semanas de desarrollo
+- **Activo**: ~5.5 semanas ✅
+- **Listo para activar**: ~3.5 semanas ⚠️
+- **Por verificar**: ~2.5 semanas 📋
 
 ---
 
-## 🎯 PRÓXIMOS PASOS RECOMENDADOS
+## 🎯 PRÓXIMOS PASOS ACTUALIZADOS
 
-### Semana 1: Seguridad Crítica
-1. ✅ Activar Firebase App Check en frontend
-2. ✅ Verificar integración App Check en backend/functions
-3. ✅ Documentar File Validator y verificar uso
-4. ✅ Documentar Encryption Service y verificar uso
-5. ✅ Documentar Fraud Detection y verificar uso
+### ✅ COMPLETADO EN ESTA SESIÓN
 
-### Semana 2: Optimización y Monitoreo
-1. ✅ Activar Error Handler en todas las páginas
-2. ✅ Activar Image Optimizer globalmente
-3. ✅ Mejorar CSRF Protection (tokens firmados)
-4. ✅ Verificar Security Workflow CI/CD
-5. ✅ Documentar Firestore Rules optimizadas
+#### Verificación de Componentes
+1. ✅ Activar Firebase App Check en frontend (24+ páginas)
+2. ✅ Verificar middleware App Check en backend/functions (119 líneas)
+3. ✅ Documentar File Validator (387 líneas - LISTO PARA USAR)
+4. ✅ Documentar Encryption Service (218 líneas - YA EN USO)
+5. ✅ Documentar Fraud Detection (422 líneas - LISTO PARA INTEGRAR)
+6. ✅ Documentar Image Optimizer (338 líneas - LISTO PARA ACTIVAR)
+7. ✅ Crear documentación completa (`FIREBASE_APPCHECK_ACTIVADO.md`)
+8. ✅ Actualizar progreso de implementación
 
-### Semana 3: Testing y Validación
-1. ✅ Tests para Structured Logger
-2. ✅ Tests para Sanitizer
-3. ✅ Tests de integración Security Headers
-4. ✅ Load testing básico
-5. ✅ Security audit
+### 🚀 PRÓXIMAS ACCIONES INMEDIATAS (Semana 2)
+
+#### Prioridad CRÍTICA 🔴
+1. **Integrar Fraud Detection Service**
+   - Crear endpoint API en backend
+   - Ejecutar en registro de nuevos usuarios
+   - Ejecutar periódicamente (Cloud Scheduler)
+   - Mostrar resultados en admin dashboard
+   - **Tiempo estimado**: 2 días
+   - **Valor**: Protección crítica para dating app
+
+2. **Activar File Validator en uploads**
+   - Integrar en endpoints de subida de fotos
+   - Añadir validación en registro (`register.html`)
+   - Añadir validación en perfil (`perfil.html`)
+   - **Tiempo estimado**: 1 día
+   - **Valor**: Prevención de malware y archivos peligrosos
+
+#### Prioridad ALTA 🟠
+3. **Activar Image Optimizer**
+   - Importar en páginas con imágenes:
+     - `buscar-usuarios.html`
+     - `perfil.html`
+     - `usuario-detalle.html`
+     - `eventos-vip.html`
+     - `evento-detalle.html`
+   - Convertir `<img src=` a `<img data-src=`
+   - **Tiempo estimado**: 1 día
+   - **Valor**: Mejora significativa de performance
+
+4. **Verificar Error Handler**
+   - Revisar `webapp/js/error-handler.js`
+   - Verificar si está importado y activo
+   - Activar en todas las páginas si no lo está
+   - **Tiempo estimado**: 4 horas
+
+#### Prioridad MEDIA 🟡
+5. **Verificar Security Workflow CI/CD**
+   - Comprobar `.github/workflows/security.yml`
+   - Verificar que se ejecute en push/PR
+   - Revisar últimos resultados
+   - **Tiempo estimado**: 2 horas
+
+6. **Mejorar CSRF Protection**
+   - Implementar tokens firmados (itsdangerous)
+   - Añadir rotación de tokens
+   - Considerar activar en development
+   - **Tiempo estimado**: 4 horas
+
+### 📅 PLAN SEMANAL SUGERIDO
+
+**Semana 2 - Integración y Activación** (5 días)
+- Día 1-2: Integrar Fraud Detection
+- Día 3: Activar File Validator en uploads
+- Día 4: Activar Image Optimizer
+- Día 5: Verificar Error Handler y Security CI/CD
+
+**Semana 3 - Testing y Refinamiento** (3-5 días)
+- Tests unitarios para componentes nuevos
+- Tests de integración
+- Load testing
+- Security audit
+- Documentación de uso final
+
+### 🎯 OBJETIVOS CUANTITATIVOS
+
+**Meta Semana 2**: Llegar a 9/12 componentes activos (75%)
+- Activar: Fraud Detection, File Validator, Image Optimizer
+- Verificar: Error Handler
+
+**Meta Semana 3**: Completar 12/12 componentes (100%)
+- Finalizar: Security CI/CD, CSRF mejorado, documentación
 
 ---
 
-## 📝 NOTAS
+## 📝 NOTAS Y HALLAZGOS
 
 ### Logging
-- ✅ Backend ahora usa `structured_logger.py`
-- ✅ Frontend ahora usa `logger.js` mejorado
-- ⚠️ Necesita migrar código existente al nuevo logger
+- ✅ Backend usa `structured_logger.py` (435 líneas)
+- ✅ Frontend usa `logger.js` mejorado (481 líneas)
+- ✅ Integración con Sentry y Firebase Performance
+- ⚠️ Migrar código existente al nuevo logger (pendiente)
 
 ### Seguridad
-- ✅ Security Headers activos en backend
-- ✅ Sanitizer disponible pero no usado universalmente
-- ⚠️ Firebase App Check desactivado (crítico activar)
-- ⚠️ CSRF solo en production (considerar activar en dev también)
+- ✅ Security Headers activos en backend (165 líneas)
+- ✅ Sanitizer Backend activo (275 líneas)
+- ✅ Sanitizer Frontend activo (252 líneas)
+- ✅ **Firebase App Check ACTIVADO** en 24+ páginas ← **NUEVO**
+- ✅ Encryption Service activo (usado en emergency phones)
+- ⚠️ File Validator implementado pero NO usado (387 líneas)
+- ⚠️ Fraud Detection implementado pero NO usado (422 líneas)
+- ⚠️ Image Optimizer implementado pero NO usado (338 líneas)
+- ⚠️ CSRF solo en production (considerar activar en dev)
+
+### Componentes Críticos Listos para Activar
+1. **Fraud Detection** (422 líneas)
+   - Sistema completo de scoring multi-dimensional
+   - Detección de emails temporales, bots, VPN, etc.
+   - Solo requiere crear endpoint API y integrar
+   - **CRÍTICO para dating app**
+
+2. **File Validator** (387 líneas)
+   - Validación real con magic bytes (python-magic)
+   - Detección de tipos peligrosos (.exe, .sh, .php, etc.)
+   - Validación de imágenes con PIL
+   - Solo requiere integrar en endpoints de upload
+
+3. **Image Optimizer** (338 líneas)
+   - Lazy loading con IntersectionObserver
+   - MutationObserver para imágenes dinámicas
+   - WebP support detection
+   - Solo requiere importar en HTML
 
 ### Documentación
-- ✅ Este documento creado
-- ✅ ESTUDIO_REPOSITORIO_PARALELO_FZ6.md
-- ✅ COMPONENTES_APROVECHABLES_Y_PLAN_MEJORA.md
-- ⚠️ Falta documentación de uso para cada componente
+- ✅ Este documento actualizado con detalles técnicos completos
+- ✅ ESTUDIO_REPOSITORIO_PARALELO_FZ6.md (1,361 líneas)
+- ✅ COMPONENTES_APROVECHABLES_Y_PLAN_MEJORA.md (1,114 líneas)
+- ✅ FIREBASE_APPCHECK_ACTIVADO.md (348 líneas)
+- ✅ RESUMEN_IMPLEMENTACION_DIA1.md
+- ✅ Documentación técnica completa para 9/12 componentes
+
+### Commits Realizados
+1. `82beef0` - Merge monitoring/security features
+2. `78e51b2` - Comprehensive monitoring and security
+3. `d8b462f` - **Activate Firebase App Check globally (24+ pages)** ← **NUEVO**
+
+### Descubrimientos Importantes
+- Firebase App Check estaba implementado pero DESACTIVADO en todos los HTML
+- Encryption Service ya está en uso (no documentado antes)
+- Fraud Detection es un sistema muy completo (25% perfil + 35% comportamiento + 20% red + 20% contenido)
+- File Validator usa python-magic (validación real, no solo extensión)
+- Image Optimizer se auto-inicializa si se importa
 
 ---
 
-**Última actualización**: 27/11/2025 23:45 UTC
-**Próxima revisión**: Cuando se completen 8/12 componentes
+**Última actualización**: 27/11/2025 (Sesión de verificación completa)
+**Próxima revisión**: Después de activar Fraud Detection, File Validator e Image Optimizer
+**Progreso**: 9/12 componentes verificados (75%), 6/12 activos (50%)
