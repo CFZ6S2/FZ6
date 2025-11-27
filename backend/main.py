@@ -8,7 +8,7 @@ from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
-from auth_utils import get_current_user, get_optional_user
+from auth_utils import get_current_user, get_optional_user, firebase_initialized
 from firebase_storage import upload_file_to_storage, upload_profile_photo
 
 # Load environment variables
@@ -62,7 +62,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": "tucitasegura-api",
-        "firebase": "connected",
+        "firebase": "connected" if firebase_initialized else "not configured",
         "environment": os.getenv("ENVIRONMENT", "development")
     }
 
