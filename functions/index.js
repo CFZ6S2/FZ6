@@ -3,12 +3,30 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const stripe = require('stripe')(functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY);
 const axios = require('axios');
+const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
+const { verifyAppCheckHTTP } = require('./middleware/app-check');
+
+// Inicializar logger
+const logger = createLogger('functions-main');
 
 admin.initializeApp();
 
+logger.info('Cloud Functions initialized', {
+  nodeVersion: process.version,
+  environment: process.env.FUNCTION_TARGET || 'unknown'
+});
+
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
+  const timer = new PerformanceTimer(logger, 'apiProxy');
   const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
   const url = base + req.originalUrl;
+
+  logger.debug('API proxy request', {
+    method: req.method,
+    path: req.originalUrl,
+    url
+  });
+
   try {
     const headers = { ...req.headers };
     delete headers.host;
@@ -22,8 +40,15 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
     Object.entries(response.headers || {}).forEach(([k, v]) => {
       if (typeof v === 'string') res.setHeader(k, v);
     });
+
+    timer.end({ status: response.status });
     res.status(response.status).send(response.data);
   } catch (error) {
+    logger.error('API proxy error', error, {
+      method: req.method,
+      path: req.originalUrl
+    });
+    timer.end({ status: 502, error: true });
     res.status(502).json({ error: 'proxy_error', detail: String(error.message || error) });
   }
 });
@@ -1387,3 +1412,13 @@ exports.sendAppointmentReminders = notifications.sendAppointmentReminders;
 exports.onVIPEventPublished = notifications.onVIPEventPublished;
 exports.onSOSAlert = notifications.onSOSAlert;
 exports.sendTestNotification = notifications.sendTestNotification;
+
+// ============================================================================
+// HEALTH CHECKS
+// ============================================================================
+const healthCheck = require('./health-check');
+
+exports.health = healthCheck.health;
+exports.healthDetailed = healthCheck.healthDetailed;
+exports.ready = healthCheck.ready;
+exports.alive = healthCheck.alive;
