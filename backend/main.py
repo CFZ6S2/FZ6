@@ -4,11 +4,12 @@ Provides protected API endpoints with Firebase authentication
 """
 
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from auth_utils import get_current_user, get_optional_user
+from firebase_storage import upload_file_to_storage, upload_profile_photo
 
 # Load environment variables
 load_dotenv()
@@ -107,6 +108,73 @@ async def get_user_profile(user: dict = Depends(get_current_user)):
             "auth_time": user.get("auth_time"),
         }
     }
+
+
+@app.post("/api/upload")
+async def upload_image(
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    """
+    Upload an image to Firebase Storage
+    Requires authentication
+    """
+    try:
+        # Upload file with user ID prefix
+        url = upload_file_to_storage(file, filename_prefix=f"user_{user['uid']}")
+
+        return {
+            "success": True,
+            "url": url,
+            "message": "Imagen subida con éxito ✔️",
+            "uploaded_by": user.get("uid")
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al subir la imagen: {str(e)}"
+        )
+
+
+@app.post("/api/upload/profile")
+async def upload_profile_image(
+    file: UploadFile = File(...),
+    photo_type: str = "avatar",
+    user: dict = Depends(get_current_user)
+):
+    """
+    Upload a profile photo (avatar or gallery) to Firebase Storage
+    Requires authentication
+
+    Args:
+        file: Image file to upload
+        photo_type: Type of photo (avatar, gallery_1, gallery_2, etc.)
+    """
+    try:
+        # Validate photo type
+        valid_types = ["avatar"] + [f"gallery_{i}" for i in range(1, 6)]
+        if photo_type not in valid_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid photo_type. Must be one of: {', '.join(valid_types)}"
+            )
+
+        # Upload profile photo
+        url = upload_profile_photo(file, user["uid"], photo_type)
+
+        return {
+            "success": True,
+            "url": url,
+            "photo_type": photo_type,
+            "message": f"Foto de perfil ({photo_type}) subida con éxito ✔️"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al subir la foto de perfil: {str(e)}"
+        )
 
 
 # ============================================================================
