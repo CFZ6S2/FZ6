@@ -24,5 +24,7 @@ COPY backend/*.py .
 # Expose port
 EXPOSE 8000
 
-# Start command (PORT will be provided by Railway)
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start command will be overridden by Railway's startCommand
+# Using ENTRYPOINT for better Railway compatibility
+ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0"]
+CMD ["--port", "8000"]
