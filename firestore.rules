@@ -76,11 +76,9 @@ service cloud.firestore {
       // ✅ EMAIL VERIFICATION: NO requerido para creación inicial, pero SÍ para funcionalidades
       allow create: if isAuthed()
                     && uid() == userId
-                    // ✅ REMOVED: isEmailVerified() - No podemos verificar email antes de registrar
-                    && request.resource.data.gender in ['masculino','femenino']
-                    && request.resource.data.userRole in ['regular']  // Solo pueden crear cuenta regular
-                    && request.resource.data.keys().hasAll(['alias','gender','userRole','birthDate','email','createdAt'])
-                    && isAdult(request.resource.data.birthDate);  // CRITICAL: Must be 18+
+                    && request.resource.data.userRole in ['regular']
+                    && request.resource.data.keys().hasAll(['userRole','birthDate','email','createdAt'])
+                    && isAdult(request.resource.data.birthDate);
 
       // Lectura: Usuarios autenticados pueden ver perfiles
       // ✅ CORREGIDO: Filtrado de género aplicado en las reglas
@@ -88,20 +86,45 @@ service cloud.firestore {
       // - Las mujeres solo pueden ver perfiles de hombres
       // - Cada usuario puede ver su propio perfil
       // - Los admins pueden ver todos los perfiles
+      // ⚠️ TEMPORAL: Permitir lectura básica mientras resolvemos custom claims
       allow read: if isAuthed() && (
         userId == uid() ||  // Propio perfil
         isAdmin() ||  // Admin puede ver todos
-        (isMale() && resource.data.gender == 'femenino') ||  // Hombres ven mujeres
-        (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
+        (gender() != null && isMale() && resource.data.gender == 'femenino') ||  // Hombres con género ven mujeres
+        (gender() != null && isFemale() && resource.data.gender == 'masculino') ||  // Mujeres con género ven hombres
+        gender() == null  // Usuarios sin género en custom claims pueden ver todos (temporal)
       );
 
-      // Actualización: El dueño puede actualizar su perfil (menos campos inmutables)
-      // ⚠️ CAMPOS INMUTABLES: userRole, email, createdAt, alias, gender
-      // - alias y gender se establecen en el registro y NUNCA pueden cambiar
-      // - Solo admin puede modificar estos campos si es absolutamente necesario
+      // Actualización: El dueño puede actualizar su perfil (con alias/gender configurables una vez)
       allow update: if isAuthed() && (
-        // Usuario actualizando su propio perfil (SIN cambiar campos inmutables)
-        (uid() == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt','alias','gender'])) ||
+        (
+          uid() == userId &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt']) &&
+          (
+            // Sin cambios en alias/gender
+            (request.resource.data.alias == resource.data.alias && request.resource.data.gender == resource.data.gender) ||
+            // Establecer alias por primera vez
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['alias']) &&
+              resource.data.alias == '' &&
+              request.resource.data.alias != ''
+            ) ||
+            // Establecer gender por primera vez
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['gender']) &&
+              resource.data.gender == '' &&
+              request.resource.data.gender in ['masculino','femenino']
+            ) ||
+            // Establecer alias y gender por primera vez
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['alias','gender']) &&
+              resource.data.alias == '' &&
+              resource.data.gender == '' &&
+              request.resource.data.alias != '' &&
+              request.resource.data.gender in ['masculino','femenino']
+            )
+          )
+        ) ||
         // Admin puede cambiar cualquier campo
         isAdmin()
       );
