@@ -1,8 +1,9 @@
 [build]
-builder = "NIXPACKS"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "cd backend && ./start.sh"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 runtime = "V2"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
