@@ -1,6 +1,21 @@
-// logger.js - Conditional logging system for production
-// Only logs in development mode, silent in production
-// Includes data sanitization for sensitive information
+// logger.js - Structured logging system with sanitization
+// Compatible with Cloud Logging and Sentry
+// Includes performance tracking and audit logging
+
+/**
+ * Niveles de severidad según Cloud Logging
+ * https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logseverity
+ */
+export const Severity = {
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  NOTICE: 'NOTICE',
+  WARNING: 'WARNING',
+  ERROR: 'ERROR',
+  CRITICAL: 'CRITICAL',
+  ALERT: 'ALERT',
+  EMERGENCY: 'EMERGENCY'
+};
 
 /**
  * Check if we're in development mode
@@ -138,13 +153,256 @@ function sanitizeObject(obj, depth = 0) {
 }
 
 /**
- * Logger object with conditional methods and sanitization
+ * Crear entrada de log estructurada
+ * @param {string} severity - Nivel de severidad
+ * @param {string} message - Mensaje de log
+ * @param {Object} context - Contexto adicional
+ * @returns {Object} Entrada de log estructurada
+ */
+function createLogEntry(severity, message, context = {}) {
+  return {
+    severity,
+    message,
+    timestamp: new Date().toISOString(),
+    ...sanitizeObject(context)
+  };
+}
+
+/**
+ * Structured Logger class
+ */
+export class StructuredLogger {
+  constructor(component = 'default') {
+    this.component = component;
+  }
+
+  /**
+   * Log de debug (solo desarrollo)
+   */
+  debug(message, context = {}) {
+    if (isDevelopment()) {
+      const entry = createLogEntry(Severity.DEBUG, message, {
+        component: this.component,
+        ...context
+      });
+      console.log(JSON.stringify(entry));
+    }
+  }
+
+  /**
+   * Log de info
+   */
+  info(message, context = {}) {
+    const entry = createLogEntry(Severity.INFO, message, {
+      component: this.component,
+      ...context
+    });
+    console.log(JSON.stringify(entry));
+  }
+
+  /**
+   * Log de notice
+   */
+  notice(message, context = {}) {
+    const entry = createLogEntry(Severity.NOTICE, message, {
+      component: this.component,
+      ...context
+    });
+    console.log(JSON.stringify(entry));
+  }
+
+  /**
+   * Log de warning
+   */
+  warn(message, context = {}) {
+    const entry = createLogEntry(Severity.WARNING, message, {
+      component: this.component,
+      ...context
+    });
+    console.warn(JSON.stringify(entry));
+  }
+
+  /**
+   * Alias para warn
+   */
+  warning(message, context = {}) {
+    this.warn(message, context);
+  }
+
+  /**
+   * Log de error
+   */
+  error(message, error = null, context = {}) {
+    const entry = createLogEntry(Severity.ERROR, message, {
+      component: this.component,
+      error: error ? {
+        message: error.message,
+        name: error.name,
+        code: error.code,
+        stack: isDevelopment() ? error.stack : undefined,
+        ...sanitizeObject(error)
+      } : null,
+      ...context
+    });
+    console.error(JSON.stringify(entry));
+
+    // Enviar a Sentry si está disponible
+    if (typeof Sentry !== 'undefined' && error) {
+      Sentry.captureException(error, {
+        contexts: {
+          component: { name: this.component },
+          custom: context
+        }
+      });
+    }
+  }
+
+  /**
+   * Log de critical
+   */
+  critical(message, error = null, context = {}) {
+    const entry = createLogEntry(Severity.CRITICAL, message, {
+      component: this.component,
+      error: error ? {
+        message: error.message,
+        name: error.name,
+        code: error.code,
+        stack: error.stack
+      } : null,
+      ...context
+    });
+    console.error(JSON.stringify(entry));
+
+    // Enviar a Sentry con nivel critical
+    if (typeof Sentry !== 'undefined') {
+      Sentry.captureMessage(message, {
+        level: 'fatal',
+        contexts: {
+          component: { name: this.component },
+          custom: context
+        }
+      });
+    }
+  }
+
+  /**
+   * Log de evento de seguridad
+   */
+  security(event, context = {}) {
+    const entry = createLogEntry(Severity.WARNING, `Security event: ${event}`, {
+      component: this.component,
+      eventType: 'security',
+      event,
+      ...context
+    });
+    console.warn(JSON.stringify(entry));
+
+    // Enviar a Sentry para tracking
+    if (typeof Sentry !== 'undefined') {
+      Sentry.captureMessage(`Security event: ${event}`, {
+        level: 'warning',
+        tags: { eventType: 'security', event },
+        contexts: {
+          component: { name: this.component },
+          custom: context
+        }
+      });
+    }
+  }
+
+  /**
+   * Log de auditoría
+   */
+  audit(action, userId, context = {}) {
+    const entry = createLogEntry(Severity.NOTICE, `Audit: ${action}`, {
+      component: this.component,
+      eventType: 'audit',
+      action,
+      userId,
+      ...context
+    });
+    console.log(JSON.stringify(entry));
+  }
+
+  /**
+   * Log de métrica de performance
+   */
+  performance(operation, durationMs, context = {}) {
+    const entry = createLogEntry(Severity.INFO, `Performance: ${operation}`, {
+      component: this.component,
+      eventType: 'performance',
+      operation,
+      durationMs: Math.round(durationMs * 100) / 100,
+      ...context
+    });
+    console.log(JSON.stringify(entry));
+
+    // Enviar a Firebase Performance si está disponible
+    if (typeof firebase !== 'undefined' && firebase.performance) {
+      const trace = firebase.performance().trace(operation);
+      trace.putMetric('duration', durationMs);
+      Object.entries(context).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          trace.putAttribute(key, value);
+        }
+      });
+    }
+  }
+
+  /**
+   * Log con tabla (solo desarrollo)
+   */
+  table(data, label = '') {
+    if (isDevelopment()) {
+      if (label) console.log(label);
+      console.table(sanitizeObject(data));
+    }
+  }
+
+  /**
+   * Group logs (solo desarrollo)
+   */
+  group(label, fn) {
+    if (isDevelopment()) {
+      console.group(label);
+      fn();
+      console.groupEnd();
+    } else {
+      fn();
+    }
+  }
+}
+
+/**
+ * Helper para medir tiempo de ejecución
+ */
+export class PerformanceTimer {
+  constructor(logger, operation) {
+    this.logger = logger;
+    this.operation = operation;
+    this.startTime = performance.now();
+  }
+
+  end(context = {}) {
+    const duration = performance.now() - this.startTime;
+    this.logger.performance(this.operation, duration, context);
+    return duration;
+  }
+}
+
+/**
+ * Crear logger para componente específico
+ * @param {string} component - Nombre del componente
+ * @returns {StructuredLogger}
+ */
+export function createLogger(component) {
+  return new StructuredLogger(component);
+}
+
+/**
+ * Logger por defecto (retrocompatibilidad)
  */
 export const logger = {
-  /**
-   * Log debug information (only in development)
-   * @param {...any} args - Arguments to log
-   */
   debug(...args) {
     if (isDevelopment()) {
       const sanitized = args.map(arg =>
@@ -154,10 +412,6 @@ export const logger = {
     }
   },
 
-  /**
-   * Log informational messages (only in development)
-   * @param {...any} args - Arguments to log
-   */
   info(...args) {
     if (isDevelopment()) {
       const sanitized = args.map(arg =>
@@ -167,10 +421,6 @@ export const logger = {
     }
   },
 
-  /**
-   * Log warnings (always shown, sanitized)
-   * @param {...any} args - Arguments to log
-   */
   warn(...args) {
     const sanitized = args.map(arg =>
       typeof arg === 'object' ? sanitizeObject(arg) : arg
@@ -178,10 +428,6 @@ export const logger = {
     console.warn('[WARN]', ...sanitized);
   },
 
-  /**
-   * Log errors (always shown, sanitized)
-   * @param {...any} args - Arguments to log
-   */
   error(...args) {
     const sanitized = args.map(arg => {
       if (arg instanceof Error) {
@@ -197,10 +443,6 @@ export const logger = {
     console.error('[ERROR]', ...sanitized);
   },
 
-  /**
-   * Log success messages (only in development)
-   * @param {...any} args - Arguments to log
-   */
   success(...args) {
     if (isDevelopment()) {
       const sanitized = args.map(arg =>
@@ -210,74 +452,27 @@ export const logger = {
     }
   },
 
-  /**
-   * Log with custom styling (only in development)
-   * @param {string} style - CSS style string
-   * @param {...any} args - Arguments to log
-   */
-  styled(style, ...args) {
-    if (isDevelopment()) {
-      const sanitized = args.map(arg =>
-        typeof arg === 'object' ? sanitizeObject(arg) : arg
-      );
-      console.log(`%c${sanitized[0]}`, style, ...sanitized.slice(1));
-    }
+  security(event, context = {}) {
+    const sanitized = sanitizeObject(context);
+    console.warn('[SECURITY]', event, sanitized);
   },
 
-  /**
-   * Group logs together (only in development)
-   * @param {string} label - Group label
-   * @param {Function} fn - Function to execute in group
-   */
-  group(label, fn) {
-    if (isDevelopment()) {
-      console.group(label);
-      fn();
-      console.groupEnd();
-    } else {
-      fn(); // Still execute function, just don't group
-    }
-  },
-
-  /**
-   * Log table data (only in development, sanitized)
-   * @param {any} data - Data to display as table
-   */
   table(data) {
     if (isDevelopment()) {
-      const sanitized = sanitizeObject(data);
-      console.table(sanitized);
+      console.table(sanitizeObject(data));
     }
   },
 
-  /**
-   * Performance timing
-   * @param {string} label - Timer label
-   */
   time(label) {
     if (isDevelopment()) {
       console.time(label);
     }
   },
 
-  /**
-   * End performance timing
-   * @param {string} label - Timer label
-   */
   timeEnd(label) {
     if (isDevelopment()) {
       console.timeEnd(label);
     }
-  },
-
-  /**
-   * Log security event (always logged, highly sanitized)
-   * @param {string} event - Event description
-   * @param {Object} context - Context information
-   */
-  security(event, context = {}) {
-    const sanitized = sanitizeObject(context);
-    console.warn('[SECURITY]', event, sanitized);
   }
 };
 

@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ejemplo con App Check - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#764ba2">
 </head>
 <body>
   <h1>Ejemplo de inclusión de App Check</h1>
@@ -16,7 +27,7 @@
     // ⚠️ ORDEN MUY IMPORTANTE:
 
     // 1️⃣ PRIMERO: Importar App Check (esto inicializa App Check)
-    // DISABLED: import './js/firebase-appcheck.js';
+    import './js/firebase-appcheck.js';
 
     // 2️⃣ SEGUNDO: Importar Firebase services (estos YA tienen App Check activo)
     import { auth, db, storage } from './js/firebase-config.js';
@@ -58,7 +69,7 @@
   También puedes hacer los imports en el <head>:
 
   <script type="module">
-    // DISABLED: import './js/firebase-appcheck.js';
+    import './js/firebase-appcheck.js';
   </script>
   <script type="module">
     import { auth, db } from './js/firebase-config.js';
