@@ -571,6 +571,7 @@
     import { initializeNotifications } from './js/notifications-safe.js';
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
     import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config.js';
+    import { fileValidator, showValidationErrors } from './js/file-validator.js';
 
     // Setup global error handling
     setupGlobalErrorHandling();
@@ -1152,30 +1153,44 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        showToast('Por favor selecciona una imagen válida', 'error');
-        return;
+      // Validate file with FileValidator
+      try {
+        const validation = await fileValidator.validateImage(file);
+
+        // Show errors and warnings
+        showValidationErrors(validation, showToast);
+
+        // If validation failed, don't proceed
+        if (!validation.isValid) {
+          e.target.value = ''; // Clear the input
+          return;
+        }
+
+        photoFile = file;
+
+        // Preview
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById('profilePhoto').src = event.target.result;
+          document.getElementById('profilePhoto').classList.remove('hidden');
+          document.getElementById('photoPlaceholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+
+        showToast('Foto seleccionada. Guarda los cambios para actualizar.', 'info');
+
+        // Log validation metadata
+        logger.debug('Profile photo validated', {
+          fileName: validation.metadata.fileName,
+          size: validation.metadata.sizeMB + 'MB',
+          dimensions: `${validation.metadata.width}x${validation.metadata.height}`
+        });
+
+      } catch (error) {
+        logger.error('Photo validation error', error);
+        showToast('Error al validar la imagen', 'error');
+        e.target.value = ''; // Clear the input
       }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('La imagen debe ser menor a 5MB', 'error');
-        return;
-      }
-
-      photoFile = file;
-
-      // Preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        document.getElementById('profilePhoto').src = event.target.result;
-        document.getElementById('profilePhoto').classList.remove('hidden');
-        document.getElementById('photoPlaceholder').classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
-
-      showToast('Foto seleccionada. Guarda los cambios para actualizar.', 'info');
     });
 
     // Gallery photo uploads (5 photos)
@@ -1191,35 +1206,49 @@
       });
 
       // Handle file selection
-      inputEl.addEventListener('change', (e) => {
+      inputEl.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          showToast('Por favor selecciona una imagen válida', 'error');
-          return;
+        // Validate file with FileValidator
+        try {
+          const validation = await fileValidator.validateImage(file);
+
+          // Show errors and warnings
+          showValidationErrors(validation, showToast);
+
+          // If validation failed, don't proceed
+          if (!validation.isValid) {
+            e.target.value = ''; // Clear the input
+            return;
+          }
+
+          galleryFiles[i - 1] = file;
+
+          // Preview
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            imageEl.src = event.target.result;
+            imageEl.classList.remove('hidden');
+            previewEl.classList.add('hidden');
+            removeBtn.classList.remove('opacity-0', 'pointer-events-none');
+          };
+          reader.readAsDataURL(file);
+
+          showToast(`Foto ${i} seleccionada`, 'info');
+
+          // Log validation metadata
+          logger.debug(`Gallery photo ${i} validated`, {
+            fileName: validation.metadata.fileName,
+            size: validation.metadata.sizeMB + 'MB',
+            dimensions: `${validation.metadata.width}x${validation.metadata.height}`
+          });
+
+        } catch (error) {
+          logger.error('Gallery photo validation error', error);
+          showToast('Error al validar la imagen', 'error');
+          e.target.value = ''; // Clear the input
         }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          showToast('La imagen debe ser menor a 5MB', 'error');
-          return;
-        }
-
-        galleryFiles[i - 1] = file;
-
-        // Preview
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          imageEl.src = event.target.result;
-          imageEl.classList.remove('hidden');
-          previewEl.classList.add('hidden');
-          removeBtn.classList.remove('opacity-0', 'pointer-events-none');
-        };
-        reader.readAsDataURL(file);
-
-        showToast(`Foto ${i} seleccionada`, 'info');
       });
 
       // Remove photo
