@@ -224,6 +224,7 @@
     import './js/firebase-appcheck.js';
     import { auth, db } from './js/firebase-config.js';
     import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
+    import { validators, sanitize } from './js/input-validator.js';
     import { logger } from './js/logger.js';
     import { handleFirebaseNetworkError, showNetworkError, retryOperation } from './js/network-error-handler.js';
     import { isDemoMode, getDemoUser, initializeDemoMode } from './js/demo-mode.js';
@@ -370,6 +371,19 @@
       const birthDate = document.getElementById('birthDate').value;
       const registerButton = document.getElementById('registerButton');
 
+      // ✅ Email validation
+      if (!validators.email(email)) {
+        showToast('Por favor ingresa un email válido', 'error');
+        return;
+      }
+
+      // ✅ Password strength validation
+      const passwordValidation = validators.password(password);
+      if (!passwordValidation.isValid) {
+        showToast('Contraseña inválida: ' + passwordValidation.errors.join(', '), 'error');
+        return;
+      }
+
       // ✅ Rate limiting check (3 attempts per 5 minutes)
       if (!RateLimiters.register.tryRequest(email)) {
         const retryAfter = RateLimiters.register.getRetryAfter(email);
@@ -383,12 +397,13 @@
         return;
       }
 
-      // Validate age
-      const age = validateAge(birthDate);
-      if (age < 18) {
+      // ✅ Validate age (18+)
+      if (!validators.age(birthDate)) {
         showToast('Debes tener al menos 18 años para registrarte', 'error');
         return;
       }
+
+      const age = validateAge(birthDate);
 
       // Disable button
       registerButton.disabled = true;
