@@ -179,6 +179,7 @@
     import { auth, db } from './js/firebase-config.js';
     import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
     import { validators } from './js/input-validator.js';
+    import { SecurityLogger } from './js/security-logger.js';
     import { logger } from './js/logger.js';
     import { handleFirebaseNetworkError, showNetworkError } from './js/network-error-handler.js';
     import { isDemoMode, getDemoUser, initializeDemoMode } from './js/demo-mode.js';
@@ -340,6 +341,9 @@
           return;
         }
 
+        // ✅ Log successful login
+        SecurityLogger.logSuccessfulLogin(user.uid, email);
+
         showToast('¡Bienvenido de vuelta!', 'success');
 
         // Redirect to app
@@ -433,6 +437,9 @@
             default:
               errorMessage = error.message;
           }
+
+          // ✅ Log failed login
+          SecurityLogger.logFailedLogin(email, errorMessage);
 
           showToast(errorMessage, 'error');
         }
