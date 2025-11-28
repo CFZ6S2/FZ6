@@ -191,6 +191,10 @@
   <!-- Error Fixes -->
   <script type="module" src="/webapp/js/error-fixes.js"></script>
 
+  <!-- DOMPurify for XSS Protection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="/webapp/js/sanitizer.js"></script>
+
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
     import './js/firebase-appcheck.js';
@@ -379,8 +383,11 @@
 
       conversationsList.innerHTML = filtered.map(conv => {
         const otherUser = conv.otherUser;
-        const alias = otherUser.alias || 'Usuario';
-        const lastMessage = conv.lastMessage || 'Nueva conversación';
+        // Sanitize user-provided data
+        const alias = sanitizer.text(otherUser.alias || 'Usuario');
+        const lastMessage = sanitizer.text(conv.lastMessage || 'Nueva conversación');
+        const safeConvId = sanitizer.text(conv.id || '');
+        const safeOtherUserId = sanitizer.text(otherUser.id || '');
         const isUnread = conv.lastMessageSenderId !== currentUser.uid && conv.unreadCount > 0;
         const isOnline = otherUser.isOnline;
 
@@ -399,7 +406,7 @@
           else timeAgo = `Hace ${diffDays}d`;
         }
 
-        // Reputation badge (for men)
+        // Reputation badge (for men) - sanitize reputation value
         let reputationBadge = '';
         if (otherUser.gender === 'masculino' && otherUser.reputation) {
           const repColors = {
@@ -408,9 +415,10 @@
             'ORO': 'from-yellow-400 to-yellow-600',
             'PLATINO': 'from-cyan-400 to-blue-500'
           };
+          const safeReputation = sanitizer.text(otherUser.reputation);
           reputationBadge = `
             <span class="px-2 py-1 text-xs rounded-full bg-gradient-to-r ${repColors[otherUser.reputation]} text-white font-bold">
-              ${otherUser.reputation}
+              ${safeReputation}
             </span>
           `;
         }
@@ -440,8 +448,8 @@
 
         return `
           <div class="glass-strong rounded-xl p-4 conversation-item cursor-pointer"
-               onclick="openChat('${conv.id}', '${otherUser.id}')"
-               oncontextmenu="showContextMenu(event, '${conv.id}', '${otherUser.id}'); return false;">
+               onclick="openChat('${safeConvId}', '${safeOtherUserId}')"
+               oncontextmenu="showContextMenu(event, '${safeConvId}', '${safeOtherUserId}'); return false;">
             <div class="flex items-center gap-4">
               <!-- Avatar -->
               <div class="relative flex-shrink-0">

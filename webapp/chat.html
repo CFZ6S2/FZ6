@@ -385,6 +385,10 @@
   <!-- Error Fixes -->
   <script type="module" src="/webapp/js/error-fixes.js"></script>
 
+  <!-- DOMPurify for XSS Protection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="/webapp/js/sanitizer.js"></script>
+
   <!-- Firebase SDK -->
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
@@ -574,7 +578,8 @@
         return;
       }
 
-      container.innerHTML = messages.map(msg => {
+      // Sanitize and render messages
+      const messagesHTML = messages.map(msg => {
         const isSent = msg.senderId === currentUser.uid;
         const timeStr = msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString('es-ES', {
           hour: '2-digit',
@@ -583,6 +588,13 @@
 
         // Check if it's a date proposal
         if (msg.type === 'date_proposal') {
+          // Sanitize all user input fields
+          const safeDate = sanitizer.text(msg.date || '');
+          const safeTime = sanitizer.text(msg.time || '');
+          const safePlace = sanitizer.text(msg.place || '');
+          const safeMessage = sanitizer.text(msg.message || '');
+          const safeId = sanitizer.text(msg.id || '');
+
           return `
             <div class="flex ${isSent ? 'justify-end' : 'justify-start'}">
               <div class="max-w-[80%] glass-strong rounded-2xl p-4">
@@ -591,17 +603,17 @@
                   <span class="font-bold">Propuesta de Cita</span>
                 </div>
                 <div class="space-y-2 text-sm">
-                  <p><i class="fas fa-calendar text-purple-400 w-5"></i> ${msg.date}</p>
-                  <p><i class="fas fa-clock text-purple-400 w-5"></i> ${msg.time}</p>
-                  <p><i class="fas fa-map-marker-alt text-purple-400 w-5"></i> ${msg.place}</p>
-                  ${msg.message ? `<p class="mt-3 text-slate-300">"${msg.message}"</p>` : ''}
+                  <p><i class="fas fa-calendar text-purple-400 w-5"></i> ${safeDate}</p>
+                  <p><i class="fas fa-clock text-purple-400 w-5"></i> ${safeTime}</p>
+                  <p><i class="fas fa-map-marker-alt text-purple-400 w-5"></i> ${safePlace}</p>
+                  ${safeMessage ? `<p class="mt-3 text-slate-300">"${safeMessage}"</p>` : ''}
                 </div>
                 <div class="flex gap-2 mt-4">
                   ${!isSent && msg.status === 'pending' ? `
-                    <button onclick="acceptDate('${msg.id}')" class="flex-1 bg-green-500 hover:bg-green-600 py-2 rounded-lg text-sm font-bold transition">
+                    <button onclick="acceptDate('${safeId}')" class="flex-1 bg-green-500 hover:bg-green-600 py-2 rounded-lg text-sm font-bold transition">
                       Aceptar
                     </button>
-                    <button onclick="rejectDate('${msg.id}')" class="flex-1 bg-red-500 hover:bg-red-600 py-2 rounded-lg text-sm font-bold transition">
+                    <button onclick="rejectDate('${safeId}')" class="flex-1 bg-red-500 hover:bg-red-600 py-2 rounded-lg text-sm font-bold transition">
                       Rechazar
                     </button>
                   ` : ''}
@@ -614,16 +626,19 @@
           `;
         }
 
-        // Regular message
+        // Regular message - sanitize text content
+        const safeText = sanitizer.text(msg.text || '');
         return `
           <div class="flex ${isSent ? 'justify-end' : 'justify-start'}">
             <div class="max-w-[70%] ${isSent ? 'message-sent' : 'message-received'} rounded-2xl px-4 py-3">
-              <p class="break-words">${escapeHtml(msg.text)}</p>
+              <p class="break-words">${safeText}</p>
               <p class="text-xs text-white/60 mt-1 text-right">${timeStr}</p>
             </div>
           </div>
         `;
       }).join('');
+
+      container.innerHTML = messagesHTML;
     }
 
     // Escape HTML
