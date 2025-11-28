@@ -289,6 +289,83 @@
         </div>
       </div>
 
+      <!-- Fraud Alerts Section -->
+      <div class="glass-container p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold flex items-center">
+            <i class="fas fa-shield-alt mr-3 text-red-300"></i>
+            Alertas de Fraude
+          </h2>
+          <div class="flex items-center space-x-2">
+            <select id="fraudFilter" class="bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              <option value="all">Todas las alertas</option>
+              <option value="high">Riesgo Alto</option>
+              <option value="medium">Riesgo Medio</option>
+              <option value="low">Riesgo Bajo</option>
+              <option value="unread">No leídas</option>
+            </select>
+            <button id="refreshFraudAlerts" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fraud Stats Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="stat-card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-white text-opacity-70 text-xs">Total Alertas</p>
+                <p id="totalFraudAlerts" class="text-white text-xl font-bold">0</p>
+              </div>
+              <i class="fas fa-exclamation-triangle text-yellow-300 text-2xl"></i>
+            </div>
+          </div>
+          <div class="stat-card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-white text-opacity-70 text-xs">Riesgo Alto</p>
+                <p id="highRiskAlerts" class="text-white text-xl font-bold">0</p>
+              </div>
+              <i class="fas fa-radiation-alt text-red-400 text-2xl"></i>
+            </div>
+          </div>
+          <div class="stat-card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-white text-opacity-70 text-xs">Sin Revisar</p>
+                <p id="unreadFraudAlerts" class="text-white text-xl font-bold">0</p>
+              </div>
+              <i class="fas fa-bell text-purple-300 text-2xl"></i>
+            </div>
+          </div>
+          <div class="stat-card p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-white text-opacity-70 text-xs">Hoy</p>
+                <p id="todayFraudAlerts" class="text-white text-xl font-bold">0</p>
+              </div>
+              <i class="fas fa-calendar-day text-blue-300 text-2xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fraud Alerts List -->
+        <div id="fraudAlertsList" class="space-y-3 max-h-96 overflow-y-auto">
+          <!-- Fraud alerts will be loaded here -->
+        </div>
+
+        <div id="noFraudAlerts" class="hidden text-center py-8">
+          <i class="fas fa-shield-alt text-white text-opacity-50 text-5xl mb-4"></i>
+          <p class="text-white text-opacity-70">No hay alertas de fraude</p>
+        </div>
+
+        <div id="loadingFraudAlerts" class="text-center py-8">
+          <i class="fas fa-spinner fa-spin text-white text-4xl"></i>
+          <p class="text-white text-opacity-70 mt-3">Cargando alertas...</p>
+        </div>
+      </div>
+
       <!-- Recent Activity -->
       <div class="glass-container p-8">
         <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
@@ -406,6 +483,9 @@
 
         // Load charts
         await loadCharts();
+
+        // Load fraud alerts
+        await loadFraudAlerts();
 
         // Load recent activity
         await loadRecentActivity();
@@ -658,6 +738,238 @@
         document.getElementById('noActivity').classList.remove('hidden');
       }
     }
+
+    // Load fraud alerts
+    async function loadFraudAlerts(filterType = 'all') {
+      try {
+        const fraudAlertsList = document.getElementById('fraudAlertsList');
+        const noFraudAlerts = document.getElementById('noFraudAlerts');
+        const loadingFraudAlerts = document.getElementById('loadingFraudAlerts');
+
+        // Show loading
+        loadingFraudAlerts.classList.remove('hidden');
+        fraudAlertsList.innerHTML = '';
+        noFraudAlerts.classList.add('hidden');
+
+        // Build query
+        let fraudQuery = query(
+          collection(db, 'admin_notifications'),
+          where('type', '==', 'fraud_alert'),
+          orderBy('createdAt', 'desc'),
+          limit(50)
+        );
+
+        const fraudSnapshot = await getDocs(fraudQuery);
+
+        // Hide loading
+        loadingFraudAlerts.classList.add('hidden');
+
+        if (fraudSnapshot.empty) {
+          noFraudAlerts.classList.remove('hidden');
+          updateFraudStats([], filterType);
+          return;
+        }
+
+        let fraudAlerts = [];
+        fraudSnapshot.forEach((doc) => {
+          fraudAlerts.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Apply filter
+        let filteredAlerts = fraudAlerts;
+        if (filterType === 'high') {
+          filteredAlerts = fraudAlerts.filter(alert => alert.riskLevel === 'high');
+        } else if (filterType === 'medium') {
+          filteredAlerts = fraudAlerts.filter(alert => alert.riskLevel === 'medium');
+        } else if (filterType === 'low') {
+          filteredAlerts = fraudAlerts.filter(alert => alert.riskLevel === 'low');
+        } else if (filterType === 'unread') {
+          filteredAlerts = fraudAlerts.filter(alert => !alert.read);
+        }
+
+        // Update stats
+        updateFraudStats(fraudAlerts, filterType);
+
+        // Display alerts
+        if (filteredAlerts.length === 0) {
+          noFraudAlerts.classList.remove('hidden');
+          return;
+        }
+
+        filteredAlerts.forEach((alert) => {
+          const createdAt = alert.createdAt?.toDate();
+          const timeAgo = createdAt ? getTimeAgo(createdAt) : 'Hace un momento';
+
+          // Risk level styling
+          const riskColors = {
+            high: 'from-red-500 to-red-600',
+            medium: 'from-orange-500 to-orange-600',
+            low: 'from-yellow-500 to-yellow-600',
+            minimal: 'from-green-500 to-green-600'
+          };
+
+          const riskIcons = {
+            high: 'fa-radiation-alt',
+            medium: 'fa-exclamation-triangle',
+            low: 'fa-exclamation-circle',
+            minimal: 'fa-check-circle'
+          };
+
+          const riskLabels = {
+            high: 'Riesgo Alto',
+            medium: 'Riesgo Medio',
+            low: 'Riesgo Bajo',
+            minimal: 'Riesgo Mínimo'
+          };
+
+          const riskColor = riskColors[alert.riskLevel] || riskColors.low;
+          const riskIcon = riskIcons[alert.riskLevel] || riskIcons.low;
+          const riskLabel = riskLabels[alert.riskLevel] || 'Riesgo Desconocido';
+
+          const alertItem = document.createElement('div');
+          alertItem.className = `activity-item p-4 ${!alert.read ? 'border-2 border-red-400' : ''}`;
+          alertItem.innerHTML = `
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="bg-gradient-to-br ${riskColor} p-3 rounded-lg flex-shrink-0">
+                  <i class="fas ${riskIcon} text-white text-xl"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center space-x-2 mb-1">
+                    <p class="text-white font-semibold">${riskLabel}</p>
+                    <span class="px-2 py-0.5 text-xs rounded-full ${!alert.read ? 'bg-red-500' : 'bg-gray-500'} text-white">
+                      ${!alert.read ? 'Nueva' : 'Leída'}
+                    </span>
+                  </div>
+                  <p class="text-white text-opacity-60 text-sm mb-2">
+                    Usuario: <span class="font-mono">${alert.userId}</span> |
+                    Puntuación: <span class="font-bold text-red-300">${(alert.fraudScore * 100).toFixed(1)}%</span>
+                  </p>
+                  ${alert.indicators && alert.indicators.length > 0 ? `
+                    <div class="mt-2 space-y-1">
+                      <p class="text-white text-opacity-80 text-xs font-semibold">Indicadores detectados:</p>
+                      <div class="flex flex-wrap gap-1">
+                        ${alert.indicators.slice(0, 5).map(indicator =>
+                          `<span class="px-2 py-1 text-xs rounded bg-white bg-opacity-10 text-white">${indicator}</span>`
+                        ).join('')}
+                        ${alert.indicators.length > 5 ? `<span class="px-2 py-1 text-xs rounded bg-white bg-opacity-10 text-white">+${alert.indicators.length - 5} más</span>` : ''}
+                      </div>
+                    </div>
+                  ` : ''}
+                  <div class="mt-3 flex space-x-2">
+                    <button onclick="viewUserDetails('${alert.userId}')" class="px-3 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white transition">
+                      <i class="fas fa-user mr-1"></i> Ver Usuario
+                    </button>
+                    ${!alert.read ? `
+                      <button onclick="markFraudAlertAsRead('${alert.id}')" class="px-3 py-1 text-xs rounded bg-green-500 hover:bg-green-600 text-white transition">
+                        <i class="fas fa-check mr-1"></i> Marcar Leída
+                      </button>
+                    ` : ''}
+                    <button onclick="dismissFraudAlert('${alert.id}')" class="px-3 py-1 text-xs rounded bg-gray-500 hover:bg-gray-600 text-white transition">
+                      <i class="fas fa-times mr-1"></i> Descartar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-3">
+                <span class="text-white text-opacity-50 text-xs">${timeAgo}</span>
+              </div>
+            </div>
+          `;
+          fraudAlertsList.appendChild(alertItem);
+        });
+
+      } catch (error) {
+        console.error('Error loading fraud alerts:', error);
+        document.getElementById('loadingFraudAlerts').classList.add('hidden');
+
+        if (!error.message.includes('index')) {
+          showToast('Error al cargar alertas de fraude', 'error');
+        } else {
+          // Index not found - show helpful message
+          const fraudAlertsList = document.getElementById('fraudAlertsList');
+          fraudAlertsList.innerHTML = `
+            <div class="text-center py-8 bg-yellow-500 bg-opacity-20 rounded-lg">
+              <i class="fas fa-database text-yellow-300 text-4xl mb-3"></i>
+              <p class="text-white font-semibold mb-2">Índice requerido no encontrado</p>
+              <p class="text-white text-opacity-70 text-sm">
+                Necesitas crear el índice compuesto en Firestore:<br>
+                Colección: admin_notifications | Campos: type (asc), createdAt (desc)
+              </p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Update fraud statistics
+    function updateFraudStats(fraudAlerts, filterType) {
+      const totalAlerts = fraudAlerts.length;
+      const highRiskCount = fraudAlerts.filter(a => a.riskLevel === 'high').length;
+      const unreadCount = fraudAlerts.filter(a => !a.read).length;
+
+      // Count today's alerts
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayCount = fraudAlerts.filter(a => {
+        const alertDate = a.createdAt?.toDate();
+        return alertDate && alertDate >= today;
+      }).length;
+
+      document.getElementById('totalFraudAlerts').textContent = totalAlerts;
+      document.getElementById('highRiskAlerts').textContent = highRiskCount;
+      document.getElementById('unreadFraudAlerts').textContent = unreadCount;
+      document.getElementById('todayFraudAlerts').textContent = todayCount;
+    }
+
+    // Mark fraud alert as read
+    window.markFraudAlertAsRead = async function(alertId) {
+      try {
+        await updateDoc(doc(db, 'admin_notifications', alertId), {
+          read: true,
+          readAt: serverTimestamp()
+        });
+        showToast('Alerta marcada como leída', 'success');
+        await loadFraudAlerts(document.getElementById('fraudFilter').value);
+      } catch (error) {
+        console.error('Error marking alert as read:', error);
+        showToast('Error al marcar alerta', 'error');
+      }
+    };
+
+    // Dismiss fraud alert
+    window.dismissFraudAlert = async function(alertId) {
+      if (!confirm('¿Descartar esta alerta de fraude?')) return;
+
+      try {
+        await updateDoc(doc(db, 'admin_notifications', alertId), {
+          dismissed: true,
+          dismissedAt: serverTimestamp()
+        });
+        showToast('Alerta descartada', 'success');
+        await loadFraudAlerts(document.getElementById('fraudFilter').value);
+      } catch (error) {
+        console.error('Error dismissing alert:', error);
+        showToast('Error al descartar alerta', 'error');
+      }
+    };
+
+    // View user details
+    window.viewUserDetails = function(userId) {
+      window.open(`/webapp/admin/user-detail.html?userId=${userId}`, '_blank');
+    };
+
+    // Fraud filter change handler
+    document.getElementById('fraudFilter')?.addEventListener('change', async (e) => {
+      await loadFraudAlerts(e.target.value);
+    });
+
+    // Refresh fraud alerts
+    document.getElementById('refreshFraudAlerts')?.addEventListener('click', async () => {
+      const filter = document.getElementById('fraudFilter').value;
+      await loadFraudAlerts(filter);
+      showToast('Alertas actualizadas', 'success');
+    });
 
     // Get time ago
     function getTimeAgo(date) {
