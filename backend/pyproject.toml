@@ -21,7 +21,11 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "security: marks tests as security tests",
-    "performance: marks tests as performance tests"
+    "performance: marks tests as performance tests",
+    "api: marks tests as API endpoint tests",
+    "database: marks tests requiring database connection",
+    "auth: marks tests requiring authentication",
+    "ml: marks tests for ML/AI services"
 ]
 asyncio_mode = "auto"
 

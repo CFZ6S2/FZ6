@@ -4,12 +4,19 @@ Provides protected API endpoints with Firebase authentication
 """
 
 import os
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from auth_utils import get_current_user, get_optional_user, firebase_initialized
 from firebase_storage import upload_file_to_storage, upload_profile_photo
+
+# Import new API routers
+from app.api.v1 import recommendations, validation
+
+# Import rate limiting
+from app.middleware.rate_limit import limiter, custom_rate_limit_handler
+from slowapi.errors import RateLimitExceeded
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +29,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Add rate limiter state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 # CORS Configuration
 origins_str = os.getenv(
@@ -40,6 +51,13 @@ app.add_middleware(
 
 print(f"✅ CORS enabled for origins: {origins}")
 
+# ============================================================================
+# INCLUDE API ROUTERS
+# ============================================================================
+
+# Include v1 API routers
+app.include_router(recommendations.router)
+app.include_router(validation.router)
 
 # ============================================================================
 # PUBLIC ROUTES
