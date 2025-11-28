@@ -200,7 +200,7 @@ async function createUserNotification(userId, notification) {
   };
 
   await db.collection('notifications').add(notificationData);
-  console.log(`[createUserNotification] Notification created for user ${userId}: ${notification.title}`);
+  logger.info('Notification created', { userId, title: notification.title, type: notification.type });
 }
 
 /**
@@ -226,7 +226,7 @@ async function logFailedPayment(userId, paymentData) {
   };
 
   await db.collection('failed_payments').add(failedPaymentRecord);
-  console.log(`[logFailedPayment] Failed payment logged for user ${userId}: ${paymentData.paymentId}`);
+  logger.warn('Failed payment logged', { userId, paymentId: paymentData.paymentId, provider: paymentData.provider, reason: paymentData.reason });
 }
 
 // ============================================================================
@@ -241,12 +241,12 @@ exports.onUserDocCreate = functions.firestore
     const gender = ['masculino','femenino'].includes(data.gender) ? data.gender : null;
     const userRole = data.userRole || 'regular';
 
-    console.log(`[onUserDocCreate] Setting claims for ${uid}: role=${userRole}, gender=${gender}`);
+    logger.info('Setting claims for new user', { uid, role: userRole, gender });
 
     // Display name en Auth
     try {
       await admin.auth().updateUser(uid, { displayName: name });
-      console.log(`[onUserDocCreate] Updated displayName for ${uid}`);
+      logger.info('Updated displayName for user', { uid, displayName: name });
     } catch (e) {
       console.error(`[onUserDocCreate] Error updating displayName:`, e);
     }
@@ -260,7 +260,7 @@ exports.onUserDocCreate = functions.firestore
         role: userRole,
         gender: gender
       });
-      console.log(`[onUserDocCreate] Custom claims set for ${uid}`);
+      logger.info('Custom claims set for new user', { uid, role: userRole, gender });
     } catch (e) {
       console.error(`[onUserDocCreate] Error setting custom claims:`, e);
     }
@@ -281,14 +281,15 @@ exports.onUserDocUpdate = functions.firestore
     const genderChanged = before.gender !== after.gender;
 
     if (!roleChanged && !genderChanged) {
-      console.log(`[onUserDocUpdate] No role/gender changes for ${uid}, skipping`);
+      // No changes, skip
+
       return null;
     }
 
     const newRole = after.userRole || 'regular';
     const newGender = ['masculino','femenino'].includes(after.gender) ? after.gender : null;
 
-    console.log(`[onUserDocUpdate] Updating claims for ${uid}: role=${newRole}, gender=${newGender}`);
+    logger.info('Updating claims for user', { uid, role: newRole, gender: newGender });
 
     try {
       const user = await admin.auth().getUser(uid);
@@ -298,7 +299,7 @@ exports.onUserDocUpdate = functions.firestore
         role: newRole,
         gender: newGender
       });
-      console.log(`[onUserDocUpdate] Claims updated for ${uid}`);
+      logger.info('Claims updated successfully', { uid, role: newRole, gender: newGender });
     } catch (e) {
       console.error(`[onUserDocUpdate] Error updating claims:`, e);
     }
