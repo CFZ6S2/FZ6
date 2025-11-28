@@ -271,8 +271,16 @@
           document.getElementById('userAlias').textContent = currentUserData.alias || 'Usuario';
 
           // Show avatar or initial
+          // SECURITY: Sanitize photo URL to prevent XSS via image src
           if (currentUserData.photoURL) {
-            document.getElementById('userAvatar').innerHTML = `<img src="${currentUserData.photoURL}" class="w-full h-full rounded-full object-cover">`;
+            const safePhotoURL = sanitizer.url(currentUserData.photoURL);
+            if (safePhotoURL) {
+              document.getElementById('userAvatar').innerHTML = `<img src="${safePhotoURL}" class="w-full h-full rounded-full object-cover">`;
+            } else {
+              // Invalid URL, show initial instead
+              const initial = (currentUserData.alias || currentUserData.email || 'U')[0].toUpperCase();
+              document.getElementById('userAvatar').textContent = initial;
+            }
           } else {
             const initial = (currentUserData.alias || currentUserData.email || 'U')[0].toUpperCase();
             document.getElementById('userAvatar').textContent = initial;
