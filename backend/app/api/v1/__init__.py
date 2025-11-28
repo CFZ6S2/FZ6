@@ -36,6 +36,21 @@ try:
 except Exception as e:
     logger.warning(f"Could not import emergency phones router for v1: {e}")
 
+# Import new v1 routers (using relative imports to avoid circular dependency)
+try:
+    from . import recommendations
+    logger.info("V1 Recommendations module imported")
+except Exception as e:
+    logger.warning(f"Could not import recommendations module: {e}")
+    recommendations = None
+
+try:
+    from . import validation
+    logger.info("V1 Validation module imported")
+except Exception as e:
+    logger.warning(f"Could not import validation module: {e}")
+    validation = None
+
 # V1 specific endpoints
 @api_v1_router.get(
     "/info",
@@ -106,4 +121,4 @@ async def v1_root(request: Request):
         "info": "/v1/info"
     })
 
-__all__ = ['api_v1_router']
+__all__ = ['api_v1_router', 'recommendations', 'validation']
