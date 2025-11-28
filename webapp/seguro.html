@@ -23,6 +23,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- PayPal SDK with AUTHORIZE intent (not capture) -->
+    <!-- DOMPurify for XSS Protection -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script src="/webapp/js/sanitizer.js"></script>
+
+
   <script src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&currency=EUR&intent=authorize"></script>
 
   <style>

@@ -213,6 +213,13 @@
   <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
   <!-- Firebase SDK -->
+    <!-- DOMPurify for XSS Protection -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script src="/webapp/js/sanitizer.js"></script>
+
+
   <script type="module">
     import './js/firebase-appcheck.js';
     import { auth, db } from './js/firebase-config.js';
@@ -258,10 +265,13 @@
                     type === 'warning' ? 'text-yellow-400' :
                     'text-blue-400';
 
+      // Sanitize message to prevent XSS
+      const safeMessage = sanitizer.text(message);
+
       toast.innerHTML = `
         <div class="flex items-center gap-3">
           <i class="fas ${icon} ${color} text-xl"></i>
-          <span class="text-white">${message}</span>
+          <span class="text-white">${safeMessage}</span>
         </div>
       `;
 
