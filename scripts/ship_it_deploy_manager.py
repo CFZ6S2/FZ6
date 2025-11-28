@@ -42,11 +42,27 @@ def print_color(text, color="ENDC"):
     else:
         print(msg)
 
-def run_command(command, cwd=None, shell=True, capture_output=False, ignore_error=False):
+def run_command(command, cwd=None, shell=False, capture_output=False, ignore_error=False):
+    """
+    Execute a command safely.
+
+    Args:
+        command: Command as string (if shell=True) or list (if shell=False, recommended)
+        cwd: Working directory
+        shell: Whether to use shell (SECURITY: avoid when possible)
+        capture_output: Whether to capture stdout/stderr
+        ignore_error: Whether to ignore command failures
+    """
     try:
+        # Convert string commands to list for safety when shell=False
+        if not shell and isinstance(command, str):
+            command = command.split()
+
+        cmd_display = command if isinstance(command, str) else ' '.join(command)
         if not capture_output:
-            print_color(f"➜ Ejecutando: {command}", "CYAN")
-            log_action(f"Ejecutando: {command} en {cwd or 'root'}")
+            print_color(f"➜ Ejecutando: {cmd_display}", "CYAN")
+            log_action(f"Ejecutando: {cmd_display} en {cwd or 'root'}")
+
         result = subprocess.run(
             command,
             cwd=cwd,
@@ -59,7 +75,7 @@ def run_command(command, cwd=None, shell=True, capture_output=False, ignore_erro
         return result
     except subprocess.CalledProcessError as e:
         if not capture_output and not ignore_error:
-            print_color(f"✖ Error al ejecutar: {command}", "FAIL")
+            print_color(f"✖ Error al ejecutar: {cmd_display}", "FAIL")
             log_action(f"Error: {str(e)}")
             if e.stderr:
                 print(e.stderr)
@@ -90,7 +106,7 @@ def check_prerequisites():
 def check_git_status(auto=False):
     if not shutil.which("git"):
         return True
-    res = run_command("git status --porcelain", capture_output=True, cwd=PROJECT_ROOT)
+    res = run_command(["git", "status", "--porcelain"], capture_output=True, cwd=PROJECT_ROOT)
     if res and res.stdout.strip():
         print_color("\n⚠ ATENCIÓN: Tienes cambios sin guardar (commit) en Git.", "WARNING")
         print(res.stdout)
@@ -145,7 +161,7 @@ def build_frontend():
     print_color("\n--- Construyendo Frontend ---", "HEADER")
     if not os.path.exists(os.path.join(PROJECT_ROOT, "node_modules")):
         print_color("Instalando dependencias NPM (raíz)...", "BLUE")
-        if not run_command("npm install", cwd=PROJECT_ROOT):
+        if not run_command(["npm", "install"], cwd=PROJECT_ROOT):
             return False
     out_dir = os.path.join(WEBAPP_DIR, "css")
     os.makedirs(out_dir, exist_ok=True)
@@ -153,7 +169,7 @@ def build_frontend():
     output_css = os.path.join("webapp", "css", "output.css")
     if os.path.exists(os.path.join(PROJECT_ROOT, input_css)):
         print_color("Compilando Tailwind CSS...", "BLUE")
-        cmd = f"npx tailwindcss -i {input_css} -o {output_css} --minify"
+        cmd = ["npx", "tailwindcss", "-i", input_css, "-o", output_css, "--minify"]
         if run_command(cmd, cwd=PROJECT_ROOT):
             print_color("✔ Frontend compilado y listo.", "GREEN")
             return True
@@ -167,7 +183,7 @@ def prepare_functions():
     if not os.path.exists(func_node_modules):
         print_color("⚠ Dependencias de Functions no encontradas.", "WARNING")
         print_color("Instalando dependencias en /functions...", "BLUE")
-        if run_command("npm install", cwd=FUNCTIONS_DIR):
+        if run_command(["npm", "install"], cwd=FUNCTIONS_DIR):
             print_color("✔ Dependencias de Functions instaladas.", "GREEN")
         else:
             print_color("✖ Error instalando dependencias de Functions.", "FAIL")
@@ -184,7 +200,7 @@ def prepare_backend(auto=False):
     if not os.path.exists(venv_path):
         print_color("⚠ Entorno virtual (venv) no encontrado.", "WARNING")
         if auto:
-            if run_command(f"{sys.executable} -m venv {venv_path}", cwd=BACKEND_DIR):
+            if run_command([sys.executable, "-m", "venv", venv_path], cwd=BACKEND_DIR):
                 print_color("✔ Entorno virtual creado.", "GREEN")
             else:
                 print_color("✖ Error creando entorno virtual.", "FAIL")
@@ -192,7 +208,7 @@ def prepare_backend(auto=False):
         else:
             ans = input("¿Crear venv en /backend ahora? (s/n): ").lower()
             if ans == 's':
-                if run_command(f"{sys.executable} -m venv {venv_path}", cwd=BACKEND_DIR):
+                if run_command([sys.executable, "-m", "venv", venv_path], cwd=BACKEND_DIR):
                     print_color("✔ Entorno virtual creado.", "GREEN")
                 else:
                     print_color("✖ Error creando entorno virtual.", "FAIL")
@@ -201,7 +217,7 @@ def prepare_backend(auto=False):
     if platform.system() == "Windows":
         pip_exe = os.path.join(venv_path, "Scripts", "pip.exe")
     print_color("Instalando/actualizando dependencias de Python...", "BLUE")
-    if run_command(f"{pip_exe} install -r {req_path}", cwd=BACKEND_DIR):
+    if run_command([pip_exe, "install", "-r", req_path], cwd=BACKEND_DIR):
         print_color("✔ Dependencias de Python instaladas.", "GREEN")
     else:
         print_color("✖ Error instalando dependencias de Python.", "FAIL")
@@ -210,7 +226,7 @@ def prepare_backend(auto=False):
 
 def deploy_firebase(targets, env_id):
     print_color(f"\n--- Desplegando a Firebase: {targets} (Entorno: {env_id}) ---", "HEADER")
-    cmd = f"firebase deploy --project {env_id} --only {targets}"
+    cmd = ["firebase", "deploy", "--project", env_id, "--only", targets]
     if run_command(cmd, cwd=PROJECT_ROOT):
         print_color("✔ Despliegue de Firebase exitoso.", "GREEN")
         log_action(f"Despliegue exitoso: {targets} a {env_id}")
@@ -244,9 +260,9 @@ def deploy_backend_manager(mode="skip", auto=False):
             imsg = input("Mensaje del commit: ")
             if imsg:
                 msg = imsg
-        run_command("git add .", cwd=PROJECT_ROOT)
-        run_command(f'git commit -m "{msg}"', cwd=PROJECT_ROOT, ignore_error=True)
-        if run_command("git push", cwd=PROJECT_ROOT):
+        run_command(["git", "add", "."], cwd=PROJECT_ROOT)
+        run_command(["git", "commit", "-m", msg], cwd=PROJECT_ROOT, ignore_error=True)
+        if run_command(["git", "push"], cwd=PROJECT_ROOT):
             print_color("✔ Código subido. El CI/CD se encargará del resto.", "GREEN")
     elif mode == "script":
         script = os.path.join(BACKEND_DIR, "scripts", "deploy-render.sh")
@@ -254,7 +270,8 @@ def deploy_backend_manager(mode="skip", auto=False):
             if platform.system() == "Windows":
                 print_color("⚠ No se pueden ejecutar .sh en Windows desde aquí. Usa Git Bash o WSL.", "WARNING")
             else:
-                run_command(f"bash {script}", shell=True, cwd=BACKEND_DIR)
+                # SECURITY FIX: Use list form to prevent command injection
+                run_command(["bash", script], shell=False, cwd=BACKEND_DIR)
         else:
             print_color(f"✖ No se encontró {script}.", "FAIL")
 

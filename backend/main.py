@@ -18,6 +18,9 @@ from app.api.v1 import recommendations, validation
 from app.middleware.rate_limit import limiter, custom_rate_limit_handler
 from slowapi.errors import RateLimitExceeded
 
+# Import CSRF protection
+from app.middleware.csrf_protection import CSRFProtection
+
 # Load environment variables
 load_dotenv()
 
@@ -49,7 +52,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add CSRF Protection (must be added after CORS)
+app.add_middleware(CSRFProtection)
+
 print(f"✅ CORS enabled for origins: {origins}")
+print("✅ CSRF Protection enabled")
 
 # ============================================================================
 # INCLUDE API ROUTERS
