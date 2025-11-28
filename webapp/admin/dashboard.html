@@ -717,6 +717,10 @@
           const createdAt = user.createdAt?.toDate();
           const timeAgo = createdAt ? getTimeAgo(createdAt) : 'Hace un momento';
 
+          // SECURITY: Sanitize user data to prevent XSS in admin dashboard
+          const safeAlias = sanitizer.text(user.alias || 'Usuario');
+          const safeCity = sanitizer.text(user.city || 'Ciudad no especificada');
+
           const activityItem = document.createElement('div');
           activityItem.className = 'activity-item p-4';
           activityItem.innerHTML = `
@@ -727,7 +731,7 @@
                 </div>
                 <div>
                   <p class="text-white font-semibold">Nuevo usuario registrado</p>
-                  <p class="text-white text-opacity-60 text-sm">${user.alias || 'Usuario'} - ${user.city || 'Ciudad no especificada'}</p>
+                  <p class="text-white text-opacity-60 text-sm">${safeAlias} - ${safeCity}</p>
                 </div>
               </div>
               <span class="text-white text-opacity-50 text-sm">${timeAgo}</span>

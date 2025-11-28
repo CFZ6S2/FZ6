@@ -4,6 +4,7 @@ Provides protected API endpoints with Firebase authentication
 """
 
 import os
+from enum import Enum
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -57,6 +58,29 @@ app.add_middleware(CSRFProtection)
 
 print(f"✅ CORS enabled for origins: {origins}")
 print("✅ CSRF Protection enabled")
+
+# ============================================================================
+# INPUT VALIDATION ENUMS (Security: Prevent injection attacks)
+# ============================================================================
+
+class PhotoType(str, Enum):
+    """Valid photo types for profile uploads"""
+    avatar = "avatar"
+    gallery_1 = "gallery_1"
+    gallery_2 = "gallery_2"
+    gallery_3 = "gallery_3"
+    gallery_4 = "gallery_4"
+    gallery_5 = "gallery_5"
+    gallery_6 = "gallery_6"
+    verification = "verification"
+
+class AllowedMimeType(str, Enum):
+    """Allowed MIME types for uploads"""
+    jpeg = "image/jpeg"
+    jpg = "image/jpg"
+    png = "image/png"
+    webp = "image/webp"
+    gif = "image/gif"
 
 # ============================================================================
 # INCLUDE API ROUTERS
@@ -164,7 +188,7 @@ async def upload_image(
 @app.post("/api/upload/profile")
 async def upload_profile_image(
     file: UploadFile = File(...),
-    photo_type: str = "avatar",
+    photo_type: PhotoType = PhotoType.avatar,  # SECURITY: Enum validation prevents injection
     user: dict = Depends(get_current_user)
 ):
     """
@@ -173,10 +197,35 @@ async def upload_profile_image(
 
     Args:
         file: Image file to upload
-        photo_type: Type of photo (avatar, gallery_1, gallery_2, etc.)
+        photo_type: Type of photo (avatar, gallery_1, gallery_2, etc.) - validated by Enum
+
+    Security:
+        - Photo type validated via Enum (prevents injection)
+        - File type validated against whitelist
+        - File size limits enforced
+        - User authentication required
     """
     try:
-        # Validate photo type
+        # SECURITY: Validate file type (whitelist approach)
+        if file.content_type not in [mime.value for mime in AllowedMimeType]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tipo de archivo no permitido. Tipos aceptados: {', '.join([mime.value for mime in AllowedMimeType])}"
+            )
+
+        # SECURITY: Validate file size (max 5MB)
+        MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+        file_content = await file.read()
+        if len(file_content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Archivo muy grande. Tamaño máximo: 5MB"
+            )
+
+        # Reset file pointer for upload
+        await file.seek(0)
+
+        # Validate photo type (now handled by Enum, but keeping for backwards compatibility)
         valid_types = ["avatar"] + [f"gallery_{i}" for i in range(1, 6)]
         if photo_type not in valid_types:
             raise HTTPException(
