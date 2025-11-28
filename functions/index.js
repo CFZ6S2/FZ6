@@ -1414,6 +1414,15 @@ exports.onSOSAlert = notifications.onSOSAlert;
 exports.sendTestNotification = notifications.sendTestNotification;
 
 // ============================================================================
+// FRAUD DETECTION
+// ============================================================================
+const fraudDetection = require('./fraud-detection');
+
+exports.analyzeFraud = fraudDetection.analyzeFraud;
+exports.onUserCreatedAnalyzeFraud = fraudDetection.onUserCreatedAnalyzeFraud;
+exports.scheduledFraudAnalysis = fraudDetection.scheduledFraudAnalysis;
+
+// ============================================================================
 // HEALTH CHECKS
 // ============================================================================
 const healthCheck = require('./health-check');

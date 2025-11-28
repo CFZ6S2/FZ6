@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Perfil - TuCitaSegura</title>
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#764ba2">
+
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
 
@@ -557,7 +568,7 @@
   <!-- Firebase SDK -->
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
-    // DISABLED: import './js/firebase-appcheck.js';
+    import './js/firebase-appcheck.js';
 
     // Then import Firebase services
     import { auth, db, storage } from './js/firebase-config.js';
@@ -571,6 +582,10 @@
     import { initializeNotifications } from './js/notifications-safe.js';
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
     import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config.js';
+    import { fileValidator, showValidationErrors } from './js/file-validator.js';
+
+    // Image optimization with lazy loading
+    import './js/image-optimizer.js';
 
     // Setup global error handling
     setupGlobalErrorHandling();
@@ -1152,30 +1167,44 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        showToast('Por favor selecciona una imagen válida', 'error');
-        return;
+      // Validate file with FileValidator
+      try {
+        const validation = await fileValidator.validateImage(file);
+
+        // Show errors and warnings
+        showValidationErrors(validation, showToast);
+
+        // If validation failed, don't proceed
+        if (!validation.isValid) {
+          e.target.value = ''; // Clear the input
+          return;
+        }
+
+        photoFile = file;
+
+        // Preview
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById('profilePhoto').src = event.target.result;
+          document.getElementById('profilePhoto').classList.remove('hidden');
+          document.getElementById('photoPlaceholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+
+        showToast('Foto seleccionada. Guarda los cambios para actualizar.', 'info');
+
+        // Log validation metadata
+        logger.debug('Profile photo validated', {
+          fileName: validation.metadata.fileName,
+          size: validation.metadata.sizeMB + 'MB',
+          dimensions: `${validation.metadata.width}x${validation.metadata.height}`
+        });
+
+      } catch (error) {
+        logger.error('Photo validation error', error);
+        showToast('Error al validar la imagen', 'error');
+        e.target.value = ''; // Clear the input
       }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('La imagen debe ser menor a 5MB', 'error');
-        return;
-      }
-
-      photoFile = file;
-
-      // Preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        document.getElementById('profilePhoto').src = event.target.result;
-        document.getElementById('profilePhoto').classList.remove('hidden');
-        document.getElementById('photoPlaceholder').classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
-
-      showToast('Foto seleccionada. Guarda los cambios para actualizar.', 'info');
     });
 
     // Gallery photo uploads (5 photos)
@@ -1191,35 +1220,49 @@
       });
 
       // Handle file selection
-      inputEl.addEventListener('change', (e) => {
+      inputEl.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          showToast('Por favor selecciona una imagen válida', 'error');
-          return;
+        // Validate file with FileValidator
+        try {
+          const validation = await fileValidator.validateImage(file);
+
+          // Show errors and warnings
+          showValidationErrors(validation, showToast);
+
+          // If validation failed, don't proceed
+          if (!validation.isValid) {
+            e.target.value = ''; // Clear the input
+            return;
+          }
+
+          galleryFiles[i - 1] = file;
+
+          // Preview
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            imageEl.src = event.target.result;
+            imageEl.classList.remove('hidden');
+            previewEl.classList.add('hidden');
+            removeBtn.classList.remove('opacity-0', 'pointer-events-none');
+          };
+          reader.readAsDataURL(file);
+
+          showToast(`Foto ${i} seleccionada`, 'info');
+
+          // Log validation metadata
+          logger.debug(`Gallery photo ${i} validated`, {
+            fileName: validation.metadata.fileName,
+            size: validation.metadata.sizeMB + 'MB',
+            dimensions: `${validation.metadata.width}x${validation.metadata.height}`
+          });
+
+        } catch (error) {
+          logger.error('Gallery photo validation error', error);
+          showToast('Error al validar la imagen', 'error');
+          e.target.value = ''; // Clear the input
         }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          showToast('La imagen debe ser menor a 5MB', 'error');
-          return;
-        }
-
-        galleryFiles[i - 1] = file;
-
-        // Preview
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          imageEl.src = event.target.result;
-          imageEl.classList.remove('hidden');
-          previewEl.classList.add('hidden');
-          removeBtn.classList.remove('opacity-0', 'pointer-events-none');
-        };
-        reader.readAsDataURL(file);
-
-        showToast(`Foto ${i} seleccionada`, 'info');
       });
 
       // Remove photo
