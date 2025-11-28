@@ -65,3 +65,15 @@ backend/.env
 coverage/
 .pytest_cache/
 tuscitasegura-loading.zip
+
+# Binary files and archives
+*.exe
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Backup directories
+backup_*/
+*.backup
+.trae/
