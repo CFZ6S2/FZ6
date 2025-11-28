@@ -91,7 +91,7 @@ async function updateUserMembership(userId, status, subscriptionData = {}) {
   }
 
   await userRef.update(updateData);
-  console.log(`[updateUserMembership] User ${userId} membership updated: ${status}`);
+  logger.info('User membership updated', { userId, status });
 
   // CRITICAL: Update custom claims for Firestore Rules
   // This allows Rules to check payment status without expensive get() calls
@@ -104,7 +104,7 @@ async function updateUserMembership(userId, status, subscriptionData = {}) {
       hasActiveSubscription: status === 'active'
     });
 
-    console.log(`[updateUserMembership] Custom claims updated for ${userId}: hasActiveSubscription=${status === 'active'}`);
+    logger.info('Custom claims updated for subscription', { userId, hasActiveSubscription: status === 'active' });
   } catch (error) {
     console.error(`[updateUserMembership] Error updating custom claims for ${userId}:`, error);
     // Don't throw - Firestore update succeeded, claims update is optimization
@@ -129,7 +129,7 @@ async function updateUserInsurance(userId, paymentData) {
   };
 
   await userRef.update(updateData);
-  console.log(`[updateUserInsurance] User ${userId} insurance activated`);
+  logger.info('User insurance activated', { userId, insuranceType: 'anti-ghosting' });
 
   // CRITICAL: Update custom claims for Firestore Rules
   // This allows Rules to check insurance status without expensive get() calls
@@ -142,7 +142,7 @@ async function updateUserInsurance(userId, paymentData) {
       hasAntiGhostingInsurance: true
     });
 
-    console.log(`[updateUserInsurance] Custom claims updated for ${userId}: hasAntiGhostingInsurance=true`);
+    logger.info('Custom claims updated for insurance', { userId, hasAntiGhostingInsurance: true });
   } catch (error) {
     console.error(`[updateUserInsurance] Error updating custom claims for ${userId}:`, error);
     // Don't throw - Firestore update succeeded, claims update is optimization
@@ -162,7 +162,7 @@ async function logSubscription(userId, subscriptionData) {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   });
-  console.log(`[logSubscription] Subscription logged for user ${userId}`);
+  logger.info('Subscription payment logged', { userId, subscriptionId: subscriptionData.subscriptionId });
 }
 
 /**

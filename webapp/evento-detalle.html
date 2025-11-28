@@ -366,13 +366,21 @@
         other: 'Otro'
       };
 
+      // SECURITY: Sanitize all user-provided data to prevent XSS
+      const safeTitle = sanitizer.text(eventData.title || 'Sin título');
+      const safeConcierge = sanitizer.text(eventData.conciergeName || 'Concierge');
+      const safeCity = sanitizer.text(eventData.location?.city || 'N/A');
+      const safeAddress = sanitizer.text(eventData.location?.address || '');
+      const safeDescription = sanitizer.text(eventData.description || 'Sin descripción');
+      const safeEventType = sanitizer.text(eventTypeNames[eventData.eventType] || 'Otro');
+
       document.getElementById('eventDetails').innerHTML = `
         <div class="flex justify-between items-start mb-6">
           <div class="flex-1">
-            <h1 class="text-white text-3xl md:text-4xl font-bold mb-2">${eventData.title || 'Sin título'}</h1>
+            <h1 class="text-white text-3xl md:text-4xl font-bold mb-2">${safeTitle}</h1>
             <p class="text-white text-opacity-80">
               <i class="fas fa-user-tie mr-2"></i>
-              Publicado por: <span class="font-semibold">${eventData.conciergeName || 'Concierge'}</span>
+              Publicado por: <span class="font-semibold">${safeConcierge}</span>
               <span class="bg-gradient-to-r from-amber-500 to-yellow-600 px-2 py-1 rounded text-xs ml-2">🎩 Verificado</span>
             </p>
           </div>
@@ -392,9 +400,9 @@
           <div class="bg-white bg-opacity-10 rounded-lg p-4">
             <p class="text-white text-opacity-70 text-sm mb-1">Ubicación</p>
             <p class="text-white font-semibold">
-              <i class="fas fa-map-marker-alt mr-2"></i>${eventData.location?.city || 'N/A'}
+              <i class="fas fa-map-marker-alt mr-2"></i>${safeCity}
             </p>
-            <p class="text-white text-opacity-80 text-sm">${eventData.location?.address || ''}</p>
+            <p class="text-white text-opacity-80 text-sm">${safeAddress}</p>
           </div>
 
           <div class="bg-white bg-opacity-10 rounded-lg p-4">
@@ -408,12 +416,12 @@
 
         <div class="bg-white bg-opacity-10 rounded-lg p-4 mb-6">
           <p class="text-white text-opacity-70 text-sm mb-2">Tipo de Evento</p>
-          <p class="text-white font-semibold">${eventTypeNames[eventData.eventType] || 'Otro'}</p>
+          <p class="text-white font-semibold">${safeEventType}</p>
         </div>
 
         <div class="mb-6">
           <h3 class="text-white text-xl font-bold mb-3">Descripción</h3>
-          <p class="text-white text-opacity-90 leading-relaxed">${eventData.description || 'Sin descripción'}</p>
+          <p class="text-white text-opacity-90 leading-relaxed">${safeDescription}</p>
         </div>
 
         <div class="mb-6">
@@ -578,35 +586,44 @@
         minute: '2-digit'
       }) : 'Fecha no disponible';
 
+      // SECURITY: Sanitize user data to prevent XSS
+      const safeName = sanitizer.text(app.userName || 'Usuario');
+      const safeAge = sanitizer.text(String(app.userAge || ''));
+      const safeCity = sanitizer.text(app.userCity || '');
+      const safeMotivation = sanitizer.text(app.motivation || 'Sin mensaje');
+      const safePhoto = app.userPhoto ? sanitizer.url(app.userPhoto) : null;
+      const safeId = sanitizer.attribute(app.id || ''); // Sanitize for use in attributes
+      const safeInitial = safeName.charAt(0).toUpperCase();
+
       const card = document.createElement('div');
       card.className = 'applicant-card p-6';
       card.innerHTML = `
         <div class="flex items-start space-x-4">
           <div class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold">
-            ${app.userPhoto ? `<img src="${app.userPhoto}" class="w-full h-full rounded-full object-cover">` : app.userName[0].toUpperCase()}
+            ${safePhoto ? `<img src="${safePhoto}" class="w-full h-full rounded-full object-cover">` : safeInitial}
           </div>
 
           <div class="flex-1">
             <div class="flex justify-between items-start mb-2">
               <div>
-                <h3 class="text-white font-bold text-xl">${app.userName}</h3>
+                <h3 class="text-white font-bold text-xl">${safeName}</h3>
                 <p class="text-white text-opacity-70 text-sm">
-                  ${app.userAge} años • ${app.userCity}
+                  ${safeAge} años • ${safeCity}
                 </p>
               </div>
               <span class="text-white text-opacity-60 text-xs">${formattedDate}</span>
             </div>
 
             <div class="bg-white bg-opacity-10 rounded-lg p-3 mb-4">
-              <p class="text-white text-opacity-80 text-sm italic">"${app.motivation || 'Sin mensaje'}"</p>
+              <p class="text-white text-opacity-80 text-sm italic">"${safeMotivation}"</p>
             </div>
 
             ${app.status === 'pending' ? `
               <div class="flex space-x-3">
-                <button onclick="selectApplicant('${app.id}')" class="flex-1 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition">
+                <button data-app-id="${safeId}" data-action="select" class="applicant-action-btn flex-1 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white font-semibold transition">
                   <i class="fas fa-check mr-2"></i>Seleccionar
                 </button>
-                <button onclick="rejectApplicant('${app.id}')" class="flex-1 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white font-semibold transition">
+                <button data-app-id="${safeId}" data-action="reject" class="applicant-action-btn flex-1 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-white font-semibold transition">
                   <i class="fas fa-times mr-2"></i>Rechazar
                 </button>
               </div>
@@ -615,7 +632,7 @@
                 <span class="bg-green-500 px-4 py-2 rounded-full text-white font-semibold">
                   <i class="fas fa-check-circle mr-2"></i>Seleccionada
                 </span>
-                <button onclick="unselectApplicant('${app.id}')" class="text-white text-opacity-70 hover:text-opacity-100 text-sm transition">
+                <button data-app-id="${safeId}" data-action="unselect" class="applicant-action-btn text-white text-opacity-70 hover:text-opacity-100 text-sm transition">
                   <i class="fas fa-undo mr-1"></i>Quitar selección
                 </button>
               </div>
@@ -624,7 +641,7 @@
                 <span class="bg-red-500 px-4 py-2 rounded-full text-white font-semibold">
                   <i class="fas fa-times-circle mr-2"></i>Rechazada
                 </span>
-                <button onclick="reconsiderApplicant('${app.id}')" class="text-white text-opacity-70 hover:text-opacity-100 text-sm transition">
+                <button data-app-id="${safeId}" data-action="reconsider" class="applicant-action-btn text-white text-opacity-70 hover:text-opacity-100 text-sm transition">
                   <i class="fas fa-undo mr-1"></i>Reconsiderar
                 </button>
               </div>
@@ -632,6 +649,24 @@
           </div>
         </div>
       `;
+
+      // SECURITY: Add event listeners using event delegation (safer than onclick)
+      card.querySelectorAll('.applicant-action-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const action = e.currentTarget.dataset.action;
+          const appId = e.currentTarget.dataset.appId;
+
+          if (action === 'select') {
+            await selectApplicant(appId);
+          } else if (action === 'reject') {
+            await rejectApplicant(appId);
+          } else if (action === 'unselect') {
+            await unselectApplicant(appId);
+          } else if (action === 'reconsider') {
+            await reconsiderApplicant(appId);
+          }
+        });
+      });
 
       return card;
     }

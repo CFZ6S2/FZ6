@@ -231,4 +231,9 @@ if (document.readyState === 'loading') {
   initSanitizer();
 }
 
+// Make sanitizer globally available for non-module scripts
+if (typeof window !== 'undefined') {
+  window.sanitizer = sanitizer;
+}
+
 export default sanitizer;
