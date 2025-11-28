@@ -12,19 +12,19 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 # Función para mostrar mensajes de éxito
 function Write-Success {
     param($Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+    Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
 # Función para mostrar mensajes de error
-function Write-Error {
+function Write-ErrorMsg {
     param($Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+    Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
 # Función para mostrar mensajes de info
 function Write-Info {
     param($Message)
-    Write-Host "ℹ $Message" -ForegroundColor Yellow
+    Write-Host "[INFO] $Message" -ForegroundColor Yellow
 }
 
 # ============================================================================
@@ -38,7 +38,7 @@ try {
     $firebaseVersion = firebase --version 2>$null
     Write-Success "Firebase CLI instalado: $firebaseVersion"
 } catch {
-    Write-Error "Firebase CLI no encontrado"
+    Write-ErrorMsg "Firebase CLI no encontrado"
     Write-Info "Instalar con: npm install -g firebase-tools"
     exit 1
 }
@@ -50,19 +50,19 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Autenticación Firebase OK"
     } else {
-        Write-Error "No autenticado en Firebase"
+        Write-ErrorMsg "No autenticado en Firebase"
         Write-Info "Ejecutar: firebase login"
         exit 1
     }
 } catch {
-    Write-Error "Error verificando autenticación"
+    Write-ErrorMsg "Error verificando autenticación"
     exit 1
 }
 
 # Verificar que estamos en la branch correcta
 $currentBranch = git branch --show-current
 if ($currentBranch -ne "claude/audit-page-performance-016iXBfeBGebGti8X6EHN4nd") {
-    Write-Error "Branch incorrecta: $currentBranch"
+    Write-ErrorMsg "Branch incorrecta: $currentBranch"
     Write-Info "Cambiar a: git checkout claude/audit-page-performance-016iXBfeBGebGti8X6EHN4nd"
     exit 1
 }
@@ -71,7 +71,7 @@ Write-Success "Branch correcta: $currentBranch"
 # Verificar que no hay cambios sin commitear
 $gitStatus = git status --porcelain
 if ($gitStatus) {
-    Write-Error "Hay cambios sin commitear"
+    Write-ErrorMsg "Hay cambios sin commitear"
     git status
     exit 1
 }
@@ -132,11 +132,11 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Cloud Functions deployed exitosamente"
     } else {
-        Write-Error "Error en deploy de Functions"
+        Write-ErrorMsg "Error en deploy de Functions"
         exit 1
     }
 } catch {
-    Write-Error "Error deploying Functions: $_"
+    Write-ErrorMsg "Error deploying Functions: $_"
     exit 1
 }
 
@@ -151,11 +151,11 @@ try {
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Firestore Rules deployed exitosamente"
     } else {
-        Write-Error "Error en deploy de Rules"
+        Write-ErrorMsg "Error en deploy de Rules"
         exit 1
     }
 } catch {
-    Write-Error "Error deploying Rules: $_"
+    Write-ErrorMsg "Error deploying Rules: $_"
     exit 1
 }
 
