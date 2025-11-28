@@ -35,6 +35,7 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
       method: req.method,
       headers,
       data: req.body,
+      timeout: 30000, // 30 segundos - previene requests que cuelgan indefinidamente
       validateStatus: () => true
     });
     Object.entries(response.headers || {}).forEach(([k, v]) => {
