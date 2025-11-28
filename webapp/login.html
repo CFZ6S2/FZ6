@@ -166,10 +166,20 @@
   <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
   <!-- Firebase SDK -->
+    <!-- DOMPurify for XSS Protection -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script src="/webapp/js/sanitizer.js"></script>
+
+
   <script type="module">
     // App Check TEMPORALMENTE DESACTIVADO para debugging
     import './js/firebase-appcheck-disabled.js';
     import { auth, db } from './js/firebase-config.js';
+    import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
+    import { validators } from './js/input-validator.js';
+    import { SecurityLogger } from './js/security-logger.js';
     import { logger } from './js/logger.js';
     import { handleFirebaseNetworkError, showNetworkError } from './js/network-error-handler.js';
     import { isDemoMode, getDemoUser, initializeDemoMode } from './js/demo-mode.js';
@@ -210,10 +220,13 @@
                     type === 'warning' ? 'text-yellow-400' :
                     'text-blue-400';
 
+      // Sanitize message to prevent XSS
+      const safeMessage = sanitizer.text(message);
+
       toast.innerHTML = `
         <div class="flex items-center gap-3">
           <i class="fas ${icon} ${color} text-xl"></i>
-          <span class="text-white">${message}</span>
+          <span class="text-white">${safeMessage}</span>
         </div>
       `;
 
@@ -276,6 +289,25 @@
       const rememberMe = document.getElementById('rememberMe').checked;
       const loginButton = document.getElementById('loginButton');
 
+      // ✅ Email validation
+      if (!validators.email(email)) {
+        showToast('Por favor ingresa un email válido', 'error');
+        return;
+      }
+
+      // ✅ Password basic validation
+      if (!password || password.length < 6) {
+        showToast('Contraseña inválida', 'error');
+        return;
+      }
+
+      // ✅ Rate limiting check (5 attempts per minute)
+      if (!RateLimiters.login.tryRequest(email)) {
+        const retryAfter = RateLimiters.login.getRetryAfter(email);
+        showRateLimitError('inicio de sesión', retryAfter);
+        return;
+      }
+
       // Disable button
       loginButton.disabled = true;
       loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
@@ -308,6 +340,9 @@
           loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
           return;
         }
+
+        // ✅ Log successful login
+        SecurityLogger.logSuccessfulLogin(user.uid, email);
 
         showToast('¡Bienvenido de vuelta!', 'success');
 
@@ -402,6 +437,9 @@
             default:
               errorMessage = error.message;
           }
+
+          // ✅ Log failed login
+          SecurityLogger.logFailedLogin(email, errorMessage);
 
           showToast(errorMessage, 'error');
         }
