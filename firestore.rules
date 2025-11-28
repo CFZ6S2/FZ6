@@ -81,18 +81,16 @@ service cloud.firestore {
                     && isAdult(request.resource.data.birthDate);
 
       // Lectura: Usuarios autenticados pueden ver perfiles
-      // ✅ CORREGIDO: Filtrado de género aplicado en las reglas
+      // ✅ Filtrado de género aplicado en las reglas
       // - Los hombres solo pueden ver perfiles de mujeres
       // - Las mujeres solo pueden ver perfiles de hombres
       // - Cada usuario puede ver su propio perfil
       // - Los admins pueden ver todos los perfiles
-      // ⚠️ TEMPORAL: Permitir lectura básica mientras resolvemos custom claims
       allow read: if isAuthed() && (
         userId == uid() ||  // Propio perfil
         isAdmin() ||  // Admin puede ver todos
-        (gender() != null && isMale() && resource.data.gender == 'femenino') ||  // Hombres con género ven mujeres
-        (gender() != null && isFemale() && resource.data.gender == 'masculino') ||  // Mujeres con género ven hombres
-        gender() == null  // Usuarios sin género en custom claims pueden ver todos (temporal)
+        (isMale() && resource.data.gender == 'femenino') ||  // Hombres ven mujeres
+        (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
       );
 
       // Actualización: El dueño puede actualizar su perfil (con alias/gender configurables una vez)

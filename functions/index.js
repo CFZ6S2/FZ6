@@ -11,6 +11,15 @@ const logger = createLogger('functions-main');
 
 admin.initializeApp();
 
+// ============================================================================
+// PAYPAL TOKEN CACHE
+// ============================================================================
+// Cache para tokens de PayPal para reducir llamadas a API
+let paypalTokenCache = {
+  token: null,
+  expiresAt: null
+};
+
 logger.info('Cloud Functions initialized', {
   nodeVersion: process.version,
   environment: process.env.FUNCTION_TARGET || 'unknown'
@@ -35,6 +44,7 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
       method: req.method,
       headers,
       data: req.body,
+      timeout: 30000, // 30 segundos - previene requests que cuelgan indefinidamente
       validateStatus: () => true
     });
     Object.entries(response.headers || {}).forEach(([k, v]) => {
@@ -434,14 +444,39 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   try {
     event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
   } catch (err) {
-    console.error(`[stripeWebhook] Webhook signature verification failed:`, err.message);
+    logger.error('Stripe webhook signature verification failed', err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log(`[stripeWebhook] Event received: ${event.type}`);
+  const eventId = event.id;
+  const eventType = event.type;
+
+  logger.info('Stripe webhook received', {
+    eventId,
+    eventType,
+    livemode: event.livemode
+  });
+
+  const db = admin.firestore();
 
   try {
-    switch (event.type) {
+    // ============================================================================
+    // IDEMPOTENCIA: Verificar si ya procesamos este evento
+    // ============================================================================
+    const webhookRef = db.collection('processed_webhooks').doc(eventId);
+    const webhookDoc = await webhookRef.get();
+
+    if (webhookDoc.exists) {
+      logger.info('Webhook already processed (duplicate)', {
+        eventId,
+        eventType,
+        processedAt: webhookDoc.data().processedAt?.toDate()
+      });
+      return res.json({ received: true, duplicate: true });
+    }
+
+    // Procesar el evento
+    switch (eventType) {
       // ========== SUBSCRIPTION EVENTS ==========
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
@@ -471,13 +506,30 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
         break;
 
       default:
-        console.log(`[stripeWebhook] Unhandled event type: ${event.type}`);
+        logger.debug('Unhandled Stripe webhook event type', { eventType });
     }
 
+    // Marcar como procesado DESPUÉS de procesamiento exitoso
+    await webhookRef.set({
+      eventId,
+      eventType,
+      provider: 'stripe',
+      livemode: event.livemode,
+      processedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: event.created ? admin.firestore.Timestamp.fromMillis(event.created * 1000) : admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    logger.info('Stripe webhook processed successfully', { eventId, eventType });
     res.json({ received: true });
+
   } catch (error) {
-    console.error(`[stripeWebhook] Error processing event:`, error);
-    res.status(500).json({ error: error.message });
+    logger.error('Error processing Stripe webhook', error, {
+      eventId,
+      eventType
+    });
+    // Retornar 200 para evitar reintentos infinitos en errores no críticos
+    // Stripe reintentará automáticamente si es un error temporal (5xx)
+    res.status(200).json({ received: true, error: error.message });
   }
 });
 
@@ -798,8 +850,16 @@ async function verifyPayPalWebhookSignature(req) {
 // ============================================================================
 exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
   const event = req.body;
+  const eventId = event.id;
+  const eventType = event.event_type;
 
-  console.log(`[paypalWebhook] Event received: ${event.event_type}`);
+  logger.info('PayPal webhook received', {
+    eventId,
+    eventType,
+    resourceType: event.resource_type
+  });
+
+  const db = admin.firestore();
 
   try {
     // ⚠️ CRITICAL SECURITY: Verificar firma de PayPal webhook
@@ -807,17 +867,32 @@ exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
     const isValidSignature = await verifyPayPalWebhookSignature(req);
 
     if (!isValidSignature) {
-      console.error('[paypalWebhook] Invalid webhook signature - potential fraud attempt');
-      // Rechazar request no autenticado
+      logger.error('PayPal webhook signature verification failed - potential fraud');
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid webhook signature'
       });
     }
 
-    console.log('[paypalWebhook] Webhook signature verified - processing event');
+    logger.info('PayPal webhook signature verified');
 
-    switch (event.event_type) {
+    // ============================================================================
+    // IDEMPOTENCIA: Verificar si ya procesamos este evento
+    // ============================================================================
+    const webhookRef = db.collection('processed_webhooks').doc(`paypal_${eventId}`);
+    const webhookDoc = await webhookRef.get();
+
+    if (webhookDoc.exists) {
+      logger.info('PayPal webhook already processed (duplicate)', {
+        eventId,
+        eventType,
+        processedAt: webhookDoc.data().processedAt?.toDate()
+      });
+      return res.json({ received: true, duplicate: true });
+    }
+
+    // Procesar el evento
+    switch (eventType) {
       // ========== SUBSCRIPTION EVENTS ==========
       case 'BILLING.SUBSCRIPTION.ACTIVATED':
         await handlePayPalSubscriptionActivated(event.resource);
@@ -843,13 +918,29 @@ exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
         break;
 
       default:
-        console.log(`[paypalWebhook] Unhandled event type: ${event.event_type}`);
+        logger.debug('Unhandled PayPal webhook event type', { eventType });
     }
 
+    // Marcar como procesado DESPUÉS de procesamiento exitoso
+    await webhookRef.set({
+      eventId,
+      eventType,
+      provider: 'paypal',
+      resourceType: event.resource_type,
+      processedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: event.create_time ? admin.firestore.Timestamp.fromDate(new Date(event.create_time)) : admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    logger.info('PayPal webhook processed successfully', { eventId, eventType });
     res.json({ received: true });
+
   } catch (error) {
-    console.error(`[paypalWebhook] Error processing event:`, error);
-    res.status(500).json({ error: error.message });
+    logger.error('Error processing PayPal webhook', error, {
+      eventId,
+      eventType
+    });
+    // Retornar 200 para evitar reintentos infinitos en errores no críticos
+    res.status(200).json({ received: true, error: error.message });
   }
 });
 
@@ -996,9 +1087,22 @@ async function handlePayPalPaymentFailed(sale) {
 // ============================================================================
 
 /**
- * Helper: Obtener access token de PayPal
+ * Helper: Obtener access token de PayPal con caché
+ * Los tokens de PayPal duran ~9 horas. Cachear reduce llamadas a API.
  */
 async function getPayPalAccessToken() {
+  const now = Date.now();
+
+  // Verificar si tenemos un token válido en caché
+  if (paypalTokenCache.token && paypalTokenCache.expiresAt && paypalTokenCache.expiresAt > now) {
+    logger.debug('Using cached PayPal token', {
+      expiresIn: Math.round((paypalTokenCache.expiresAt - now) / 1000) + 's'
+    });
+    return paypalTokenCache.token;
+  }
+
+  logger.info('Fetching new PayPal access token');
+
   const paypalMode = functions.config().paypal?.mode || process.env.PAYPAL_MODE || 'sandbox';
   const paypalClientId = functions.config().paypal?.client_id || process.env.PAYPAL_CLIENT_ID;
   const paypalSecret = functions.config().paypal?.secret || process.env.PAYPAL_SECRET;
@@ -1017,10 +1121,24 @@ async function getPayPalAccessToken() {
     headers: {
       'Authorization': `Basic ${auth}`,
       'Content-Type': 'application/x-www-form-urlencoded'
-    }
+    },
+    timeout: 10000 // 10 segundos timeout
   });
 
-  return response.data.access_token;
+  const accessToken = response.data.access_token;
+  const expiresIn = response.data.expires_in || 32400; // Default: 9 horas (32400 segundos)
+
+  // Guardar en caché con 5 minutos de margen de seguridad
+  const safetyMargin = 300000; // 5 minutos en milisegundos
+  paypalTokenCache.token = accessToken;
+  paypalTokenCache.expiresAt = now + (expiresIn * 1000) - safetyMargin;
+
+  logger.info('PayPal token cached', {
+    expiresIn: expiresIn + 's',
+    cacheExpiresAt: new Date(paypalTokenCache.expiresAt).toISOString()
+  });
+
+  return accessToken;
 }
 
 /**
