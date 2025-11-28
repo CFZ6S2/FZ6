@@ -177,6 +177,7 @@
     // App Check TEMPORALMENTE DESACTIVADO para debugging
     import './js/firebase-appcheck-disabled.js';
     import { auth, db } from './js/firebase-config.js';
+    import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
     import { logger } from './js/logger.js';
     import { handleFirebaseNetworkError, showNetworkError } from './js/network-error-handler.js';
     import { isDemoMode, getDemoUser, initializeDemoMode } from './js/demo-mode.js';
@@ -285,6 +286,13 @@
       const password = document.getElementById('password').value;
       const rememberMe = document.getElementById('rememberMe').checked;
       const loginButton = document.getElementById('loginButton');
+
+      // ✅ Rate limiting check (5 attempts per minute)
+      if (!RateLimiters.login.tryRequest(email)) {
+        const retryAfter = RateLimiters.login.getRetryAfter(email);
+        showRateLimitError('inicio de sesión', retryAfter);
+        return;
+      }
 
       // Disable button
       loginButton.disabled = true;
