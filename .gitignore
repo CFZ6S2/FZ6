@@ -19,6 +19,11 @@ backend/.env.railway
 **/*.pem
 **/*.key
 
+# API keys and configuration files with secrets
+webapp/js/google-maps-config.js
+**/api-config.js
+**/*-config.js
+
 # Node modules
 node_modules/
 functions/node_modules/

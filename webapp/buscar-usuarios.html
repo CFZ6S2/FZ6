@@ -33,13 +33,20 @@
     3. Create API key with HTTP referrer restrictions
     4. Replace YOUR_GOOGLE_MAPS_API_KEY below
 
-    Status: 🔴 NOT CONFIGURED - Map will NOT work without valid API key
+    Status: ⚠️ API key should be configured via environment variables
+    See: SECURITY_API_KEYS.md for setup instructions
   -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places,geometry"></script>
-=======
-  <!-- Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AQ.Ab8RN6I6FQgaC1SltCBdMTyt6mM49BUATqwB32I7g5crKb91Vg&libraries=places,geometry"></script>
->>>>>>> origin/claude/add-api-key-integration-011CUyqdyCeFEB4PHX2XZJn9
+  <!-- Google Maps API - Loaded dynamically from config -->
+  <script type="module">
+    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config.js';
+
+    // Dynamically load Google Maps API with the configured key
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
