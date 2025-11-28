@@ -1,7 +1,49 @@
-node_modules
-build
-dist
-.git
-.trae
-.log
-.figma
+# Node modules
+node_modules/
+
+# Functions (se despliegan separado en Firebase)
+functions/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+*.test.js
+*.spec.js
+__tests__/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+.cache/
+dist/
+
+# Documentation
+README.md
+docs/
+
+# Archivos de desarrollo/prueba
+webapp/test-*.html
+webapp/diagnostic*.html
+webapp/*-test.html
+webapp/example-*.html
+webapp/verify-*.html
+webapp/clear-*.html
+webapp/complete-system-test.html
+webapp/firebase-sdk-test.html
+webapp/sanitizer-demo.html
+
+# Archivos duplicados de perfil (solo mantener perfil.html)
+webapp/perfil-*.html
