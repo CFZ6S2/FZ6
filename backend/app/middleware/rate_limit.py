@@ -7,6 +7,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from fastapi.responses import JSONResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,13 +30,16 @@ def custom_rate_limit_handler(request, exc: RateLimitExceeded):
         f"on path {request.url.path}"
     )
 
-    return {
-        "error": True,
-        "status_code": 429,
-        "message": "Demasiadas solicitudes. Por favor, intenta más tarde.",
-        "detail": f"Límite de {exc.detail} excedido",
-        "retry_after": "60 seconds"
-    }
+    return JSONResponse(
+        status_code=429,
+        content={
+            "error": True,
+            "status_code": 429,
+            "message": "Demasiadas solicitudes. Por favor, intenta más tarde.",
+            "detail": f"Límite de {exc.detail} excedido",
+            "retry_after": "60 seconds"
+        }
+    )
 
 
 # Rate limit configurations for different endpoint types
