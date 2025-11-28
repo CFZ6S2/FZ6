@@ -366,11 +366,25 @@
 
     Status: 🔴 NOT CONFIGURED - Map will NOT work without valid API key
   -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
-=======
-  <!-- Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AQ.Ab8RN6I6FQgaC1SltCBdMTyt6mM49BUATqwB32I7g5crKb91Vg&libraries=places"></script>
->>>>>>> origin/claude/add-api-key-integration-011CUyqdyCeFEB4PHX2XZJn9
+    <!-- DOMPurify for XSS Protection -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script src="/webapp/js/sanitizer.js"></script>
+
+
+  <!-- Google Maps API - Loaded dynamically from config -->
+  <!-- See: SECURITY_API_KEYS.md for setup instructions -->
+  <script type="module">
+    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config.js';
+
+    // Dynamically load Google Maps API with the configured key
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
 
   <!-- Firebase Scripts -->
   <script type="module">
@@ -507,33 +521,40 @@
         document.getElementById('pinSection').classList.add('hidden');
       }
 
+      // Sanitize user data
+      const safeAlias = sanitizer.text(dateData.otherUser?.alias || 'Usuario');
+      const safeDate = sanitizer.text(formattedDate);
+      const safeTime = sanitizer.text(formattedTime);
+      const safeLocation = sanitizer.text(dateData.location || 'No especificado');
+      const safeDeposit = dateData.depositAmount ? sanitizer.text(String(dateData.depositAmount)) : null;
+
       dateInfo.innerHTML = `
         <div class="bg-white bg-opacity-10 p-4 rounded-lg">
           <p class="text-white text-opacity-70 text-sm">Cita con</p>
-          <p class="text-white font-semibold text-lg">${dateData.otherUser?.alias || 'Usuario'}</p>
+          <p class="text-white font-semibold text-lg">${safeAlias}</p>
         </div>
 
         <div class="grid md:grid-cols-2 gap-4">
           <div class="bg-white bg-opacity-10 p-4 rounded-lg">
             <p class="text-white text-opacity-70 text-sm">Fecha</p>
-            <p class="text-white font-semibold">${formattedDate}</p>
+            <p class="text-white font-semibold">${safeDate}</p>
           </div>
 
           <div class="bg-white bg-opacity-10 p-4 rounded-lg">
             <p class="text-white text-opacity-70 text-sm">Hora</p>
-            <p class="text-white font-semibold">${formattedTime}</p>
+            <p class="text-white font-semibold">${safeTime}</p>
           </div>
         </div>
 
         <div class="bg-white bg-opacity-10 p-4 rounded-lg">
           <p class="text-white text-opacity-70 text-sm">Lugar</p>
-          <p class="text-white font-semibold">${dateData.location || 'No especificado'}</p>
+          <p class="text-white font-semibold">${safeLocation}</p>
         </div>
 
-        ${dateData.depositAmount ? `
+        ${safeDeposit ? `
           <div class="bg-gradient-to-r from-green-500 to-emerald-500 bg-opacity-20 border border-green-300 border-opacity-30 p-4 rounded-lg">
             <p class="text-white text-opacity-70 text-sm">Depósito de Seguridad</p>
-            <p class="text-white font-bold text-2xl">${dateData.depositAmount} €</p>
+            <p class="text-white font-bold text-2xl">${safeDeposit} €</p>
           </div>
         ` : ''}
       `;
