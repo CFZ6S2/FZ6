@@ -10,7 +10,18 @@ import { logger } from './logger.js';
 // ============================================================================
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
+// Prioridad: window.RECAPTCHA_SITE_KEY > localStorage > constante hardcoded
+// Esto permite configurar la clave dinámicamente en producción sin rebuild
+const RECAPTCHA_ENTERPRISE_SITE_KEY =
+  (typeof window !== 'undefined' && window.RECAPTCHA_SITE_KEY) ||
+  (typeof localStorage !== 'undefined' && localStorage.getItem('RECAPTCHA_SITE_KEY')) ||
+  '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
+
+logger.debug('reCAPTCHA Site Key configurada', {
+  source: window.RECAPTCHA_SITE_KEY ? 'window' :
+          localStorage.getItem('RECAPTCHA_SITE_KEY') ? 'localStorage' : 'hardcoded',
+  key: RECAPTCHA_ENTERPRISE_SITE_KEY.substring(0, 20) + '...'
+});
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
@@ -24,6 +35,8 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
                       location.hostname.includes("192.168.");
 
 // Dominios configurados en reCAPTCHA Enterprise
+// IMPORTANTE: Estos dominios deben estar configurados en Google Cloud Console
+// https://console.cloud.google.com/security/recaptcha?project=tuscitasseguras-2d1a6
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
@@ -31,7 +44,8 @@ const ALLOWED_DOMAINS = [
   'tuscitasseguras-2d1a6.firebaseapp.com',
   'traext5oyy6q.vercel.app',
   'vercel.app',
-  'tucitasegura.com'
+  'tucitasegura.com',
+  'www.tucitasegura.com'  // Agregar con y sin www
 ];
 
 const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
@@ -133,17 +147,38 @@ async function clearAppCheckStorage() {
   return true;
 }
 
-window.clearAppCheckThrottle = async function({ reload = true } = {}) {
-  if (!isDevelopment) {
-    logger.warn('⚠️  clearAppCheckThrottle is allowed only in development');
+/**
+ * Limpiar estado de throttling de App Check
+ *
+ * DESARROLLO: Usa esta función para limpiar el bloqueo de 24h localmente
+ * PRODUCCIÓN: NO uses esta función. En su lugar:
+ *   1. Corrige la configuración de reCAPTCHA Enterprise en Google Cloud Console
+ *   2. Agrega los dominios correctos (tucitasegura.com, www.tucitasegura.com)
+ *   3. Espera la ventana de desbloqueo (~24h) O
+ *   4. Pide a los usuarios que limpien su cache del navegador
+ *
+ * @param {Object} options - Opciones
+ * @param {boolean} options.reload - Si debe recargar la página después (default: true)
+ * @param {boolean} options.force - Forzar limpieza en producción (NO RECOMENDADO)
+ * @returns {Promise<boolean>} - true si se limpió exitosamente
+ */
+window.clearAppCheckThrottle = async function({ reload = true, force = false } = {}) {
+  if (!isDevelopment && !force) {
+    logger.warn('⚠️  clearAppCheckThrottle solo debe usarse en desarrollo');
+    logger.warn('📝 En producción:');
+    logger.warn('   1. Corrige la configuración en Google Cloud Console');
+    logger.warn('   2. Espera 24h para que expire el throttle');
+    logger.warn('   3. Pide a usuarios limpiar cache del navegador');
+    logger.warn('💡 Si realmente necesitas forzar: clearAppCheckThrottle({ force: true })');
     return false;
   }
-  logger.info('🧹 Clearing App Check state (development only)...');
+
+  logger.info('🧹 Limpiando estado de App Check...');
   await clearAppCheckStorage();
-  logger.success('✅ App Check state cleared locally. Si enforcement estaba activo, recuérdalo en Firebase Console.');
+  logger.success('✅ App Check state cleared locally.');
 
   if (reload) {
-    logger.info('🔁 Reloading page to apply changes...');
+    logger.info('🔁 Recargando página en 800ms...');
     setTimeout(() => location.reload(), 800);
   }
   return true;
