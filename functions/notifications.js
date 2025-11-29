@@ -5,6 +5,10 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const { createLogger } = require('./utils/structured-logger');
+
+// Initialize logger
+const logger = createLogger('notifications');
 
 /**
  * Send notification to user's devices
@@ -15,7 +19,7 @@ async function sendNotificationToUser(userId, notification, data) {
     const userDoc = await admin.firestore().collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
-      console.log(`User ${userId} not found`);
+      logger.warn('User not found for notification', { userId });
       return;
     }
 
@@ -23,7 +27,7 @@ async function sendNotificationToUser(userId, notification, data) {
     const tokens = userData.fcmTokens || [];
 
     if (tokens.length === 0) {
-      console.log(`User ${userId} has no FCM tokens`);
+      logger.debug('User has no FCM tokens', { userId });
       return;
     }
 
@@ -41,7 +45,11 @@ async function sendNotificationToUser(userId, notification, data) {
     // Send to all devices
     const response = await admin.messaging().sendEachForMulticast(message);
 
-    console.log(`Sent notification to ${response.successCount}/${tokens.length} devices`);
+    logger.info('Notification sent to devices', {
+      userId,
+      successCount: response.successCount,
+      totalDevices: tokens.length
+    });
 
     // Remove invalid tokens
     if (response.failureCount > 0) {
@@ -58,13 +66,13 @@ async function sendNotificationToUser(userId, notification, data) {
         await admin.firestore().collection('users').doc(userId).update({
           fcmTokens: validTokens
         });
-        console.log(`Removed ${tokensToRemove.length} invalid tokens`);
+        logger.info('Removed invalid FCM tokens', { userId, removedCount: tokensToRemove.length });
       }
     }
 
     return response;
   } catch (error) {
-    console.error('Error sending notification:', error);
+    logger.error('Error sending notification', { userId, error: error.message });
     throw error;
   }
 }
@@ -105,9 +113,9 @@ exports.onMatchCreated = functions.firestore
         }
       );
 
-      console.log(`Match notification sent: ${senderId} → ${receiverId}`);
+      logger.info('Match notification sent', { senderId, receiverId, matchId: context.params.matchId });
     } catch (error) {
-      console.error('Error in onMatchCreated:', error);
+      logger.error('Error in onMatchCreated', { matchId: context.params.matchId, error: error.message });
     }
   });
 
@@ -147,10 +155,10 @@ exports.onMatchAccepted = functions.firestore
           }
         );
 
-        console.log(`Match accepted notification sent: ${receiverId} accepted ${senderId}`);
+        logger.info('Match accepted notification sent', { senderId, receiverId, matchId: context.params.matchId });
       }
     } catch (error) {
-      console.error('Error in onMatchAccepted:', error);
+      logger.error('Error in onMatchAccepted', { matchId: context.params.matchId, error: error.message });
     }
   });
 
@@ -207,9 +215,9 @@ exports.onMessageCreated = functions.firestore
         }
       );
 
-      console.log(`Message notification sent: ${senderId} → ${receiverId}`);
+      logger.info('Message notification sent', { senderId, receiverId, conversationId });
     } catch (error) {
-      console.error('Error in onMessageCreated:', error);
+      logger.error('Error in onMessageCreated', { conversationId, error: error.message });
     }
   });
 
@@ -246,10 +254,13 @@ exports.onAppointmentConfirmed = functions.firestore
           );
         }
 
-        console.log(`Appointment confirmation notifications sent for ${context.params.appointmentId}`);
+        logger.info('Appointment confirmation notifications sent', {
+          appointmentId: context.params.appointmentId,
+          participantsCount: participants.length
+        });
       }
     } catch (error) {
-      console.error('Error in onAppointmentConfirmed:', error);
+      logger.error('Error in onAppointmentConfirmed', { appointmentId: context.params.appointmentId, error: error.message });
     }
   });
 
@@ -316,14 +327,14 @@ exports.sendAppointmentReminders = functions.pubsub
           await doc.ref.update({ reminderSent: true });
           remindersSent++;
 
-          console.log(`Reminder sent for appointment ${doc.id}`);
+          logger.debug('Appointment reminder sent', { appointmentId: doc.id });
         }
       }
 
-      console.log(`Sent ${remindersSent} appointment reminders`);
+      logger.info('Appointment reminders sent', { count: remindersSent });
       return null;
     } catch (error) {
-      console.error('Error in sendAppointmentReminders:', error);
+      logger.error('Error sending appointment reminders', { error: error.message });
       throw error;
     }
   });
@@ -374,9 +385,12 @@ exports.onVIPEventPublished = functions.firestore
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      console.log(`VIP event notification sent to ${notificationsSent} users`);
+      logger.info('VIP event notifications sent', {
+        eventId: context.params.eventId,
+        recipientsCount: notificationsSent
+      });
     } catch (error) {
-      console.error('Error in onVIPEventPublished:', error);
+      logger.error('Error in onVIPEventPublished', { eventId: context.params.eventId, error: error.message });
     }
   });
 
@@ -411,7 +425,13 @@ exports.onSOSAlert = functions.firestore
 
       // TODO: Send notification to admin/support team
       // For now, log the alert
-      console.log(`SOS Alert from ${userName} (${userId}) at location:`, location);
+      logger.warn('SOS Alert triggered', {
+        userId,
+        userName,
+        appointmentId,
+        location,
+        otherUserId
+      });
 
       // Send notification to emergency contact (if configured)
       if (userData.emergencyContact) {
@@ -420,7 +440,7 @@ exports.onSOSAlert = functions.firestore
 
       return null;
     } catch (error) {
-      console.error('Error in onSOSAlert:', error);
+      logger.error('Error in onSOSAlert', { error: error.message });
     }
   });
 
@@ -454,7 +474,7 @@ exports.sendTestNotification = functions.https.onCall(async (data, context) => {
 
     return { success: true, message: 'Test notification sent' };
   } catch (error) {
-    console.error('Error sending test notification:', error);
+    logger.error('Error sending test notification', { userId, error: error.message });
     throw new functions.https.HttpsError('internal', 'Failed to send test notification');
   }
 });
