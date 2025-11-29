@@ -50,10 +50,38 @@ if (!admin.apps.length) {
       projectId = firebaserc.projects?.default || projectId;
     }
 
-    admin.initializeApp({
-      projectId: projectId
-    });
+    // Buscar service account key en varios lugares
+    const possibleKeyPaths = [
+      path.join(__dirname, '../serviceAccountKey.json'),
+      path.join(__dirname, '../service-account.json'),
+      path.join(__dirname, '../firebase-adminsdk.json'),
+      path.join(process.env.HOME || process.env.USERPROFILE || '', 'serviceAccountKey.json')
+    ];
+
+    let credential = null;
+    for (const keyPath of possibleKeyPaths) {
+      if (fs.existsSync(keyPath)) {
+        console.log(`✓ Usando service account key: ${path.basename(keyPath)}`);
+        credential = admin.credential.cert(keyPath);
+        break;
+      }
+    }
+
+    if (credential) {
+      admin.initializeApp({
+        credential: credential,
+        projectId: projectId
+      });
+    } else {
+      // Usar Application Default Credentials (funciona con firebase login)
+      console.log('⚠️  No se encontró service account key, usando Application Default Credentials');
+      console.log('   Asegúrate de haber ejecutado: firebase login');
+      admin.initializeApp({
+        projectId: projectId
+      });
+    }
   } catch (error) {
+    console.error('Error al inicializar Firebase Admin:', error.message);
     // Fallback a inicialización estándar
     admin.initializeApp();
   }
