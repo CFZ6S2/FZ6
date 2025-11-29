@@ -293,4 +293,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createAdminUser, listAdminUsers };
+module.exports = { createAdminUser, listAdminUsers, admin };

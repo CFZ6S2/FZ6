@@ -15,7 +15,7 @@ npm install
 cd ..
 ```
 
-#### Uso Básico
+#### Uso Básico - Un Admin a la Vez
 
 ```bash
 # Crear admin con password auto-generado
@@ -33,6 +33,22 @@ node scripts/create-admin.js --list
 # Ver ayuda
 node scripts/create-admin.js --help
 ```
+
+#### Uso Batch - Crear Múltiples Admins
+
+Si necesitas crear varios administradores de una vez:
+
+```bash
+# Crear los 3 administradores principales de TuCitaSegura
+node scripts/create-admins-batch.js
+```
+
+Este script creará automáticamente:
+- ✅ cesar.herrera.rojo@gmail.com (masculino)
+- ✅ gonzalo.hrrj@gmail.com (masculino)
+- ✅ lacasitadebarajas@gmail.com (masculino)
+
+**Nota**: Si los usuarios ya existen, el script actualizará sus claims a admin sin crear usuarios duplicados.
 
 #### Lo que hace el script:
 
