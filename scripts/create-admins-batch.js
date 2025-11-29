@@ -15,17 +15,17 @@ const ADMINS_TO_CREATE = [
   {
     email: 'cesar.herrera.rojo@gmail.com',
     gender: 'masculino',
-    password: null // Auto-generado, usuario deberá resetear
+    password: 'cesar123456' // Password temporal - cambiar después del primer login
   },
   {
     email: 'gonzalo.hrrj@gmail.com',
     gender: 'masculino',
-    password: null
+    password: 'cesar123456' // Password temporal - cambiar después del primer login
   },
   {
     email: 'lacasitadebarajas@gmail.com',
     gender: 'femenino',
-    password: null
+    password: 'cesar123456' // Password temporal - cambiar después del primer login
   }
 ];
 
