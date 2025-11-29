@@ -38,6 +38,34 @@ export class APIService {
   }
 
   /**
+   * Get App Check token if available
+   * @returns {Promise<string|null>} App Check token or null
+   */
+  async getAppCheckToken() {
+    try {
+      // Check if App Check is available
+      if (typeof window === 'undefined' || !window._appCheckInstance) {
+        return null;
+      }
+
+      // Try to get token from window.getAppCheckToken() helper
+      if (typeof window.getAppCheckToken === 'function') {
+        const tokenResult = await window.getAppCheckToken();
+        return tokenResult?.token || null;
+      }
+
+      // Fallback: try importing getToken directly
+      const { getToken } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js');
+      const tokenResult = await getToken(window._appCheckInstance, false);
+      return tokenResult?.token || null;
+    } catch (error) {
+      // Silently fail - App Check is optional
+      console.debug('App Check token not available:', error.message);
+      return null;
+    }
+  }
+
+  /**
    * Make HTTP request
    * @param {string} endpoint - API endpoint
    * @param {Object} options - Request options
@@ -53,6 +81,19 @@ export class APIService {
     if (method === 'GET') {
       delete mergedHeaders['Content-Type'];
     }
+
+    // Try to add App Check token header
+    try {
+      const appCheckToken = await this.getAppCheckToken();
+      if (appCheckToken) {
+        mergedHeaders['X-Firebase-AppCheck'] = appCheckToken;
+        console.debug('App Check token added to request');
+      }
+    } catch (error) {
+      // Continue without App Check token
+      console.debug('Request proceeding without App Check token');
+    }
+
     const config = { ...options, method, headers: mergedHeaders };
 
     try {

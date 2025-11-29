@@ -25,6 +25,19 @@ logger.info('Cloud Functions initialized', {
   environment: process.env.FUNCTION_TARGET || 'unknown'
 });
 
+// ============================================================================
+// API PROXY con App Check
+// ============================================================================
+// Config: firebase functions:config:set appcheck.enforce_proxy=true
+// Env: APPCHECK_ENFORCE_PROXY=true
+const ENFORCE_APPCHECK_PROXY =
+  functions.config()?.appcheck?.enforce_proxy === 'true' ||
+  process.env.APPCHECK_ENFORCE_PROXY === 'true' ||
+  false;
+
+// Rutas públicas que no requieren App Check
+const PUBLIC_PATHS = ['/health', '/public'];
+
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
   const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
@@ -33,8 +46,56 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
   logger.debug('API proxy request', {
     method: req.method,
     path: req.originalUrl,
-    url
+    url,
+    appCheckEnforced: ENFORCE_APPCHECK_PROXY
   });
+
+  // Bypass App Check para OPTIONS (CORS preflight) y rutas públicas
+  const isPublicPath = PUBLIC_PATHS.some(path => req.originalUrl.startsWith(path));
+  const shouldBypass = req.method === 'OPTIONS' || isPublicPath;
+
+  if (ENFORCE_APPCHECK_PROXY && !shouldBypass) {
+    // Verificar App Check token
+    const appCheckToken = req.header('X-Firebase-AppCheck');
+
+    if (!appCheckToken) {
+      logger.security('app_check_missing_proxy', {
+        path: req.originalUrl,
+        method: req.method,
+        ip: req.ip
+      });
+      timer.end({ status: 401, error: true });
+      return res.status(401).json({
+        error: 'unauthorized',
+        message: 'App Check token missing'
+      });
+    }
+
+    try {
+      // Verificar token con Firebase Admin SDK
+      const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
+      logger.debug('App Check verified (proxy)', {
+        appId: appCheckClaims.app_id,
+        path: req.originalUrl
+      });
+    } catch (error) {
+      logger.security('app_check_verification_failed_proxy', {
+        path: req.originalUrl,
+        error: error.message,
+        ip: req.ip
+      });
+      timer.end({ status: 401, error: true });
+      return res.status(401).json({
+        error: 'unauthorized',
+        message: 'Invalid App Check token'
+      });
+    }
+  } else if (shouldBypass) {
+    logger.debug('App Check bypassed', {
+      path: req.originalUrl,
+      reason: req.method === 'OPTIONS' ? 'CORS preflight' : 'public path'
+    });
+  }
 
   try {
     const headers = { ...req.headers };
