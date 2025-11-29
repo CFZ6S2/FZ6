@@ -27,7 +27,7 @@ AppCheck: Requests throttled due to 403 error. Attempts allowed again after 01d:
 
 ### Paso 2: Editar la Key de reCAPTCHA Enterprise
 
-1. Busca la key: `6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2`
+1. Busca la key: `6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w`
 2. Click en **EDITAR** (icono de lápiz)
 
 ### Paso 3: Agregar Dominios Permitidos
@@ -208,7 +208,7 @@ Si sigues teniendo problemas:
 
 1. Verifica los permisos en Google Cloud Console
 2. Revisa que el proyecto Firebase sea `tuscitasseguras-2d1a6`
-3. Confirma que la key de reCAPTCHA sea `6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2`
+3. Confirma que la key de reCAPTCHA sea `6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w`
 4. Verifica en Network tab (F12) que las peticiones a `content-firebaseappcheck.googleapis.com` retornen 200, no 403
 
 ---
