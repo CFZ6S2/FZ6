@@ -450,7 +450,7 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
     return res.status(405).json({ error: 'Solo se permite método POST' });
   }
 
-  const { email, adminSecret } = req.body;
+  const { email, adminSecret, gender } = req.body;
 
   // Verificar secreto de admin (configura esto en Firebase Config o .env)
   const expectedSecret = functions.config().admin?.bootstrap_secret || process.env.ADMIN_BOOTSTRAP_SECRET || 'CHANGE_ME_IMMEDIATELY';
@@ -462,6 +462,12 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
 
   if (!email) {
     return res.status(400).json({ error: 'Email es requerido' });
+  }
+
+  // Validar gender si se proporciona
+  const userGender = gender || 'masculino';
+  if (!['masculino', 'femenino'].includes(userGender)) {
+    return res.status(400).json({ error: 'gender debe ser "masculino" o "femenino"' });
   }
 
   try {
@@ -488,7 +494,7 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
     // Establecer custom claims como admin
     await admin.auth().setCustomUserClaims(user.uid, {
       role: 'admin',
-      gender: 'masculino' // Por defecto, se puede cambiar después
+      gender: userGender
     });
 
     // Crear/actualizar documento en Firestore
@@ -501,20 +507,21 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
         uid: user.uid,
         email: email,
         userRole: 'admin',
-        gender: 'masculino',
+        gender: userGender,
         alias: 'Admin',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         lastActivity: admin.firestore.FieldValue.serverTimestamp(),
         hasActiveSubscription: false,
         subscriptionStatus: 'none'
       });
-      logger.info('createFirstAdmin: Firestore document created', { uid: user.uid });
+      logger.info('createFirstAdmin: Firestore document created', { uid: user.uid, gender: userGender });
     } else {
       await userRef.update({
         userRole: 'admin',
+        gender: userGender,
         lastActivity: admin.firestore.FieldValue.serverTimestamp()
       });
-      logger.info('createFirstAdmin: Firestore document updated', { uid: user.uid });
+      logger.info('createFirstAdmin: Firestore document updated', { uid: user.uid, gender: userGender });
     }
 
     logger.info('createFirstAdmin: SUCCESS', { email, uid: user.uid });

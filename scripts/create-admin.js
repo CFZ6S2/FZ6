@@ -49,8 +49,15 @@ function findCredentials() {
   return null;
 }
 
-async function createAdminUser(email) {
+async function createAdminUser(email, gender = 'masculino') {
   try {
+    // Validar gender
+    if (!['masculino', 'femenino'].includes(gender)) {
+      log(`❌ Género inválido: ${gender}`, 'red');
+      log('Debe ser "masculino" o "femenino"', 'yellow');
+      process.exit(1);
+    }
+
     // Inicializar Firebase Admin
     const credPath = findCredentials();
 
@@ -73,6 +80,7 @@ async function createAdminUser(email) {
     });
 
     log(`\n🔍 Buscando usuario: ${email}`, 'blue');
+    log(`👤 Género: ${gender}`, 'blue');
 
     // Buscar o crear usuario
     let user;
@@ -104,7 +112,7 @@ async function createAdminUser(email) {
     log('\n🔧 Configurando rol de administrador...', 'blue');
     await admin.auth().setCustomUserClaims(user.uid, {
       role: 'admin',
-      gender: 'masculino' // Por defecto
+      gender: gender
     });
     log('✅ Custom claims configurados', 'green');
 
@@ -119,7 +127,7 @@ async function createAdminUser(email) {
         uid: user.uid,
         email: email,
         userRole: 'admin',
-        gender: 'masculino',
+        gender: gender,
         alias: 'Admin',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         lastActivity: admin.firestore.FieldValue.serverTimestamp(),
@@ -130,6 +138,7 @@ async function createAdminUser(email) {
     } else {
       await userRef.update({
         userRole: 'admin',
+        gender: gender,
         lastActivity: admin.firestore.FieldValue.serverTimestamp()
       });
       log('✅ Documento de Firestore actualizado', 'green');
@@ -142,6 +151,7 @@ async function createAdminUser(email) {
     log(`\n📧 Email: ${email}`, 'cyan');
     log(`🆔 UID: ${user.uid}`, 'cyan');
     log(`👤 Rol: admin`, 'cyan');
+    log(`⚧️ Género: ${gender}`, 'cyan');
 
     if (isNewUser) {
       log('\n⚠️  IMPORTANTE:', 'yellow');
@@ -180,13 +190,16 @@ async function createAdminUser(email) {
 
 // Main
 const email = process.argv[2];
+const gender = process.argv[3] || 'masculino';
 
 if (!email) {
   log('❌ Error: Debes proporcionar un email', 'red');
   log('\nUso:', 'yellow');
-  log('  node scripts/create-admin.js EMAIL', 'cyan');
-  log('\nEjemplo:', 'yellow');
+  log('  node scripts/create-admin.js EMAIL [GENDER]', 'cyan');
+  log('\nEjemplos:', 'yellow');
   log('  node scripts/create-admin.js cesar.herrera.rojo@gmail.com', 'cyan');
+  log('  node scripts/create-admin.js cesar.herrera.rojo@gmail.com masculino', 'cyan');
+  log('  node scripts/create-admin.js lacasitadebarajas@gmail.com femenino', 'cyan');
   process.exit(1);
 }
 
@@ -197,4 +210,4 @@ if (!email.includes('@') || !email.includes('.')) {
 }
 
 log('🚀 Iniciando creación de administrador...', 'blue');
-createAdminUser(email);
+createAdminUser(email, gender);
