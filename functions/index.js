@@ -434,7 +434,122 @@ exports.getUserClaims = functions.https.onCall(async (data, context) => {
 });
 
 // ============================================================================
-// 6) STRIPE WEBHOOK: Manejar eventos de Stripe (subscriptions y payments)
+// 6) ADMIN BOOTSTRAP: Crear el primer administrador (usar solo una vez)
+// ============================================================================
+exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
+  // CORS headers
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Solo se permite método POST' });
+  }
+
+  const { email, adminSecret, gender } = req.body;
+
+  // Verificar secreto de admin (configura esto en Firebase Config o .env)
+  const expectedSecret = functions.config().admin?.bootstrap_secret || process.env.ADMIN_BOOTSTRAP_SECRET || 'CHANGE_ME_IMMEDIATELY';
+
+  if (!adminSecret || adminSecret !== expectedSecret) {
+    logger.warn('createFirstAdmin: Invalid admin secret attempt', { email });
+    return res.status(403).json({ error: 'Secreto de administrador inválido' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email es requerido' });
+  }
+
+  // Validar gender si se proporciona
+  const userGender = gender || 'masculino';
+  if (!['masculino', 'femenino'].includes(userGender)) {
+    return res.status(400).json({ error: 'gender debe ser "masculino" o "femenino"' });
+  }
+
+  try {
+    // Buscar o crear el usuario
+    let user;
+    try {
+      user = await admin.auth().getUserByEmail(email);
+      logger.info('createFirstAdmin: User found', { email, uid: user.uid });
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        // Crear nuevo usuario
+        user = await admin.auth().createUser({
+          email: email,
+          emailVerified: true,
+          displayName: 'Administrador',
+          password: `Admin${Date.now()}!` // Contraseña temporal, se debe cambiar
+        });
+        logger.info('createFirstAdmin: User created', { email, uid: user.uid });
+      } else {
+        throw error;
+      }
+    }
+
+    // Establecer custom claims como admin
+    await admin.auth().setCustomUserClaims(user.uid, {
+      role: 'admin',
+      gender: userGender
+    });
+
+    // Crear/actualizar documento en Firestore
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(user.uid);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        email: email,
+        userRole: 'admin',
+        gender: userGender,
+        alias: 'Admin',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastActivity: admin.firestore.FieldValue.serverTimestamp(),
+        hasActiveSubscription: false,
+        subscriptionStatus: 'none'
+      });
+      logger.info('createFirstAdmin: Firestore document created', { uid: user.uid, gender: userGender });
+    } else {
+      await userRef.update({
+        userRole: 'admin',
+        gender: userGender,
+        lastActivity: admin.firestore.FieldValue.serverTimestamp()
+      });
+      logger.info('createFirstAdmin: Firestore document updated', { uid: user.uid, gender: userGender });
+    }
+
+    logger.info('createFirstAdmin: SUCCESS', { email, uid: user.uid });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Administrador creado exitosamente',
+      user: {
+        uid: user.uid,
+        email: user.email,
+        role: 'admin'
+      },
+      note: user.providerData.length === 0
+        ? 'Usuario creado con contraseña temporal. Usa "Olvidé mi contraseña" para establecer una nueva.'
+        : 'Usuario existente ahora es admin. Usa tu contraseña actual para iniciar sesión.'
+    });
+
+  } catch (error) {
+    logger.error('createFirstAdmin: Error', { email, error: error.message });
+    return res.status(500).json({
+      error: 'Error al crear administrador',
+      details: error.message
+    });
+  }
+});
+
+// ============================================================================
+// 7) STRIPE WEBHOOK: Manejar eventos de Stripe (subscriptions y payments)
 // ============================================================================
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   const sig = req.headers['stripe-signature'];
