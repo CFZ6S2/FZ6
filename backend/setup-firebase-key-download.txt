@@ -1,0 +1,13 @@
+=============================================================
+COPIA ESTE CONTENIDO EN: backend/setup-firebase-key.ps1
+=============================================================
+
+Instrucciones:
+1. Abre Notepad (Bloc de notas)
+2. Copia TODO el contenido de abajo (desde "# ========" hasta el final)
+3. Guarda como: setup-firebase-key.ps1 en la carpeta backend
+4. Asegúrate de seleccionar "Todos los archivos (*.*)" en "Tipo"
+
+=============================================================
+CONTENIDO DEL ARCHIVO:
+=============================================================
