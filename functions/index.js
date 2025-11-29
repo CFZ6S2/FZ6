@@ -1630,7 +1630,11 @@ exports.alive = healthCheck.alive;
 // ============================================================================
 // RECAPTCHA ENTERPRISE VERIFICATION
 // ============================================================================
-const recaptchaEnterprise = require('./recaptcha-enterprise');
-
-exports.verifyRecaptcha = recaptchaEnterprise.verifyRecaptcha;
-exports.verifyRecaptchaCallable = recaptchaEnterprise.verifyRecaptchaCallable;
+// TODO: Funciones v2 deshabilitadas temporalmente por errores de healthcheck en Cloud Run
+// Las funciones v2 requieren que el contenedor arranque correctamente y el cliente
+// RecaptchaEnterpriseServiceClient está causando problemas de inicialización.
+// Solución pendiente: migrar a v1 o corregir inicialización lazy del cliente.
+//
+// const recaptchaEnterprise = require('./recaptcha-enterprise');
+// exports.verifyRecaptcha = recaptchaEnterprise.verifyRecaptcha;
+// exports.verifyRecaptchaCallable = recaptchaEnterprise.verifyRecaptchaCallable;
