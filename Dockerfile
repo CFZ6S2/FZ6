@@ -20,11 +20,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application code
 COPY backend/*.py .
+COPY backend/start.sh .
+COPY backend/app ./app
+
+# Make start script executable
+RUN chmod +x start.sh
 
 # Expose port
 EXPOSE 8000
 
-# Start command will be overridden by Railway's startCommand
-# Using ENTRYPOINT for better Railway compatibility
-ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0"]
-CMD ["--port", "8000"]
+# Use start.sh which properly handles $PORT variable
+CMD ["./start.sh"]
