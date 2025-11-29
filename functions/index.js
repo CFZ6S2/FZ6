@@ -106,7 +106,7 @@ async function updateUserMembership(userId, status, subscriptionData = {}) {
 
     logger.info('Custom claims updated for subscription', { userId, hasActiveSubscription: status === 'active' });
   } catch (error) {
-    console.error(`[updateUserMembership] Error updating custom claims for ${userId}:`, error);
+    logger.error('Error updating custom claims for subscription', { userId, error: error.message });
     // Don't throw - Firestore update succeeded, claims update is optimization
   }
 
@@ -144,7 +144,7 @@ async function updateUserInsurance(userId, paymentData) {
 
     logger.info('Custom claims updated for insurance', { userId, hasAntiGhostingInsurance: true });
   } catch (error) {
-    console.error(`[updateUserInsurance] Error updating custom claims for ${userId}:`, error);
+    logger.error('Error updating custom claims for insurance', { userId, error: error.message });
     // Don't throw - Firestore update succeeded, claims update is optimization
   }
 
@@ -176,7 +176,7 @@ async function logInsurance(userId, insuranceData) {
     isActive: true,
     createdAt: admin.firestore.FieldValue.serverTimestamp()
   });
-  console.log(`[logInsurance] Insurance logged for user ${userId}`);
+  logger.info('Insurance logged', { userId, paymentId: insuranceData.paymentId });
 }
 
 /**
@@ -248,7 +248,7 @@ exports.onUserDocCreate = functions.firestore
       await admin.auth().updateUser(uid, { displayName: name });
       logger.info('Updated displayName for user', { uid, displayName: name });
     } catch (e) {
-      console.error(`[onUserDocCreate] Error updating displayName:`, e);
+      logger.error('Error updating displayName', { uid, error: e.message });
     }
 
     // Claims iniciales (conservando otros si existieran)
@@ -262,7 +262,7 @@ exports.onUserDocCreate = functions.firestore
       });
       logger.info('Custom claims set for new user', { uid, role: userRole, gender });
     } catch (e) {
-      console.error(`[onUserDocCreate] Error setting custom claims:`, e);
+      logger.error('Error setting custom claims', { uid, error: e.message });
     }
   });
 
@@ -301,7 +301,7 @@ exports.onUserDocUpdate = functions.firestore
       });
       logger.info('Claims updated successfully', { uid, role: newRole, gender: newGender });
     } catch (e) {
-      console.error(`[onUserDocUpdate] Error updating claims:`, e);
+      logger.error('Error updating claims on user update', { uid, error: e.message });
     }
 
     return null;
@@ -323,10 +323,10 @@ exports.syncChatACL = functions.firestore
     const added = [...afterSet].filter(x => !beforeSet.has(x));
     const removed = [...beforeSet].filter(x => !afterSet.has(x));
 
-    console.log(`[syncChatACL] Conversation ${conversationId}: +${added.length} -${removed.length} participants`);
+    logger.debug('Syncing chat ACL', { conversationId, added: added.length, removed: removed.length });
 
     if (added.length === 0 && removed.length === 0) {
-      console.log(`[syncChatACL] No changes, skipping`);
+      logger.debug('No ACL changes to sync', { conversationId });
       return null;
     }
 
@@ -335,17 +335,17 @@ exports.syncChatACL = functions.firestore
     try {
       await Promise.all([
         ...added.map(uid => {
-          console.log(`[syncChatACL] Adding ACL for ${uid} in ${conversationId}`);
+          logger.debug('Adding ACL', { uid, conversationId });
           return bucket.file(`chat_attachments/${conversationId}/__acl__/${uid}`).save('');
         }),
         ...removed.map(uid => {
-          console.log(`[syncChatACL] Removing ACL for ${uid} in ${conversationId}`);
+          logger.debug('Removing ACL', { uid, conversationId });
           return bucket.file(`chat_attachments/${conversationId}/__acl__/${uid}`).delete({ ignoreNotFound: true });
         }),
       ]);
-      console.log(`[syncChatACL] ACL sync complete for ${conversationId}`);
+      logger.info('ACL sync complete', { conversationId, added: added.length, removed: removed.length });
     } catch (e) {
-      console.error(`[syncChatACL] Error syncing ACL:`, e);
+      logger.error('Error syncing ACL', { conversationId, error: e.message });
     }
 
     return null;
@@ -388,10 +388,10 @@ exports.updateUserClaims = functions.https.onCall(async (data, context) => {
 
   try {
     await admin.auth().setCustomClaims(userId, { role, gender });
-    console.log(`[updateUserClaims] Claims updated for ${userId}: role=${role}, gender=${gender}`);
+    logger.info('User claims updated', { userId, role, gender });
     return { success: true, message: `Claims actualizados para ${userId}` };
   } catch (error) {
-    console.error(`[updateUserClaims] Error:`, error);
+    logger.error('Error updating user claims', { userId, error: error.message });
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
@@ -428,7 +428,7 @@ exports.getUserClaims = functions.https.onCall(async (data, context) => {
       customClaims: user.customClaims || {}
     };
   } catch (error) {
-    console.error(`[getUserClaims] Error:`, error);
+    logger.error('Error getting user claims', { targetUserId, error: error.message });
     throw new functions.https.HttpsError('not-found', 'Usuario no encontrado');
   }
 });
@@ -541,7 +541,7 @@ async function handleSubscriptionUpdate(subscription) {
   const userId = subscription.metadata.userId;
 
   if (!userId) {
-    console.error('[handleSubscriptionUpdate] No userId in subscription metadata');
+    logger.error('No userId in subscription metadata', { subscriptionId: subscription.id });
     return;
   }
 
@@ -565,7 +565,7 @@ async function handleSubscriptionUpdate(subscription) {
 
   await logSubscription(userId, subscriptionData);
 
-  console.log(`[handleSubscriptionUpdate] Subscription ${subscription.id} updated for user ${userId}: ${status}`);
+  logger.info('Subscription updated', { subscriptionId: subscription.id, userId, status });
 }
 
 /**
@@ -575,7 +575,7 @@ async function handleSubscriptionCanceled(subscription) {
   const userId = subscription.metadata.userId;
 
   if (!userId) {
-    console.error('[handleSubscriptionCanceled] No userId in subscription metadata');
+    logger.error('No userId in subscription metadata', { subscriptionId: subscription.id });
     return;
   }
 
@@ -589,7 +589,7 @@ async function handleSubscriptionCanceled(subscription) {
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  console.log(`[handleSubscriptionCanceled] Subscription ${subscription.id} canceled for user ${userId}`);
+  logger.info('Subscription canceled', { subscriptionId: subscription.id, userId });
 }
 
 /**
@@ -600,7 +600,7 @@ async function handlePaymentSucceeded(paymentIntent) {
   const paymentType = paymentIntent.metadata.paymentType; // 'insurance' or 'membership'
 
   if (!userId) {
-    console.error('[handlePaymentSucceeded] No userId in payment metadata');
+    logger.error('No userId in payment metadata', { paymentIntentId: paymentIntent.id });
     return;
   }
 
@@ -617,7 +617,7 @@ async function handlePaymentSucceeded(paymentIntent) {
     await updateUserInsurance(userId, insuranceData);
     await logInsurance(userId, insuranceData);
 
-    console.log(`[handlePaymentSucceeded] Insurance payment ${paymentIntent.id} succeeded for user ${userId}`);
+    logger.info('Insurance payment succeeded', { paymentIntentId: paymentIntent.id, userId, amount: insuranceData.amount });
   }
 }
 
@@ -628,11 +628,15 @@ async function handlePaymentFailed(paymentIntent) {
   const userId = paymentIntent.metadata.userId;
 
   if (!userId) {
-    console.error('[handlePaymentFailed] No userId in payment metadata');
+    logger.error('No userId in payment metadata', { paymentIntentId: paymentIntent.id });
     return;
   }
 
-  console.error(`[handlePaymentFailed] Payment ${paymentIntent.id} failed for user ${userId}`);
+  logger.warn('Payment failed', {
+    paymentIntentId: paymentIntent.id,
+    userId,
+    errorCode: paymentIntent.last_payment_error?.code
+  });
 
   // Registrar pago fallido
   await logFailedPayment(userId, {
@@ -663,7 +667,7 @@ async function handlePaymentFailed(paymentIntent) {
     }
   });
 
-  console.log(`[handlePaymentFailed] Notification and failed payment record created for user ${userId}`);
+  logger.info('Payment failure notification sent', { userId, paymentIntentId: paymentIntent.id });
 }
 
 /**
@@ -681,7 +685,7 @@ async function handleInvoicePaymentFailed(invoice) {
 
   await updateUserMembership(userId, 'past_due');
 
-  console.error(`[handleInvoicePaymentFailed] Invoice payment failed for user ${userId}`);
+  logger.warn('Invoice payment failed', { userId, invoiceId: invoice.id, subscriptionId });
 
   // Registrar pago fallido
   await logFailedPayment(userId, {
@@ -714,7 +718,7 @@ async function handleInvoicePaymentFailed(invoice) {
     }
   });
 
-  console.log(`[handleInvoicePaymentFailed] Notification and failed payment record created for user ${userId}`);
+  logger.info('Invoice payment failure notification sent', { userId, invoiceId: invoice.id });
 }
 
 /**
@@ -730,7 +734,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
 
   if (!userId) return;
 
-  console.log(`[handleInvoicePaymentSucceeded] Invoice payment succeeded for user ${userId}`);
+  logger.info('Invoice payment succeeded', { userId, invoiceId: invoice.id, subscriptionId });
 
   // La suscripción ya se actualizará con customer.subscription.updated
 }
@@ -757,13 +761,13 @@ async function verifyPayPalWebhookSignature(req) {
     const webhookId = functions.config().paypal?.webhook_id || process.env.PAYPAL_WEBHOOK_ID;
 
     if (!webhookId) {
-      console.error('[verifyPayPalWebhookSignature] PayPal webhook ID not configured');
-      console.error('Run: firebase functions:config:set paypal.webhook_id="YOUR_WEBHOOK_ID"');
+      logger.error('PayPal webhook ID not configured');
+      logger.error('Configuration', { message: 'Run: firebase functions:config:set paypal.webhook_id="YOUR_WEBHOOK_ID"' });
       return false;
     }
 
     if (!transmissionId || !transmissionTime || !transmissionSig || !certUrl || !authAlgo) {
-      console.error('[verifyPayPalWebhookSignature] Missing required headers');
+      logger.error('Missing required PayPal webhook headers');
       return false;
     }
 
@@ -785,7 +789,7 @@ async function verifyPayPalWebhookSignature(req) {
     const paypalSecret = functions.config().paypal?.secret || process.env.PAYPAL_SECRET;
 
     if (!paypalClientId || !paypalSecret) {
-      console.error('[verifyPayPalWebhookSignature] PayPal credentials not configured');
+      logger.error('PayPal credentials not configured');
       return false;
     }
 
@@ -804,7 +808,7 @@ async function verifyPayPalWebhookSignature(req) {
     });
 
     if (!authResponse.ok) {
-      console.error('[verifyPayPalWebhookSignature] Failed to get PayPal access token:', authResponse.status);
+      logger.error('Failed to get PayPal access token', { status: authResponse.status });
       return false;
     }
 
@@ -826,7 +830,7 @@ async function verifyPayPalWebhookSignature(req) {
     });
 
     if (!verifyResponse.ok) {
-      console.error('[verifyPayPalWebhookSignature] Verification request failed:', verifyResponse.status);
+      logger.error('PayPal verification request failed', { status: verifyResponse.status });
       return false;
     }
 
@@ -834,14 +838,14 @@ async function verifyPayPalWebhookSignature(req) {
 
     // Resultado de verificación
     if (verifyData.verification_status === 'SUCCESS') {
-      console.log('[verifyPayPalWebhookSignature] Signature verified successfully');
+      logger.debug('PayPal webhook signature verified successfully');
       return true;
     } else {
-      console.error('[verifyPayPalWebhookSignature] Signature verification failed:', verifyData.verification_status);
+      logger.error('PayPal signature verification failed', { status: verifyData.verification_status });
       return false;
     }
   } catch (error) {
-    console.error('[verifyPayPalWebhookSignature] Error verifying signature:', error);
+    logger.error('Error verifying PayPal webhook signature', { error: error.message });
     return false;
   }
 }
@@ -952,7 +956,7 @@ async function handlePayPalSubscriptionActivated(subscription) {
   const userId = subscription.custom_id; // Debe incluirse al crear la suscripción
 
   if (!userId) {
-    console.error('[handlePayPalSubscriptionActivated] No userId in custom_id');
+    logger.error('No userId in PayPal subscription custom_id', { subscriptionId: subscription.id });
     return;
   }
 
@@ -974,7 +978,7 @@ async function handlePayPalSubscriptionActivated(subscription) {
 
   await logSubscription(userId, subscriptionData);
 
-  console.log(`[handlePayPalSubscriptionActivated] Subscription ${subscription.id} activated for user ${userId}`);
+  logger.info('PayPal subscription activated', { subscriptionId: subscription.id, userId });
 }
 
 /**
@@ -992,7 +996,7 @@ async function handlePayPalSubscriptionCanceled(subscription) {
   const userId = subscription.custom_id;
 
   if (!userId) {
-    console.error('[handlePayPalSubscriptionCanceled] No userId in custom_id');
+    logger.error('No userId in PayPal subscription custom_id (cancel)', { subscriptionId: subscription.id });
     return;
   }
 
@@ -1005,7 +1009,7 @@ async function handlePayPalSubscriptionCanceled(subscription) {
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   });
 
-  console.log(`[handlePayPalSubscriptionCanceled] Subscription ${subscription.id} canceled for user ${userId}`);
+  logger.info('PayPal subscription canceled', { subscriptionId: subscription.id, userId });
 }
 
 /**
@@ -1016,7 +1020,7 @@ async function handlePayPalPaymentCompleted(sale) {
   const paymentType = sale.description; // 'insurance' or 'membership'
 
   if (!userId) {
-    console.error('[handlePayPalPaymentCompleted] No userId in custom field');
+    logger.error('No userId in PayPal payment custom field', { saleId: sale.id });
     return;
   }
 
@@ -1033,7 +1037,7 @@ async function handlePayPalPaymentCompleted(sale) {
     await updateUserInsurance(userId, insuranceData);
     await logInsurance(userId, insuranceData);
 
-    console.log(`[handlePayPalPaymentCompleted] Insurance payment ${sale.id} completed for user ${userId}`);
+    logger.info('PayPal insurance payment completed', { saleId: sale.id, userId, amount: insuranceData.amount });
   }
 }
 
@@ -1044,11 +1048,11 @@ async function handlePayPalPaymentFailed(sale) {
   const userId = sale.custom;
 
   if (!userId) {
-    console.error('[handlePayPalPaymentFailed] No userId in custom field');
+    logger.error('No userId in PayPal payment custom field (failed)', { saleId: sale.id });
     return;
   }
 
-  console.error(`[handlePayPalPaymentFailed] Payment ${sale.id} failed for user ${userId}`);
+  logger.warn('PayPal payment failed', { saleId: sale.id, userId, reasonCode: sale.reason_code });
 
   // Registrar pago fallido
   await logFailedPayment(userId, {
@@ -1080,7 +1084,7 @@ async function handlePayPalPaymentFailed(sale) {
     }
   });
 
-  console.log(`[handlePayPalPaymentFailed] Notification and failed payment record created for user ${userId}`);
+  logger.info('PayPal payment failure notification sent', { userId, saleId: sale.id });
 }
 
 // ============================================================================
@@ -1168,7 +1172,7 @@ exports.captureInsuranceAuthorization = functions.https.onCall(async (data, cont
   }
 
   try {
-    console.log(`[captureInsuranceAuthorization] Starting capture for authorization ${authorizationId}`);
+    logger.info('Starting insurance authorization capture', { authorizationId, appointmentId, victimUserId });
 
     const db = admin.firestore();
 
@@ -1214,7 +1218,7 @@ exports.captureInsuranceAuthorization = functions.https.onCall(async (data, cont
     );
 
     const captureData = captureResponse.data;
-    console.log(`[captureInsuranceAuthorization] Capture successful:`, captureData.id);
+    logger.info('Insurance capture successful', { captureId: captureData.id, authorizationId });
 
     // 5. Obtener el usuario que plantó (quien tiene la autorización)
     const ghosterId = participants.find(uid => uid !== victimUserId);
@@ -1278,7 +1282,7 @@ exports.captureInsuranceAuthorization = functions.https.onCall(async (data, cont
       }
     });
 
-    console.log(`[captureInsuranceAuthorization] Completed successfully for appointment ${appointmentId}`);
+    logger.info('Insurance authorization capture completed', { appointmentId, captureId: captureData.id, ghosterId, victimUserId });
 
     return {
       success: true,
@@ -1289,7 +1293,11 @@ exports.captureInsuranceAuthorization = functions.https.onCall(async (data, cont
     };
 
   } catch (error) {
-    console.error(`[captureInsuranceAuthorization] Error:`, error.response?.data || error.message);
+    logger.error('Error capturing insurance authorization', {
+      authorizationId,
+      appointmentId,
+      error: error.response?.data || error.message
+    });
 
     // Log del error
     const db = admin.firestore();
@@ -1343,7 +1351,7 @@ exports.voidInsuranceAuthorization = functions.https.onCall(async (data, context
   }
 
   try {
-    console.log(`[voidInsuranceAuthorization] Starting void for authorization ${authorizationId}, reason: ${reason}`);
+    logger.info('Starting insurance authorization void', { authorizationId, userId, reason });
 
     const db = admin.firestore();
 
@@ -1381,7 +1389,7 @@ exports.voidInsuranceAuthorization = functions.https.onCall(async (data, context
       }
     );
 
-    console.log(`[voidInsuranceAuthorization] Void successful for authorization ${authorizationId}`);
+    logger.info('Insurance authorization void successful', { authorizationId, userId });
 
     // 5. Actualizar Firestore
     await db.collection('users').doc(userId).update({
@@ -1422,7 +1430,7 @@ exports.voidInsuranceAuthorization = functions.https.onCall(async (data, context
       }
     });
 
-    console.log(`[voidInsuranceAuthorization] Completed successfully for user ${userId}`);
+    logger.info('Insurance authorization void completed', { userId, reason, authorizationId });
 
     return {
       success: true,
@@ -1431,11 +1439,15 @@ exports.voidInsuranceAuthorization = functions.https.onCall(async (data, context
     };
 
   } catch (error) {
-    console.error(`[voidInsuranceAuthorization] Error:`, error.response?.data || error.message);
+    logger.error('Error voiding insurance authorization', {
+      authorizationId,
+      userId,
+      error: error.response?.data || error.message
+    });
 
     // Si el error es que la autorización ya expiró (esto es normal después de 29 días)
     if (error.response?.status === 422 || error.response?.data?.name === 'AUTHORIZATION_VOIDED') {
-      console.log(`[voidInsuranceAuthorization] Authorization already voided or expired - updating user record`);
+      logger.info('Authorization already voided or expired - updating user record', { authorizationId, userId });
 
       const db = admin.firestore();
       await db.collection('users').doc(userId).update({
@@ -1507,7 +1519,10 @@ exports.getInsuranceAuthorizationStatus = functions.https.onCall(async (data, co
     };
 
   } catch (error) {
-    console.error(`[getInsuranceAuthorizationStatus] Error:`, error.response?.data || error.message);
+    logger.error('Error getting insurance authorization status', {
+      authorizationId,
+      error: error.response?.data || error.message
+    });
     throw new functions.https.HttpsError(
       'internal',
       `Failed to get authorization status: ${error.response?.data?.message || error.message}`
