@@ -2,6 +2,10 @@
  * PayPal Configuration for TuCitaSegura
  */
 
+import { createLogger } from './logger.js';
+
+const logger = createLogger('paypal-config');
+
 // PayPal Client ID (public, safe to expose)
 export const PAYPAL_CLIENT_ID = 'AUYz2zdljYOCUhGYqKYDHiV7SxJyuGiCda7Q7JH7VqKK10U7DP5C83374uL6VyXG2ja4x69mpVVQKTrO';
 
@@ -57,7 +61,7 @@ export async function createPayPalSubscription(userId, containerId = 'paypal-but
           });
         },
         onApprove: async function(data) {
-          console.log('PayPal subscription approved:', data.subscriptionID);
+          logger.info('PayPal subscription approved', { subscriptionId: data.subscriptionID, userId });
 
           // Subscription will be handled by webhook
           resolve({
@@ -66,7 +70,7 @@ export async function createPayPalSubscription(userId, containerId = 'paypal-but
           });
         },
         onError: function(err) {
-          console.error('PayPal subscription error:', err);
+          logger.error('PayPal subscription error', err, { userId });
           reject(err);
         },
         onCancel: function() {
@@ -76,7 +80,7 @@ export async function createPayPalSubscription(userId, containerId = 'paypal-but
     });
 
   } catch (error) {
-    console.error('Error creating PayPal subscription:', error);
+    logger.error('Error creating PayPal subscription', error, { userId });
     return {
       success: false,
       error: error.message
@@ -115,7 +119,11 @@ export async function createPayPalPayment(userId, amount, description, container
         },
         onApprove: async function(data, actions) {
           const order = await actions.order.capture();
-          console.log('PayPal payment captured:', order);
+          logger.info('PayPal payment captured', {
+            orderId: order.id,
+            userId,
+            amount: parseFloat(order.purchase_units[0].amount.value)
+          });
 
           resolve({
             success: true,
@@ -125,7 +133,7 @@ export async function createPayPalPayment(userId, amount, description, container
           });
         },
         onError: function(err) {
-          console.error('PayPal payment error:', err);
+          logger.error('PayPal payment error', err, { userId });
           reject(err);
         },
         onCancel: function() {
@@ -135,7 +143,7 @@ export async function createPayPalPayment(userId, amount, description, container
     });
 
   } catch (error) {
-    console.error('Error creating PayPal payment:', error);
+    logger.error('Error creating PayPal payment', error, { userId, amount, description });
     return {
       success: false,
       error: error.message
@@ -159,7 +167,7 @@ export async function cancelPayPalSubscription(subscriptionId) {
     return result.data;
 
   } catch (error) {
-    console.error('Error canceling PayPal subscription:', error);
+    logger.error('Error canceling PayPal subscription', error, { subscriptionId });
     return {
       success: false,
       error: error.message
