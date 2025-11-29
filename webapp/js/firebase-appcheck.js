@@ -177,6 +177,17 @@ async function initAppCheck() {
     return;
   }
 
+  // TEMPORARY: Disable App Check on production until reCAPTCHA Enterprise is properly configured
+  if (location.hostname === 'tucitasegura.com' || location.hostname.includes('tucitasegura.com')) {
+    logger.warn('⚠️  App Check TEMPORALMENTE DESACTIVADO en tucitasegura.com');
+    logger.info('💡 Para habilitar: Configura tucitasegura.com en reCAPTCHA Enterprise (Google Cloud Console)');
+    logger.info('📝 Paso 1: Ve a https://console.cloud.google.com/security/recaptcha');
+    logger.info('📝 Paso 2: Edita la key 6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w');
+    logger.info('📝 Paso 3: Agrega tucitasegura.com a los dominios permitidos');
+    window._appCheckInstance = null;
+    return;
+  }
+
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;
@@ -206,14 +217,16 @@ async function initAppCheck() {
     logger.info('🔐 Inicializando App Check...');
     appCheck = initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
-      isTokenAutoRefreshEnabled: true
+      isTokenAutoRefreshEnabled: false  // Disable auto-refresh to prevent 403 errors on misconfigured domains
     });
 
     logger.success('✅ App Check inicializado correctamente');
     logger.info(`📍 Modo: ${isDevelopment ? 'DESARROLLO' : 'PRODUCCIÓN'} (${location.hostname})`);
 
   } catch (e) {
-    logger.error('❌ Error inicializando App Check:', e.message);
+    logger.warn('⚠️  App Check no pudo inicializarse:', e.message);
+    logger.info('💡 La aplicación funcionará sin App Check (verificación deshabilitada)');
+    logger.info('📝 Para habilitar: Configura tucitasegura.com en reCAPTCHA Enterprise (Google Cloud Console)');
     appCheck = null;
   }
 
@@ -235,7 +248,16 @@ async function initAppCheck() {
           logger.warn('⚠️  No fue posible obtener App Check token en producción');
         }
       } catch (err) {
-        logger.error('❌ Error al verificar App Check en producción:', err.message || err);
+        // Check if it's a throttle error (403)
+        if (err.message && err.message.includes('throttled')) {
+          logger.warn('⚠️  App Check throttled - la aplicación funcionará sin App Check');
+          logger.info('💡 Para resolver: Limpia el cache o configura correctamente reCAPTCHA Enterprise');
+          // Disable App Check to prevent further errors
+          window._appCheckInstance = null;
+        } else {
+          logger.warn('⚠️  App Check token error (producción):', err.message || err);
+          logger.info('💡 La aplicación funcionará sin App Check');
+        }
       }
     }, 2000);
   }
