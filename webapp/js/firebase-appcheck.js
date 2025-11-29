@@ -169,6 +169,14 @@ window.detectAppCheckThrottled = function() {
 let appCheck = null;
 
 async function initAppCheck() {
+  // FIRST: Completely disable App Check on localhost to prevent 403 errors
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    logger.info('🔧 App Check COMPLETAMENTE DESACTIVADO en localhost');
+    logger.info('💡 Para habilitar en desarrollo, configura window.FIREBASE_APPCHECK_DEBUG_TOKEN antes de cargar este script');
+    window._appCheckInstance = null;
+    return;
+  }
+
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;
