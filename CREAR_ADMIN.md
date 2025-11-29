@@ -1,16 +1,30 @@
 # 👤 Crear Cuentas de Administrador - TuCitaSegura
 
-Este documento explica cómo crear cuentas de administrador para cesar.herrera.rojo@gmail.com (o cualquier otro email).
+Este documento explica cómo crear cuentas de administrador en TuCitaSegura.
+
+## 📋 Administradores del Sistema
+
+Los siguientes usuarios tienen permisos de administrador:
+
+1. **cesar.herrera.rojo@gmail.com** (masculino)
+2. **lacasitadebarajas@gmail.com** (femenino)
+3. **gonzalo.hrrj@gmail.com** (masculino)
 
 ---
 
 ## 🎯 Métodos Disponibles
 
-Hay **3 métodos** para crear una cuenta de administrador:
+Hay **3 métodos** para crear cuentas de administrador:
 
 1. **[Método 1: Cloud Function HTTP](#método-1-cloud-function-http)** ⭐ **RECOMENDADO** - Más rápido, no requiere credenciales locales
 2. **[Método 2: Script Node.js Local](#método-2-script-nodejs-local)** - Requiere credenciales de Firebase
 3. **[Método 3: Python Script](#método-3-python-script)** - Requiere credenciales de Firebase
+
+### 🚀 Crear TODOS los Admins de Una Vez
+
+Si quieres crear todos los administradores listados arriba de una vez, usa:
+- **Bash**: `./scripts/create-all-admins.sh SECRET`
+- **Node.js**: `node scripts/create-all-admins.js`
 
 ---
 
@@ -72,6 +86,7 @@ https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin
 **Opción A: Usando curl (Linux/Mac/Windows PowerShell)**
 
 ```bash
+# Usuario masculino (por defecto)
 curl -X POST \
   https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin \
   -H "Content-Type: application/json" \
@@ -79,11 +94,30 @@ curl -X POST \
     "email": "cesar.herrera.rojo@gmail.com",
     "adminSecret": "TU_SECRETO_SEGURO_AQUI_123"
   }'
+
+# Usuario femenino (especificar género)
+curl -X POST \
+  https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "lacasitadebarajas@gmail.com",
+    "gender": "femenino",
+    "adminSecret": "TU_SECRETO_SEGURO_AQUI_123"
+  }'
+
+# Crear todos los admins usando el script helper
+./scripts/call-create-admin.sh cesar.herrera.rojo@gmail.com TU_SECRETO masculino
+./scripts/call-create-admin.sh lacasitadebarajas@gmail.com TU_SECRETO femenino
+./scripts/call-create-admin.sh gonzalo.hrrj@gmail.com TU_SECRETO masculino
+
+# O crear todos de una vez
+./scripts/create-all-admins.sh TU_SECRETO_SEGURO_AQUI_123
 ```
 
 **Opción B: Usando JavaScript (desde el navegador o Node.js)**
 
 ```javascript
+// Crear admin masculino
 fetch('https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin', {
   method: 'POST',
   headers: {
@@ -91,6 +125,23 @@ fetch('https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstA
   },
   body: JSON.stringify({
     email: 'cesar.herrera.rojo@gmail.com',
+    gender: 'masculino', // opcional, por defecto es masculino
+    adminSecret: 'TU_SECRETO_SEGURO_AQUI_123'
+  })
+})
+.then(res => res.json())
+.then(data => console.log(data))
+.catch(err => console.error('Error:', err));
+
+// Crear admin femenino
+fetch('https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: 'lacasitadebarajas@gmail.com',
+    gender: 'femenino',
     adminSecret: 'TU_SECRETO_SEGURO_AQUI_123'
   })
 })
@@ -104,10 +155,11 @@ fetch('https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstA
 1. Método: `POST`
 2. URL: `https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin`
 3. Headers: `Content-Type: application/json`
-4. Body (raw JSON):
+4. Body (raw JSON) - Ejemplo con género:
 ```json
 {
-  "email": "cesar.herrera.rojo@gmail.com",
+  "email": "lacasitadebarajas@gmail.com",
+  "gender": "femenino",
   "adminSecret": "TU_SECRETO_SEGURO_AQUI_123"
 }
 ```
@@ -167,7 +219,17 @@ npm install
 
 ```bash
 cd /home/user/FZ6
+
+# Crear admin con género masculino (por defecto)
 node scripts/create-admin.js cesar.herrera.rojo@gmail.com
+
+# Crear admin con género específico
+node scripts/create-admin.js cesar.herrera.rojo@gmail.com masculino
+node scripts/create-admin.js lacasitadebarajas@gmail.com femenino
+node scripts/create-admin.js gonzalo.hrrj@gmail.com masculino
+
+# O crear todos de una vez
+node scripts/create-all-admins.js
 ```
 
 ### Paso 4: Verificar

@@ -18,16 +18,19 @@ NC='\033[0m' # No Color
 
 EMAIL="${1}"
 SECRET="${2}"
-FUNCTION_URL="${3:-https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin}"
+GENDER="${3:-masculino}"
+FUNCTION_URL="${4:-https://us-central1-tuscitasseguras-2d1a6.cloudfunctions.net/createFirstAdmin}"
 
 if [ -z "$EMAIL" ]; then
   echo -e "${RED}❌ Error: Email es requerido${NC}"
   echo ""
   echo -e "${YELLOW}Uso:${NC}"
-  echo "  $0 EMAIL SECRET [FUNCTION_URL]"
+  echo "  $0 EMAIL SECRET [GENDER] [FUNCTION_URL]"
   echo ""
-  echo -e "${YELLOW}Ejemplo:${NC}"
+  echo -e "${YELLOW}Ejemplos:${NC}"
   echo "  $0 cesar.herrera.rojo@gmail.com MiSecreto123"
+  echo "  $0 cesar.herrera.rojo@gmail.com MiSecreto123 masculino"
+  echo "  $0 lacasitadebarajas@gmail.com MiSecreto123 femenino"
   echo ""
   exit 1
 fi
@@ -36,13 +39,14 @@ if [ -z "$SECRET" ]; then
   echo -e "${RED}❌ Error: Secreto es requerido${NC}"
   echo ""
   echo -e "${YELLOW}Uso:${NC}"
-  echo "  $0 EMAIL SECRET [FUNCTION_URL]"
+  echo "  $0 EMAIL SECRET [GENDER] [FUNCTION_URL]"
   echo ""
   exit 1
 fi
 
 echo -e "${BLUE}🚀 Creando administrador...${NC}"
 echo -e "${BLUE}📧 Email: ${EMAIL}${NC}"
+echo -e "${BLUE}👤 Género: ${GENDER}${NC}"
 echo -e "${BLUE}🔗 URL: ${FUNCTION_URL}${NC}"
 echo ""
 
@@ -52,6 +56,7 @@ response=$(curl -s -X POST \
   -H "Content-Type: application/json" \
   -d "{
     \"email\": \"${EMAIL}\",
+    \"gender\": \"${GENDER}\",
     \"adminSecret\": \"${SECRET}\"
   }")
 
