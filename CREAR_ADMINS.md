@@ -20,7 +20,7 @@ Este comando creará automáticamente los 3 administradores:
 
 1. ✅ **cesar.herrera.rojo@gmail.com** (masculino, admin)
 2. ✅ **gonzalo.hrrj@gmail.com** (masculino, admin)
-3. ✅ **lacasitadebarajas@gmail.com** (masculino, admin)
+3. ✅ **lacasitadebarajas@gmail.com** (femenino, admin)
 
 ---
 
@@ -131,7 +131,7 @@ Si prefieres establecer passwords manualmente:
 # Un admin a la vez con password
 node scripts/create-admin.js cesar.herrera.rojo@gmail.com MiPassword123! masculino
 node scripts/create-admin.js gonzalo.hrrj@gmail.com OtraPass456! masculino
-node scripts/create-admin.js lacasitadebarajas@gmail.com Password789! masculino
+node scripts/create-admin.js lacasitadebarajas@gmail.com Password789! femenino
 ```
 
 ---

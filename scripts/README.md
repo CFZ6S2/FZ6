@@ -46,7 +46,7 @@ node scripts/create-admins-batch.js
 Este script creará automáticamente:
 - ✅ cesar.herrera.rojo@gmail.com (masculino)
 - ✅ gonzalo.hrrj@gmail.com (masculino)
-- ✅ lacasitadebarajas@gmail.com (masculino)
+- ✅ lacasitadebarajas@gmail.com (femenino)
 
 **Nota**: Si los usuarios ya existen, el script actualizará sus claims a admin sin crear usuarios duplicados.
 

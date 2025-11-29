@@ -24,7 +24,7 @@ const ADMINS_TO_CREATE = [
   },
   {
     email: 'lacasitadebarajas@gmail.com',
-    gender: 'masculino',
+    gender: 'femenino',
     password: null
   }
 ];
