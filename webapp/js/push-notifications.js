@@ -6,9 +6,11 @@
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 import { app, VAPID_PUBLIC_KEY } from "./firebase-config.js";
 import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { createLogger } from "./logger.js";
 
 const messaging = getMessaging(app);
 const db = getFirestore(app);
+const logger = createLogger('push-notifications');
 
 /**
  * Request notification permission and get FCM token
@@ -19,7 +21,7 @@ export async function requestNotificationPermission(userId) {
   try {
     // Check if notifications are supported
     if (!('Notification' in window)) {
-      console.log('This browser does not support notifications');
+      logger.warn('Browser does not support notifications');
       return null;
     }
 
@@ -27,7 +29,7 @@ export async function requestNotificationPermission(userId) {
     const permission = await Notification.requestPermission();
 
     if (permission === 'granted') {
-      console.log('✅ Notification permission granted');
+      logger.info('Notification permission granted', { userId });
 
       // Get FCM token
       const token = await getToken(messaging, {
@@ -35,23 +37,23 @@ export async function requestNotificationPermission(userId) {
       });
 
       if (token) {
-        console.log('📱 FCM Token obtained');
+        logger.info('FCM token obtained', { userId });
 
         // Save token to Firestore
         await saveTokenToFirestore(userId, token);
 
         return token;
       } else {
-        console.log('⚠️ No registration token available');
+        logger.warn('No FCM registration token available', { userId });
         return null;
       }
     } else {
-      console.log('❌ Notification permission denied');
+      logger.warn('Notification permission denied', { userId, permission });
       return null;
     }
 
   } catch (error) {
-    console.error('Error getting notification permission:', error);
+    logger.error('Error getting notification permission', error, { userId });
     return null;
   }
 }
@@ -75,11 +77,11 @@ async function saveTokenToFirestore(userId, token) {
           updatedAt: new Date()
         });
 
-        console.log('✅ FCM token saved');
+        logger.info('FCM token saved to Firestore', { userId });
       }
     }
   } catch (error) {
-    console.error('Error saving token:', error);
+    logger.error('Error saving FCM token', error, { userId });
   }
 }
 
@@ -89,7 +91,10 @@ async function saveTokenToFirestore(userId, token) {
  */
 export function setupMessageListener(callback) {
   onMessage(messaging, (payload) => {
-    console.log('📬 Message received:', payload);
+    logger.info('FCM message received', {
+      title: payload.notification?.title,
+      type: payload.data?.type
+    });
 
     const { title, body, icon } = payload.notification || {};
     const data = payload.data || {};

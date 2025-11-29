@@ -1565,3 +1565,11 @@ exports.health = healthCheck.health;
 exports.healthDetailed = healthCheck.healthDetailed;
 exports.ready = healthCheck.ready;
 exports.alive = healthCheck.alive;
+
+// ============================================================================
+// RECAPTCHA ENTERPRISE VERIFICATION
+// ============================================================================
+const recaptchaEnterprise = require('./recaptcha-enterprise');
+
+exports.verifyRecaptcha = recaptchaEnterprise.verifyRecaptcha;
+exports.verifyRecaptchaCallable = recaptchaEnterprise.verifyRecaptchaCallable;
