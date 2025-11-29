@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login con reCAPTCHA Enterprise - Ejemplo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .message {
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 4px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .recaptcha-badge {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔐 Login con reCAPTCHA</h1>
+  <p>Este ejemplo muestra cómo integrar reCAPTCHA Enterprise en el login.</p>
+
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required placeholder="tu@email.com">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Contraseña:</label>
+      <input type="password" id="password" name="password" required placeholder="••••••••">
+    </div>
+
+    <button type="submit" id="loginButton">Iniciar Sesión</button>
+  </form>
+
+  <div id="message"></div>
+
+  <div class="recaptcha-badge">
+    <p>
+      Protegido por reCAPTCHA Enterprise<br>
+      <small>Site Key: 6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w</small>
+    </p>
+  </div>
+
+  <!-- Logger para debugging -->
+  <script type="module" src="./js/logger.js"></script>
+
+  <!-- reCAPTCHA Helper -->
+  <script type="module">
+    import { checkRecaptcha, loadRecaptchaScript, RECAPTCHA_ACTIONS } from './js/recaptcha-helper.js';
+    import { createLogger } from './js/logger.js';
+
+    const logger = createLogger('login-example');
+
+    // Elementos del DOM
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const messageDiv = document.getElementById('message');
+
+    // Función para mostrar mensajes
+    function showMessage(text, type = 'info') {
+      messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+    }
+
+    // Cargar reCAPTCHA al iniciar
+    (async function init() {
+      try {
+        showMessage('⏳ Cargando protección anti-bot...', 'info');
+        await loadRecaptchaScript();
+        showMessage('✅ Protección anti-bot activada', 'success');
+        logger.info('reCAPTCHA Enterprise inicializado correctamente');
+      } catch (error) {
+        showMessage('⚠️ No se pudo cargar la protección anti-bot. El login funcionará de todos modos.', 'error');
+        logger.error('Error cargando reCAPTCHA', error);
+      }
+    })();
+
+    // Manejar submit del formulario
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Deshabilitar botón
+      loginButton.disabled = true;
+      showMessage('🔐 Verificando que eres humano...', 'info');
+
+      try {
+        // 1. Verificar reCAPTCHA
+        logger.info('Iniciando verificación reCAPTCHA', { email });
+        const isHuman = await checkRecaptcha(RECAPTCHA_ACTIONS.LOGIN);
+
+        if (!isHuman) {
+          showMessage('❌ Verificación anti-bot fallida. Por favor intenta de nuevo.', 'error');
+          logger.warn('reCAPTCHA verification failed', { email });
+          loginButton.disabled = false;
+          return;
+        }
+
+        logger.success('reCAPTCHA verification passed', { email });
+        showMessage('✅ Verificación exitosa. Iniciando sesión...', 'success');
+
+        // 2. Aquí irían las llamadas reales a Firebase Auth
+        // Por ahora solo simulamos
+        await simulateLogin(email, password);
+
+      } catch (error) {
+        logger.error('Error en el proceso de login', error);
+        showMessage('❌ Error inesperado. Por favor intenta de nuevo.', 'error');
+      } finally {
+        loginButton.disabled = false;
+      }
+    });
+
+    // Simulación de login (reemplazar con Firebase Auth real)
+    async function simulateLogin(email, password) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          showMessage(`✅ ¡Login exitoso! Bienvenido ${email}`, 'success');
+          logger.info('Login successful', { email });
+          resolve();
+        }, 1000);
+      });
+    }
+
+    // EJEMPLO DE INTEGRACIÓN REAL CON FIREBASE:
+    /*
+    import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { auth } from './js/firebase-config.js';
+
+    async function realLogin(email, password) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        logger.info('Login successful', { uid: userCredential.user.uid });
+        showMessage('✅ ¡Login exitoso!', 'success');
+        // Redirigir a dashboard
+        window.location.href = '/webapp/dashboard.html';
+      } catch (error) {
+        logger.error('Login failed', error);
+
+        if (error.code === 'auth/wrong-password') {
+          showMessage('❌ Contraseña incorrecta', 'error');
+        } else if (error.code === 'auth/user-not-found') {
+          showMessage('❌ Usuario no encontrado', 'error');
+        } else {
+          showMessage('❌ Error al iniciar sesión', 'error');
+        }
+      }
+    }
+    */
+  </script>
+</body>
+</html>
