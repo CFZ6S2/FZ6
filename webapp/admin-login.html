@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Administradores - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+
+  <!-- DOMPurify for XSS Protection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="/webapp/js/sanitizer.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-8 fade-in">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-purple-500/20 mb-4">
+          <i class="fas fa-shield-alt text-4xl text-purple-400"></i>
+        </div>
+        <h1 class="text-4xl font-bold text-white mb-2">
+          Acceso de Administradores
+        </h1>
+        <p class="text-gray-300">
+          Login sin App Check
+        </p>
+      </div>
+
+      <!-- Info Banner -->
+      <div class="glass rounded-2xl p-4 mb-6 fade-in border-l-4 border-yellow-500">
+        <div class="flex items-start space-x-3">
+          <i class="fas fa-info-circle text-xl text-yellow-400 mt-1"></i>
+          <div class="text-sm text-gray-300">
+            <p class="font-bold text-white mb-1">Página especial para administradores</p>
+            <p>Esta página bypasea Firebase App Check para permitir el acceso durante problemas de throttling.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <div class="glass rounded-2xl p-8 fade-in">
+        <form id="loginForm" class="space-y-6">
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-bold text-white mb-2">
+              <i class="fas fa-envelope mr-2"></i>
+              Email de Administrador
+            </label>
+            <input
+              type="email"
+              id="email"
+              class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="admin@example.com"
+              required
+            >
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-bold text-white mb-2">
+              <i class="fas fa-lock mr-2"></i>
+              Contraseña
+            </label>
+            <div class="relative">
+              <input
+                type="password"
+                id="password"
+                class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="AdminTuCita2025!Seguro"
+                required
+              >
+              <button
+                type="button"
+                id="togglePassword"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Contraseña temporal: AdminTuCita2025!Seguro
+            </p>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            id="loginButton"
+            class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="fas fa-sign-in-alt mr-2"></i>
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <!-- Result Message -->
+        <div id="resultMessage" class="mt-4"></div>
+      </div>
+
+      <!-- Admin Accounts Info -->
+      <div class="glass rounded-2xl p-6 mt-6 fade-in">
+        <h3 class="text-lg font-bold text-white mb-3">
+          <i class="fas fa-users text-purple-400 mr-2"></i>
+          Cuentas de Administrador
+        </h3>
+        <div class="space-y-2 text-sm text-gray-300">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-envelope text-purple-400"></i>
+            <span>cesar.herrera.rojo@gmail.com</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-envelope text-pink-400"></i>
+            <span>lacasitadebarajas@gmail.com</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-envelope text-purple-400"></i>
+            <span>gonzalo.hrrj@gmail.com</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back to Normal Login -->
+      <div class="text-center mt-6">
+        <a href="/webapp/login.html" class="text-gray-400 hover:text-white transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i>
+          Volver al Login Normal
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (WITHOUT App Check) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
+      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+      databaseURL: "https://tuscitasseguras-2d1a6-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "tuscitasseguras-2d1a6",
+      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+      messagingSenderId: "924208562587",
+      appId: "1:924208562587:web:5291359426fe390b36213e"
+    };
+
+    // Initialize Firebase (WITHOUT App Check)
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    console.log('✅ Firebase initialized WITHOUT App Check');
+    console.log('🔓 App Check bypassed for admin login');
+
+    // Toggle Password Visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      const icon = this.querySelector('i');
+
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    });
+
+    // Login Form Handler
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const resultDiv = document.getElementById('resultMessage');
+      const loginButton = document.getElementById('loginButton');
+
+      // Clear previous messages
+      resultDiv.innerHTML = '';
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
+
+      try {
+        // Set persistence to session only
+        await setPersistence(auth, browserSessionPersistence);
+
+        // Sign in
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        console.log('✅ Login successful:', user.uid);
+
+        // Get ID token to check custom claims
+        const idTokenResult = await user.getIdTokenResult();
+        const isAdmin = idTokenResult.claims.role === 'admin';
+
+        if (!isAdmin) {
+          throw new Error('Esta cuenta no tiene permisos de administrador');
+        }
+
+        // Success
+        resultDiv.innerHTML = `
+          <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
+            <div class="flex items-center text-green-400">
+              <i class="fas fa-check-circle text-2xl mr-3"></i>
+              <div>
+                <p class="font-bold">¡Login exitoso!</p>
+                <p class="text-sm text-green-300 mt-1">
+                  Bienvenido, ${email}
+                </p>
+                <p class="text-sm text-green-300">
+                  Redirigiendo al panel de administración...
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Redirect to admin panel
+        setTimeout(() => {
+          window.location.href = '/webapp/admin.html';
+        }, 2000);
+
+      } catch (error) {
+        console.error('❌ Login error:', error);
+
+        let errorMessage = 'Error desconocido';
+
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          errorMessage = 'Email o contraseña incorrectos';
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = 'Email inválido';
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'Demasiados intentos. Espera un momento e intenta de nuevo.';
+        } else if (error.code === 'auth/network-request-failed') {
+          errorMessage = 'Error de red. Verifica tu conexión a internet.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        resultDiv.innerHTML = `
+          <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
+            <div class="flex items-center text-red-400">
+              <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
+              <div>
+                <p class="font-bold">Error al iniciar sesión</p>
+                <p class="text-sm text-red-300 mt-1">
+                  ${errorMessage}
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        loginButton.disabled = false;
+        loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
+      }
+    });
+  </script>
+</body>
+</html>
