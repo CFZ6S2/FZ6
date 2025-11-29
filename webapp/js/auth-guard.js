@@ -5,6 +5,9 @@
  */
 
 import { apiService, handleAPIError } from './api-service.js';
+import { createLogger } from './logger.js';
+
+const logger = createLogger('auth-guard');
 
 class AuthGuard {
     constructor() {
@@ -46,7 +49,7 @@ class AuthGuard {
             return true;
             
         } catch (error) {
-            console.error('Error verificando autenticación:', error);
+            logger.error('Error verificando autenticación', error);
             this.redirectToLogin();
             return false;
         }
@@ -63,23 +66,23 @@ class AuthGuard {
             // Verificar conexión con backend
             const isAvailable = await apiService.isBackendAvailable();
             if (!isAvailable) {
-                console.warn('Backend no disponible, usando solo Firebase');
+                logger.warn('Backend no disponible, usando solo Firebase');
                 return true; // Permitir acceso con Firebase solo
             }
 
             // Verificar estado de autenticación en backend
             const authStatus = await apiService.checkAuthStatus();
-            console.log('Backend auth status:', authStatus);
+            logger.debug('Backend auth status verified', { authStatus });
             
             return true;
             
         } catch (error) {
             if (error.message.includes('403')) {
-                console.error('Backend auth failed - access denied');
+                logger.error('Backend auth failed - access denied', error);
                 return false;
             }
-            
-            console.warn('Backend auth check failed, continuing with Firebase:', error);
+
+            logger.warn('Backend auth check failed, continuing with Firebase', error);
             return true; // Fallback a Firebase
         }
     }
@@ -120,9 +123,9 @@ class AuthGuard {
             }
 
             return true;
-            
+
         } catch (error) {
-            console.error('Error verificando perfil:', error);
+            logger.error('Error verificando perfil', error);
             return false;
         }
     }
@@ -180,7 +183,7 @@ class AuthGuard {
             return token;
             
         } catch (error) {
-            console.error('Error obteniendo token:', error);
+            logger.error('Error obteniendo token', error);
             throw error;
         }
     }
@@ -204,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (protectedPages.includes(pageName)) {
         const isAuthenticated = await AuthGuard.protectPage();
         if (!isAuthenticated) {
-            console.log('Acceso denegado - redirigiendo...');
+            logger.info('Acceso denegado - redirigiendo', { page: pageName });
         }
     }
 });
