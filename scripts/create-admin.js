@@ -14,11 +14,49 @@
  *   node scripts/create-admin.js admin@example.com AdminPass456! femenino
  */
 
-const admin = require('firebase-admin');
+const path = require('path');
+const fs = require('fs');
+
+// Intentar cargar firebase-admin desde functions/node_modules
+let admin;
+try {
+  admin = require('firebase-admin');
+} catch (e) {
+  // Intentar desde functions/node_modules
+  const functionsAdminPath = path.join(__dirname, '../functions/node_modules/firebase-admin');
+  if (fs.existsSync(functionsAdminPath)) {
+    admin = require(functionsAdminPath);
+  } else {
+    console.error('❌ ERROR: firebase-admin no está instalado');
+    console.error('');
+    console.error('Por favor instala las dependencias:');
+    console.error('  cd functions && npm install && cd ..');
+    console.error('');
+    console.error('O instala firebase-admin globalmente:');
+    console.error('  npm install -g firebase-admin');
+    process.exit(1);
+  }
+}
 
 // Inicializar Firebase Admin
 if (!admin.apps.length) {
-  admin.initializeApp();
+  try {
+    // Intentar leer .firebaserc para obtener el project ID
+    const firebasercPath = path.join(__dirname, '../.firebaserc');
+    let projectId = 'tuscitasseguras-2d1a6'; // Default
+
+    if (fs.existsSync(firebasercPath)) {
+      const firebaserc = JSON.parse(fs.readFileSync(firebasercPath, 'utf8'));
+      projectId = firebaserc.projects?.default || projectId;
+    }
+
+    admin.initializeApp({
+      projectId: projectId
+    });
+  } catch (error) {
+    // Fallback a inicialización estándar
+    admin.initializeApp();
+  }
 }
 
 /**
