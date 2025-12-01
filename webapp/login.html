@@ -317,24 +317,33 @@
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Check if email is verified
-        if (!user.emailVerified) {
-          showToast('Por favor verifica tu correo electrónico antes de iniciar sesión', 'warning');
-          await auth.signOut();
-          loginButton.disabled = false;
-          loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
-          return;
-        }
+        // Get user token to check if admin
+        const tokenResult = await user.getIdTokenResult();
+        const isAdmin = tokenResult.claims.role === 'admin';
 
-        // Check if user profile exists
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        // ADMINS: Skip email verification and profile checks
+        if (!isAdmin) {
+          // Check if email is verified (only for regular users)
+          if (!user.emailVerified) {
+            showToast('Por favor verifica tu correo electrónico antes de iniciar sesión', 'warning');
+            await auth.signOut();
+            loginButton.disabled = false;
+            loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
+            return;
+          }
 
-        if (!userDoc.exists()) {
-          showToast('Error: Perfil de usuario no encontrado', 'error');
-          await auth.signOut();
-          loginButton.disabled = false;
-          loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
-          return;
+          // Check if user profile exists (only for regular users)
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+          if (!userDoc.exists()) {
+            showToast('Error: Perfil de usuario no encontrado', 'error');
+            await auth.signOut();
+            loginButton.disabled = false;
+            loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
+            return;
+          }
+        } else {
+          logger.info('Admin login - bypassing email verification and profile checks', { uid: user.uid });
         }
 
         // ✅ Log successful login
