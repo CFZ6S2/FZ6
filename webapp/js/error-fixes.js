@@ -82,6 +82,7 @@ console.warn = function(...args) {
 const originalConsoleError = console.error;
 console.error = function(...args) {
     const message = args[0]?.toString() || '';
+    const fullMessage = args.join(' ');
 
     // Handle storage/unauthenticated errors
     if (message.includes('storage/unauthenticated')) {
@@ -92,6 +93,20 @@ console.error = function(...args) {
     // Handle App Check throttled errors (reduce noise)
     if (message.includes('appCheck/throttled')) {
         // Already logged by Firebase, don't duplicate
+        return;
+    }
+
+    // Handle App Check ReCAPTCHA errors (reduce noise)
+    if (message.includes('appCheck/recaptcha-error') ||
+        message.includes('ReCAPTCHA error') ||
+        (fullMessage.includes('appCheck') && fullMessage.includes('ReCAPTCHA'))) {
+        // Suppress - already handled in firebase-appcheck.js
+        return;
+    }
+
+    // Handle generic App Check errors from Firebase SDK
+    if (message.includes('@firebase/app-check') && message.includes('FirebaseError')) {
+        // Suppress - these are handled gracefully in firebase-appcheck.js
         return;
     }
 
