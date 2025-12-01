@@ -80,21 +80,16 @@ service cloud.firestore {
                     && request.resource.data.keys().hasAll(['userRole','birthDate','email','createdAt'])
                     && isAdult(request.resource.data.birthDate);
 
-      // Lectura: Usuarios autenticados pueden ver perfiles
-      // ✅ Filtrado de género aplicado en las reglas
-      // - Los hombres solo pueden ver perfiles de mujeres
-      // - Las mujeres solo pueden ver perfiles de hombres
-      // - Cada usuario puede ver su propio perfil
-      // - Los admins pueden ver todos los perfiles y listar toda la colección
+      // Lectura: Admins primero, luego otros usuarios
+      // ✅ ADMINS tienen acceso total (get, list, todas las operaciones de lectura)
+      // ✅ Usuarios regulares: filtrado de género aplicado
+      allow read, list: if isAdmin();  // Admins pueden leer TODO
+
       allow read: if isAuthed() && (
         userId == uid() ||  // Propio perfil
-        isAdmin() ||  // Admin puede ver todos
         (isMale() && resource.data.gender == 'femenino') ||  // Hombres ven mujeres
         (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
       );
-
-      // Permitir a admins listar todos los usuarios
-      allow list: if isAdmin();
 
       // Actualización: El dueño puede actualizar su perfil (con alias/gender configurables una vez)
       allow update: if isAuthed() && (
