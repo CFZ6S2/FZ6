@@ -6,6 +6,7 @@ Las Cloud Functions deployadas (onUserDocCreate) crearán los documentos de Fire
 import os
 import sys
 import ssl
+from pathlib import Path
 
 # Fix SSL issues
 os.environ['GRPC_SSL_CIPHER_SUITES'] = 'HIGH+ECDSA'
@@ -69,9 +70,16 @@ def main():
     print("🚀 CREACIÓN DE CUENTAS DE ADMINISTRADOR")
     print("=" * 70)
 
-    # Inicializar Firebase
-    cred_path = "/home/user/FZ6/backend/firebase-credentials.json"
-    cred = credentials.Certificate(cred_path)
+    # Inicializar Firebase - usar ruta relativa para Windows/Linux
+    script_dir = Path(__file__).parent
+    cred_path = script_dir.parent / 'backend' / 'firebase-credentials.json'
+
+    if not cred_path.exists():
+        print(f"❌ ERROR: No se encuentra el archivo de credenciales en: {cred_path}")
+        print(f"   Asegúrate de que el archivo firebase-credentials.json esté en la carpeta 'backend'")
+        sys.exit(1)
+
+    cred = credentials.Certificate(str(cred_path))
     firebase_admin.initialize_app(cred)
 
     print(f"✅ Firebase Auth inicializado")
