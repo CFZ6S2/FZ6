@@ -265,15 +265,23 @@
         return;
       }
 
+      // FORCE token refresh to get latest custom claims
+      console.log('🔄 Forcing token refresh to get latest custom claims...');
+      const idTokenResult = await user.getIdTokenResult(true); // true = force refresh
+
+      console.log('📋 Custom claims:', idTokenResult.claims);
+      console.log('👤 Role:', idTokenResult.claims.role);
+
       // Verify admin role
-      const idTokenResult = await user.getIdTokenResult();
       if (idTokenResult.claims.role !== 'admin') {
-        alert('Acceso denegado: Se requieren permisos de administrador');
+        console.error('❌ Access denied: role =', idTokenResult.claims.role);
+        alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role || 'undefined'));
         await signOut(auth);
         window.location.href = '/webapp/admin-login.html';
         return;
       }
 
+      console.log('✅ Admin access granted');
       document.getElementById('adminName').textContent = user.email;
       loadData();
     });
