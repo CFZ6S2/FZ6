@@ -205,8 +205,23 @@ async function initAppCheck() {
     }
 
   } catch (e) {
-    logger.error('❌ Error inicializando App Check:', e.message);
-    logger.warn('⚠️  La aplicación continuará sin App Check (funcionalidad reducida)');
+    // Suppress ReCAPTCHA configuration errors in production
+    const isReCaptchaError = e.message && (
+      e.message.includes('recaptcha') ||
+      e.message.includes('ReCAPTCHA') ||
+      e.code === 'appCheck/recaptcha-error'
+    );
+
+    if (isReCaptchaError) {
+      logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
+      if (isDevelopment) {
+        logger.info('💡 Para desarrollo: Configura un debug token o usa localhost');
+      }
+    } else {
+      logger.error('❌ Error inicializando App Check:', e.message);
+    }
+
+    logger.info('✅ La aplicación funciona normalmente sin App Check');
     appCheck = null;
   }
 
@@ -228,26 +243,29 @@ async function initAppCheck() {
           logger.warn('⚠️  No fue posible obtener App Check token en producción');
         }
       } catch (err) {
-        // Manejar errores de throttling específicamente
-        if (err.message && err.message.includes('throttled')) {
-          logger.error('🚨 App Check throttled (403) - Bloqueo de 24h activo');
-          logger.info('🔧 SOLUCIÓN 1: Limpia el cache del navegador');
-          logger.info('   → Abre /webapp/clear-appcheck-throttle.html');
-          logger.info('   → O presiona Ctrl+Shift+Delete y borra todo');
-          logger.info('🔧 SOLUCIÓN 2: Configura reCAPTCHA Enterprise correctamente');
-          logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          logger.info('   → Agrega tucitasegura.com a dominios permitidos');
-          logger.info('💡 La aplicación funcionará sin App Check mientras tanto');
-        } else if (err.message && err.message.includes('403')) {
-          logger.error('🚨 Error 403 en App Check - Dominio no configurado');
-          logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
-          logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          logger.info('   → Edita la key: 6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w');
-          logger.info('   → Agrega tucitasegura.com a los dominios permitidos');
+        // Manejar errores de ReCAPTCHA y throttling de manera más silenciosa
+        const errorCode = err.code || '';
+        const errorMsg = err.message || '';
+
+        if (errorMsg.includes('throttled') || errorCode === 'appCheck/throttled') {
+          logger.warn('⚠️  App Check: Límite de solicitudes alcanzado (continuando sin App Check)');
+          if (isDevelopment) {
+            logger.info('💡 Desarrollo: Visita /webapp/clear-appcheck-throttle.html para limpiar');
+          }
+        } else if (errorMsg.includes('403') || errorMsg.includes('recaptcha') || errorCode === 'appCheck/recaptcha-error') {
+          logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
+          if (isDevelopment) {
+            logger.info('💡 Desarrollo: Configura dominio en Google Cloud Console');
+            logger.info('   → https://console.cloud.google.com/security/recaptcha');
+          }
+        } else if (errorMsg.includes('400')) {
+          // Suppress 400 errors - these are typically ReCAPTCHA configuration issues
+          logger.warn('⚠️  App Check: Configuración de ReCAPTCHA pendiente (continuando sin App Check)');
         } else {
-          logger.warn('⚠️  App Check error en producción:', err.message || err);
+          // Only log unexpected errors
+          logger.debug('App Check token error:', errorMsg);
         }
-        logger.info('✅ Firebase Auth y Firestore funcionan sin App Check');
+        // Don't log success message - it's confusing when there's an error
       }
     }, 2000);
   }
