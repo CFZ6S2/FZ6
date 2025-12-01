@@ -85,13 +85,16 @@ service cloud.firestore {
       // - Los hombres solo pueden ver perfiles de mujeres
       // - Las mujeres solo pueden ver perfiles de hombres
       // - Cada usuario puede ver su propio perfil
-      // - Los admins pueden ver todos los perfiles
+      // - Los admins pueden ver todos los perfiles y listar toda la colección
       allow read: if isAuthed() && (
         userId == uid() ||  // Propio perfil
         isAdmin() ||  // Admin puede ver todos
         (isMale() && resource.data.gender == 'femenino') ||  // Hombres ven mujeres
         (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
       );
+
+      // Permitir a admins listar todos los usuarios
+      allow list: if isAdmin();
 
       // Actualización: El dueño puede actualizar su perfil (con alias/gender configurables una vez)
       allow update: if isAuthed() && (

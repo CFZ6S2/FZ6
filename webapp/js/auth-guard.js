@@ -20,14 +20,24 @@ class AuthGuard {
     async checkAuthStatus() {
         try {
             const user = firebase.auth().currentUser;
-            
+
             if (!user) {
                 // No hay usuario autenticado
                 this.redirectToLogin();
                 return false;
             }
 
-            // Verificar email verificado
+            // Obtener token con custom claims para verificar si es admin
+            const tokenResult = await user.getIdTokenResult();
+            const isAdmin = tokenResult.claims.role === 'admin';
+
+            // ADMINS: Los administradores NO necesitan email verificado ni perfil completo
+            if (isAdmin) {
+                logger.info('Admin authenticated - bypassing profile checks', { uid: user.uid });
+                return true;
+            }
+
+            // USUARIOS NORMALES: Verificar email verificado
             if (!user.emailVerified) {
                 this.redirectToEmailVerification();
                 return false;
