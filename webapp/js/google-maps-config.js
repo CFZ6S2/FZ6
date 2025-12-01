@@ -26,7 +26,8 @@
 
 // ⚠️ TODO: Replace with your restricted API key
 // DO NOT commit your real API key to Git!
-export const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'TU_API_KEY_AQUI';
+// You can set window.GOOGLE_MAPS_API_KEY before loading this module
+export const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.GOOGLE_MAPS_API_KEY) || 'TU_API_KEY_AQUI';
 
 // Configuración del mapa
 export const MAP_CONFIG = {
