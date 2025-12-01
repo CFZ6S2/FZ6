@@ -237,7 +237,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
@@ -394,12 +394,21 @@
             }
           </td>
           <td class="px-6 py-4">
-            <button
-              onclick="viewUser('${user.id}')"
-              class="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors text-sm"
-            >
-              <i class="fas fa-eye mr-2"></i>Ver
-            </button>
+            <div class="flex gap-2">
+              <button
+                onclick="viewUser('${user.id}')"
+                class="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors text-sm"
+              >
+                <i class="fas fa-eye mr-2"></i>Ver
+              </button>
+              <button
+                onclick="deleteUser('${user.id}', '${user.email?.replace(/'/g, "\\'")}', '${user.userRole}')"
+                class="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors text-sm ${user.userRole === 'admin' ? 'opacity-50 cursor-not-allowed' : ''}"
+                ${user.userRole === 'admin' ? 'disabled' : ''}
+              >
+                <i class="fas fa-trash mr-2"></i>Borrar
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -505,6 +514,46 @@
 
     window.closeUserModal = () => {
       document.getElementById('userModal').classList.add('hidden');
+    };
+
+    // Delete user function
+    window.deleteUser = async (userId, userEmail, userRole) => {
+      // Prevent deleting admins
+      if (userRole === 'admin') {
+        alert('⚠️ No se pueden borrar cuentas de administrador');
+        return;
+      }
+
+      // Confirm deletion
+      const confirmed = confirm(
+        `⚠️ ¿Estás seguro de que quieres borrar este usuario?\n\n` +
+        `Email: ${userEmail}\n\n` +
+        `Esta acción NO se puede deshacer.`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        console.log('🗑️ Deleting user:', userId, userEmail);
+
+        // Delete from Firestore
+        await deleteDoc(doc(db, 'users', userId));
+
+        console.log('✅ User deleted from Firestore');
+
+        // Remove from local array
+        allUsers = allUsers.filter(u => u.id !== userId);
+
+        // Update display
+        applyFilters();
+
+        // Show success message
+        alert('✅ Usuario borrado exitosamente');
+
+      } catch (error) {
+        console.error('❌ Error deleting user:', error);
+        alert('❌ Error al borrar usuario: ' + error.message);
+      }
     };
 
     window.logout = async () => {
