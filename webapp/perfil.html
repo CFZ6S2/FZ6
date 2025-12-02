@@ -783,6 +783,9 @@
         const latlng = new google.maps.LatLng(lat, lon);
 
         geocoder.geocode({ location: latlng }, (results, status) => {
+          console.log('🌍 Geocoder status:', status);
+          console.log('🌍 Geocoder results:', results);
+
           if (status === 'OK') {
             if (results && results.length > 0) {
               // Find the locality (municipality/city) component
@@ -815,7 +818,10 @@
               }
 
               // Update city input with municipality name only
-              document.getElementById('city').value = municipality;
+              const cityInput = document.getElementById('city');
+              cityInput.removeAttribute('readonly'); // Remove readonly temporarily
+              cityInput.value = municipality;
+              cityInput.setAttribute('readonly', 'readonly'); // Add it back for user protection
 
               // Save coordinates to hidden inputs
               document.getElementById('latitude').value = lat;
@@ -823,6 +829,9 @@
 
               console.log('📍 Municipio obtenido:', municipality);
               console.log('🔒 Privacidad: Solo se muestra el municipio, sin dirección exacta');
+
+              // Show success message
+              showToast(`✅ Ubicación establecida: ${municipality}`, 'success');
 
             } else {
               throw new Error('No se encontraron resultados');
