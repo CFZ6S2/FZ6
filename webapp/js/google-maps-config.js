@@ -24,10 +24,10 @@
  * - Geocoding API
  */
 
-// ⚠️ TODO: Replace with your restricted API key
-// DO NOT commit your real API key to Git!
-// You can set window.GOOGLE_MAPS_API_KEY before loading this module
-export const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.GOOGLE_MAPS_API_KEY) || 'TU_API_KEY_AQUI';
+// ⚠️ IMPORTANT: This API key should be restricted in Google Cloud Console
+// Restrict to these domains: tucitasegura.com, www.tucitasegura.com, *.firebaseapp.com
+// You can override by setting window.GOOGLE_MAPS_API_KEY before loading this module
+export const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.GOOGLE_MAPS_API_KEY) || 'AIzaSyB-1uKRCkjlTMxjyXgnFDDtmvHJ4Gedp5k';
 
 // Configuración del mapa
 export const MAP_CONFIG = {
