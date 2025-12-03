@@ -579,7 +579,7 @@
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-    import { showToast } from './js/utils.js';
+    import { showToast, validateProfileComplete } from './js/utils.js';
     import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './js/theme.js';
     import { logger } from './js/logger.js';
     import { setupGlobalErrorHandling } from './js/error-handler.js';
@@ -593,6 +593,18 @@
 
     // Setup global error handling
     setupGlobalErrorHandling();
+
+    // Check if user was redirected due to incomplete profile
+    const urlParams = new URLSearchParams(window.location.search);
+    const isIncomplete = urlParams.get('incomplete') === 'true';
+    const returnUrl = urlParams.get('returnUrl');
+
+    if (isIncomplete) {
+      setTimeout(() => {
+        showToast('⚠️ Debes completar tu perfil para acceder al chat', 'warning');
+        showToast('📝 Por favor completa todos los campos requeridos', 'info');
+      }, 500);
+    }
 
     let currentUser = null;
     let currentUserData = null;
