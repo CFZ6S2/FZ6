@@ -4,6 +4,7 @@
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 import app from './firebase-config.js';
 import { logger } from './logger.js';
+const __hideRecaptchaBadge = (() => { try { const s = document.createElement('style'); s.setAttribute('data-hide-recaptcha', 'true'); s.textContent = '.grecaptcha-badge{visibility:hidden!important}'; document.head.appendChild(s); } catch {} })();
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
@@ -11,7 +12,7 @@ import { logger } from './logger.js';
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LfdTvQrAAAAACkGjvbbFIkqHMsTHwRYYZS_CGq2';
+const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LcIeB4sAAAAAIsW672Uvlem8ECauSVa2IwG1vfY';
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
@@ -28,11 +29,12 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'tuscitasseguras-2d1a6.web.app',
-  'tuscitasseguras-2d1a6.firebaseapp.com',
+  'tucitasegura-129cc.web.app',
+  'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
   'vercel.app',
-  'tucitasegura.com'
+  'tucitasegura.com',
+  'www.tucitasegura.com'
 ];
 
 const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
@@ -56,19 +58,27 @@ const DEBUG_TOKEN =
     (window.__FIREBASE_APPCHECK_DEBUG_TOKEN || window.FIREBASE_APPCHECK_DEBUG_TOKEN)) ||
   null;
 
-const enableDebugToken = isDevelopment && !!DEBUG_TOKEN;
+let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
+try {
+  const params = new URLSearchParams(location.search);
+  const qToken = params.get('debugToken');
+  if (!DEV_DEBUG_TOKEN && isDevelopment && qToken) DEV_DEBUG_TOKEN = qToken;
+  const lsToken = (typeof localStorage !== 'undefined') ? localStorage.getItem('APPCHECK_DEBUG_TOKEN') : null;
+  if (!DEV_DEBUG_TOKEN && isDevelopment && lsToken) DEV_DEBUG_TOKEN = lsToken;
+} catch {}
+if (!DEV_DEBUG_TOKEN && isDevelopment) {
+  DEV_DEBUG_TOKEN = '1ACC3630-42C6-4D01-92BA-ED0DE8C718FF';
+}
+
+const enableDebugToken = isDevelopment && !!DEV_DEBUG_TOKEN;
 
 if (enableDebugToken) {
-  logger.info('🔧 Activando App Check Debug Token (DESARROLLO) ANTES de inicializar SDK');
   try {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-  } catch (e) {
-    logger.warn('⚠️  No se pudo establecer debug token globalmente:', e.message);
-  }
-} else if (DEBUG_TOKEN && !isDevelopment) {
-  logger.warn('⚠️  Debug token detectado pero NO estamos en desarrollo — ignorándolo para producción');
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+  } catch (e) {}
+} else if (DEV_DEBUG_TOKEN && !isDevelopment) {
 }
 
 // ============================================================================
@@ -201,7 +211,7 @@ async function initAppCheck() {
     // Instrucciones de configuración para producción
     if (location.hostname === 'tucitasegura.com') {
       logger.info('📝 Si ves errores 403: Configura tucitasegura.com en Google Cloud Console');
-      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LfdTvQrAAAAA...');
+      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LcIeB4sAAAAAIsW672Uvlem8ECauSVa2IwG1vfY');
     }
 
   } catch (e) {
@@ -242,7 +252,7 @@ async function initAppCheck() {
           logger.error('🚨 Error 403 en App Check - Dominio no configurado');
           logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
           logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          logger.info('   → Edita la key: 6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w');
+          logger.info('   → Edita la key: 6LcIeB4sAAAAAIsW672Uvlem8ECauSVa2IwG1vfY');
           logger.info('   → Agrega tucitasegura.com a los dominios permitidos');
         } else {
           logger.warn('⚠️  App Check error en producción:', err.message || err);

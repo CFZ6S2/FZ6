@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "TuCitaSegura - Premium Dating Platform",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "test:firestore": "jest test/firestore-rules.test.js",
@@ -33,7 +36,8 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^2.0.7",
+    "vite": "^5.0.0",
+    "@firebase/rules-unit-testing": "^5.0.0",
     "@playwright/test": "^1.40.0",
     "@types/jest": "^29.5.10",
     "autoprefixer": "^10.4.16",
@@ -45,7 +49,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
-    "firebase-admin": "^13.6.0"
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
   },
   "jest": {
     "testEnvironment": "node",

@@ -18,13 +18,11 @@ COPY backend/requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend application code
-COPY backend/*.py .
+# Copy backend application code (entire backend directory)
+COPY backend/ .
 
-# Expose port
-EXPOSE 8000
+# Expose Cloud Run default port
+EXPOSE 8080
 
-# Start command will be overridden by Railway's startCommand
-# Using ENTRYPOINT for better Railway compatibility
-ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0"]
-CMD ["--port", "8000"]
+# Start command compatible with Cloud Run (PORT env defaults to 8080)
+ENTRYPOINT ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]
