@@ -412,7 +412,7 @@
       getDocs,
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { showToast, calculateDistance } from './js/utils.js';
+    import { showToast, calculateDistance, requireCompleteProfile } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading
@@ -441,6 +441,13 @@
       if (user) {
         currentUser = user;
         await loadUserData();
+
+        // ✅ VALIDACIÓN: Verificar que el perfil esté completo antes de permitir chat
+        if (currentUserData && !requireCompleteProfile(currentUserData, window.location.href)) {
+          // requireCompleteProfile redirige automáticamente si el perfil está incompleto
+          return;
+        }
+
         loadMessages();
       } else {
         window.location.href = '/login.html';
