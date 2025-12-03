@@ -1,8 +1,11 @@
 // Firebase App Check Configuration
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
-import app from './firebase-config.js';
+// ============================================================================
+// DESHABILITADO TEMPORALMENTE (24h) - TODOS LOS IMPORTS DE APP CHECK ELIMINADOS
+// ============================================================================
+// import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+// import app from './firebase-config.js';
 import { logger } from './logger.js';
 
 // ============================================================================
@@ -245,8 +248,14 @@ window.detectAppCheckThrottled = function() {
 // Inicializar App Check (solo si dominio permitido y en producción
 // o con debug token en dev)
 // ============================================================================
+// DESHABILITADO TEMPORALMENTE (24h) - App Check completamente desactivado
 let appCheck = null;
+window._appCheckInstance = null;
 
+logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
+logger.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
+
+/* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
 async function initAppCheck() {
   // DESHABILITADO TEMPORALMENTE (24h) para solucionar problemas de throttle
   logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
@@ -370,7 +379,12 @@ async function initAppCheck() {
 */
 
 // Helper: obtener token manualmente (si appCheck inicializado)
+// DESHABILITADO TEMPORALMENTE (24h) - No importar módulo de App Check
 window.getAppCheckToken = async function() {
+  logger.warn('🚨 App Check DESHABILITADO - getAppCheckToken no disponible');
+  return null;
+
+  /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
   if (!window._appCheckInstance) {
     logger.error('App Check no está inicializado');
     return null;
@@ -384,6 +398,7 @@ window.getAppCheckToken = async function() {
     logger.error('❌ Error obteniendo token:', e.message || e);
     return null;
   }
+  */
 };
 
 export { appCheck };
