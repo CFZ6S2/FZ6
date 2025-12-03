@@ -536,6 +536,11 @@
   <!-- Firebase Scripts -->
   <!-- IMPORTANTE: App Check debe cargarse ANTES de inicializar Firebase -->
   <script type="module">
+    // DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
+    console.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
+    console.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
+
+    /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
     // Importar y configurar App Check con reCAPTCHA Enterprise
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
@@ -564,6 +569,7 @@
     } catch (error) {
       console.warn('⚠️ App Check error (continuando):', error.message);
     }
+    */
   </script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
