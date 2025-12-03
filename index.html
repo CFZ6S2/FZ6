@@ -528,49 +528,20 @@
         <p class="text-sm text-slate-500" data-i18n="home.footer.copyright">
           © 2025 TuCitaSegura. Todos los derechos reservados.
         </p>
+        <p class="text-xs text-slate-500 mt-3">
+          Este sitio está protegido por reCAPTCHA y se aplican la
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="underline hover:text-blue-300">Política de Privacidad</a>
+          y los
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener" class="underline hover:text-blue-300">Términos de Servicio</a>
+          de Google.
+        </p>
       </div>
     </div>
   </footer>
 
 
-  <!-- Firebase Scripts -->
-  <!-- IMPORTANTE: App Check debe cargarse ANTES de inicializar Firebase -->
-  <script type="module">
-    // DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
-    console.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
-    console.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
-
-    /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
-    // Importar y configurar App Check con reCAPTCHA Enterprise
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
-
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
-      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
-      projectId: "tuscitasseguras-2d1a6",
-      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
-      messagingSenderId: "924208562587",
-      appId: "1:924208562587:web:5291359426fe390b36213e"
-    };
-
-    // Inicializar Firebase (modular)
-    const app = initializeApp(firebaseConfig);
-
-    // Inicializar App Check con reCAPTCHA Enterprise
-    // Site Key: 6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w
-    try {
-      const appCheck = initializeAppCheck(app, {
-        provider: new ReCaptchaEnterpriseProvider('6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w'),
-        isTokenAutoRefreshEnabled: true
-      });
-      console.log('✅ App Check inicializado en index.html');
-    } catch (error) {
-      console.warn('⚠️ App Check error (continuando):', error.message);
-    }
-    */
-  </script>
+  <!-- App Check (import centralizado) -->
+  <script type="module" src="/webapp/js/firebase-appcheck.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -744,12 +715,12 @@
   <script>
     // Firebase config for compat version
     const firebaseConfig = {
-      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
-      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
-      projectId: "tuscitasseguras-2d1a6",
-      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
-      messagingSenderId: "924208562587",
-      appId: "1:924208562587:web:5291359426fe390b36213e"
+      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+      authDomain: "tucitasegura-129cc.firebaseapp.com",
+      projectId: "tucitasegura-129cc",
+      storageBucket: "tucitasegura-129cc.firebasestorage.app",
+      messagingSenderId: "180656060538",
+      appId: "1:180656060538:web:3168487130aa126db663c3"
     };
 
     // Initialize Firebase compat
