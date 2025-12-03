@@ -540,44 +540,8 @@
   </footer>
 
 
-  <!-- Firebase Scripts -->
-  <!-- IMPORTANTE: App Check debe cargarse ANTES de inicializar Firebase -->
-  <script type="module">
-    // DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
-    console.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
-    console.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
-
-    /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
-    // Importar y configurar App Check con reCAPTCHA Enterprise
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
-
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
-      authDomain: "tucitasegura-129cc.firebaseapp.com",
-      projectId: "tucitasegura-129cc",
-      storageBucket: "tucitasegura-129cc.firebasestorage.app",
-      messagingSenderId: "180656060538",
-      appId: "1:180656060538:web:3168487130aa126db663c3"
-    };
-
-    // Inicializar Firebase (modular)
-    const app = initializeApp(firebaseConfig);
-
-    // Inicializar App Check con reCAPTCHA Enterprise
-    // Site Key: 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb
-    try {
-      const appCheck = initializeAppCheck(app, {
-        provider: new ReCaptchaEnterpriseProvider('6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb'),
-        isTokenAutoRefreshEnabled: true
-      });
-      console.log('✅ App Check inicializado en index.html');
-    } catch (error) {
-      console.warn('⚠️ App Check error (continuando):', error.message);
-    }
-    */
-  </script>
+  <!-- App Check (import centralizado) -->
+  <script type="module" src="/webapp/js/firebase-appcheck.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
