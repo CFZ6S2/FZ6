@@ -1,95 +1,10 @@
 // Firebase App Check Configuration
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
-// ============================================================================
-// DESHABILITADO TEMPORALMENTE (24h) - TODOS LOS IMPORTS DE APP CHECK ELIMINADOS
-// ============================================================================
-// import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
-// import app from './firebase-config.js';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+import app from './firebase-config.js';
 import { logger } from './logger.js';
-
-// ============================================================================
-// AUTO-LIMPIEZA DE APP CHECK - DESHABILITADA
-// ============================================================================
-// NOTA: Auto-limpieza deshabilitada porque interfiere con la inicialización
-// normal de Firebase Auth. Como ya no importamos el módulo de App Check,
-// no debería haber throttle nuevo.
-
-console.info('ℹ️  App Check completamente deshabilitado - Sin auto-limpieza');
-
-/* CÓDIGO DE AUTO-LIMPIEZA COMENTADO - Causaba error "auth export not found"
-(function autoCleanAppCheckThrottle() {
-  try {
-    if (sessionStorage.getItem('appCheckCleaned')) {
-      return;
-    }
-
-    const storageKeys = Object.keys(localStorage);
-    let needsClean = false;
-
-    storageKeys.forEach(key => {
-      if (key.includes('firebase') ||
-          key.includes('appCheck') ||
-          key.includes('app-check') ||
-          key.toLowerCase().includes('recaptcha')) {
-        needsClean = true;
-      }
-    });
-
-    if (needsClean || !sessionStorage.getItem('appCheckCleaned')) {
-      console.warn('🧹 LIMPIEZA COMPLETA de App Check y Firebase...');
-
-      const allKeys = Object.keys(localStorage);
-      allKeys.forEach(key => {
-        if (key.includes('firebase') ||
-            key.includes('appCheck') ||
-            key.includes('app-check') ||
-            key.toLowerCase().includes('recaptcha')) {
-          console.log('🗑️ Eliminando:', key);
-          localStorage.removeItem(key);
-        }
-      });
-
-      const sessionKeys = Object.keys(sessionStorage);
-      sessionKeys.forEach(key => {
-        if (key.includes('firebase') ||
-            key.includes('appCheck') ||
-            key !== 'appCheckCleaned') {
-          sessionStorage.removeItem(key);
-        }
-      });
-
-      if (window.indexedDB) {
-        const databasesToDelete = [
-          'firebase-app-check-database',
-          'firebaseLocalStorageDb',
-          'firebase-heartbeat-database',
-          'firebase-installations-database'
-        ];
-
-        databasesToDelete.forEach(dbName => {
-          try {
-            console.log('🗑️ Eliminando DB:', dbName);
-            indexedDB.deleteDatabase(dbName);
-          } catch (e) {
-            console.warn('No se pudo eliminar DB:', dbName, e);
-          }
-        });
-      }
-
-      sessionStorage.setItem('appCheckCleaned', 'true');
-      console.info('✅ Limpieza completa. Recargando en 1 segundo...');
-      setTimeout(() => {
-        location.reload();
-      }, 1000);
-
-      return;
-    }
-  } catch (error) {
-    console.error('Error al limpiar throttle de App Check:', error);
-  }
-})();
-*/
+const __hideRecaptchaBadge = (() => { try { const s = document.createElement('style'); s.setAttribute('data-hide-recaptcha', 'true'); s.textContent = '.grecaptcha-badge{visibility:hidden!important}'; document.head.appendChild(s); } catch {} })();
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
@@ -97,7 +12,7 @@ console.info('ℹ️  App Check completamente deshabilitado - Sin auto-limpieza'
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
+const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
@@ -114,8 +29,8 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'tuscitasseguras-2d1a6.web.app',
-  'tuscitasseguras-2d1a6.firebaseapp.com',
+  'tucitasegura-129cc.web.app',
+  'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
   'vercel.app',
   'tucitasegura.com',
@@ -143,19 +58,27 @@ const DEBUG_TOKEN =
     (window.__FIREBASE_APPCHECK_DEBUG_TOKEN || window.FIREBASE_APPCHECK_DEBUG_TOKEN)) ||
   null;
 
-const enableDebugToken = isDevelopment && !!DEBUG_TOKEN;
+let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
+try {
+  const params = new URLSearchParams(location.search);
+  const qToken = params.get('debugToken');
+  if (!DEV_DEBUG_TOKEN && isDevelopment && qToken) DEV_DEBUG_TOKEN = qToken;
+  const lsToken = (typeof localStorage !== 'undefined') ? localStorage.getItem('APPCHECK_DEBUG_TOKEN') : null;
+  if (!DEV_DEBUG_TOKEN && isDevelopment && lsToken) DEV_DEBUG_TOKEN = lsToken;
+} catch {}
+if (!DEV_DEBUG_TOKEN && isDevelopment) {
+  DEV_DEBUG_TOKEN = '1ACC3630-42C6-4D01-92BA-ED0DE8C718FF';
+}
+
+const enableDebugToken = isDevelopment && !!DEV_DEBUG_TOKEN;
 
 if (enableDebugToken) {
-  logger.info('🔧 Activando App Check Debug Token (DESARROLLO) ANTES de inicializar SDK');
   try {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-  } catch (e) {
-    logger.warn('⚠️  No se pudo establecer debug token globalmente:', e.message);
-  }
-} else if (DEBUG_TOKEN && !isDevelopment) {
-  logger.warn('⚠️  Debug token detectado pero NO estamos en desarrollo — ignorándolo para producción');
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+  } catch (e) {}
+} else if (DEV_DEBUG_TOKEN && !isDevelopment) {
 }
 
 // ============================================================================
@@ -245,22 +168,9 @@ window.detectAppCheckThrottled = function() {
 // Inicializar App Check (solo si dominio permitido y en producción
 // o con debug token en dev)
 // ============================================================================
-// DESHABILITADO TEMPORALMENTE (24h) - App Check completamente desactivado
 let appCheck = null;
-window._appCheckInstance = null;
 
-logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
-logger.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
-
-/* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
 async function initAppCheck() {
-  // DESHABILITADO TEMPORALMENTE (24h) para solucionar problemas de throttle
-  logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
-  logger.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
-  window._appCheckInstance = null;
-  return;
-
-  /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;
@@ -301,36 +211,18 @@ async function initAppCheck() {
     // Instrucciones de configuración para producción
     if (location.hostname === 'tucitasegura.com') {
       logger.info('📝 Si ves errores 403: Configura tucitasegura.com en Google Cloud Console');
-      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LfdTvQrAAAAA...');
+      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
     }
 
   } catch (e) {
-    // Suppress ReCAPTCHA configuration errors in production
-    const isReCaptchaError = e.message && (
-      e.message.includes('recaptcha') ||
-      e.message.includes('ReCAPTCHA') ||
-      e.code === 'appCheck/recaptcha-error'
-    );
-
-    if (isReCaptchaError) {
-      logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
-      if (isDevelopment) {
-        logger.info('💡 Para desarrollo: Configura un debug token o usa localhost');
-      }
-    } else {
-      logger.error('❌ Error inicializando App Check:', e.message);
-    }
-
-    logger.info('✅ La aplicación funciona normalmente sin App Check');
+    logger.error('❌ Error inicializando App Check:', e.message);
+    logger.warn('⚠️  La aplicación continuará sin App Check (funcionalidad reducida)');
     appCheck = null;
   }
 
   window._appCheckInstance = appCheck;
-  */
 }
 
-// DESHABILITADO TEMPORALMENTE (24h) - Bootstrap de App Check
-/* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
 (async function bootstrap() {
   await initAppCheck();
 
@@ -346,42 +238,33 @@ async function initAppCheck() {
           logger.warn('⚠️  No fue posible obtener App Check token en producción');
         }
       } catch (err) {
-        // Manejar errores de ReCAPTCHA y throttling de manera más silenciosa
-        const errorCode = err.code || '';
-        const errorMsg = err.message || '';
-
-        if (errorMsg.includes('throttled') || errorCode === 'appCheck/throttled') {
-          logger.warn('⚠️  App Check: Límite de solicitudes alcanzado (continuando sin App Check)');
-          if (isDevelopment) {
-            logger.info('💡 Desarrollo: Visita /webapp/clear-appcheck-throttle.html para limpiar');
-          }
-        } else if (errorMsg.includes('403') || errorMsg.includes('recaptcha') || errorCode === 'appCheck/recaptcha-error') {
-          logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
-          if (isDevelopment) {
-            logger.info('💡 Desarrollo: Configura dominio en Google Cloud Console');
-            logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          }
-        } else if (errorMsg.includes('400')) {
-          // Suppress 400 errors - these are typically ReCAPTCHA configuration issues
-          logger.warn('⚠️  App Check: Configuración de ReCAPTCHA pendiente (continuando sin App Check)');
+        // Manejar errores de throttling específicamente
+        if (err.message && err.message.includes('throttled')) {
+          logger.error('🚨 App Check throttled (403) - Bloqueo de 24h activo');
+          logger.info('🔧 SOLUCIÓN 1: Limpia el cache del navegador');
+          logger.info('   → Abre /webapp/clear-appcheck-throttle.html');
+          logger.info('   → O presiona Ctrl+Shift+Delete y borra todo');
+          logger.info('🔧 SOLUCIÓN 2: Configura reCAPTCHA Enterprise correctamente');
+          logger.info('   → https://console.cloud.google.com/security/recaptcha');
+          logger.info('   → Agrega tucitasegura.com a dominios permitidos');
+          logger.info('💡 La aplicación funcionará sin App Check mientras tanto');
+        } else if (err.message && err.message.includes('403')) {
+          logger.error('🚨 Error 403 en App Check - Dominio no configurado');
+          logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
+          logger.info('   → https://console.cloud.google.com/security/recaptcha');
+          logger.info('   → Edita la key: 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
+          logger.info('   → Agrega tucitasegura.com a los dominios permitidos');
         } else {
-          // Only log unexpected errors
-          logger.debug('App Check token error:', errorMsg);
+          logger.warn('⚠️  App Check error en producción:', err.message || err);
         }
-        // Don't log success message - it's confusing when there's an error
+        logger.info('✅ Firebase Auth y Firestore funcionan sin App Check');
       }
     }, 2000);
   }
 })();
-*/
 
 // Helper: obtener token manualmente (si appCheck inicializado)
-// DESHABILITADO TEMPORALMENTE (24h) - No importar módulo de App Check
 window.getAppCheckToken = async function() {
-  logger.warn('🚨 App Check DESHABILITADO - getAppCheckToken no disponible');
-  return null;
-
-  /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
   if (!window._appCheckInstance) {
     logger.error('App Check no está inicializado');
     return null;
@@ -395,7 +278,6 @@ window.getAppCheckToken = async function() {
     logger.error('❌ Error obteniendo token:', e.message || e);
     return null;
   }
-  */
 };
 
 export { appCheck };

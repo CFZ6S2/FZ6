@@ -12,7 +12,7 @@ export class APIService {
     const useSameOrigin = !isLocal && !override;
     this.useSameOrigin = useSameOrigin;
     this.baseURL = override ? override : (isLocal ? 'http://localhost:8001' : '');
-    this.fallbackBaseURL = 'https://tuscitasseguras-2d1a6.web.app';
+    this.fallbackBaseURL = 'https://tucitasegura-129cc.web.app';
     
     this.token = null;
     this.headers = {
@@ -50,6 +50,18 @@ export class APIService {
     const url = this.useSameOrigin ? endpoint : `${this.baseURL}${endpoint}`;
     const method = (options.method ? String(options.method) : 'GET').toUpperCase();
     const mergedHeaders = { ...this.headers, ...(options.headers || {}) };
+    try {
+      const hasGetter = typeof window !== 'undefined' && typeof window.getAppCheckToken === 'function';
+      const hasInstance = typeof window !== 'undefined' && !!window._appCheckInstance;
+      if (hasGetter && hasInstance) {
+        const tokenResult = await window.getAppCheckToken();
+        if (tokenResult && tokenResult.token) {
+          mergedHeaders['X-Firebase-AppCheck'] = tokenResult.token;
+        }
+      }
+    } catch (e) {
+      console.warn('App Check token not available:', e?.message || e);
+    }
     if (method === 'GET') {
       delete mergedHeaders['Content-Type'];
     }
@@ -68,6 +80,9 @@ export class APIService {
             const text = await response.text();
             if (text) detail = text;
           } catch {}
+        }
+        if (String(detail).toLowerCase().includes('app check') || String(detail).toLowerCase().includes('x-firebase-appcheck')) {
+          console.warn('App Check enforcement detected on backend:', detail);
         }
         throw new Error(detail);
       }
@@ -112,6 +127,22 @@ export class APIService {
         console.warn(`API warning: ${ep}`, error.message || error);
       } else {
         console.error(`API request failed: ${ep}`, error);
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          await fetch('/reportAppCheckFailure', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              errorCode: 'api_request_failed',
+              message: error.message || String(error),
+              hostname: location.hostname,
+              userAgent: navigator.userAgent,
+              path: endpoint
+            })
+          });
+        } catch {}
       }
       throw error;
     }

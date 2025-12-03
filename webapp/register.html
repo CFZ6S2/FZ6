@@ -208,6 +208,13 @@
       </div>
     </div>
   </main>
+  <div class="text-center px-4 mb-8 text-xs text-slate-400">
+    Este sitio está protegido por reCAPTCHA y se aplican la
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="underline hover:text-blue-300">Política de Privacidad</a>
+    y los
+    <a href="https://policies.google.com/terms" target="_blank" rel="noopener" class="underline hover:text-blue-300">Términos de Servicio</a>
+    de Google.
+  </div>
 
   <!-- Toast Container -->
   <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
@@ -216,8 +223,7 @@
     <!-- DOMPurify for XSS Protection -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-
-    <script src="/webapp/js/sanitizer.js"></script>
+    <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module">
@@ -232,12 +238,12 @@
     import {
       createUserWithEmailAndPassword,
       sendEmailVerification
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       doc,
       setDoc,
       serverTimestamp
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { setupGlobalErrorHandling } from './js/error-handler.js';
 
     // Setup global error handling

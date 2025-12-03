@@ -2,11 +2,30 @@
 // Ejecutar: node scripts/update-existing-users.js
 
 const admin = require('firebase-admin');
-const serviceAccount = require('../serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+function initAdmin() {
+  try {
+    const json = process.env.SERVICE_ACCOUNT_JSON;
+    if (json) {
+      const creds = JSON.parse(json);
+      admin.initializeApp({ credential: admin.credential.cert(creds) });
+      console.log('✅ Firebase Admin initialized from SERVICE_ACCOUNT_JSON');
+      return;
+    }
+  } catch (e) {
+    console.warn('⚠️ Failed to parse SERVICE_ACCOUNT_JSON:', e.message);
+  }
+
+  try {
+    admin.initializeApp({ credential: admin.credential.applicationDefault() });
+    console.log('✅ Firebase Admin initialized with Application Default Credentials');
+  } catch (e) {
+    console.error('❌ Failed to initialize Firebase Admin. Set GOOGLE_APPLICATION_CREDENTIALS or SERVICE_ACCOUNT_JSON');
+    process.exit(1);
+  }
+}
+
+initAdmin();
 
 const db = admin.firestore();
 
