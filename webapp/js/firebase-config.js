@@ -1,7 +1,7 @@
 // Firebase Configuration - TuCitaSegura Production
 // ============================================================================
 // IMPORTANTE: Esta es la configuración de producción del proyecto
-// Project ID: tuscitasseguras-2d1a6
+// Project ID: tucitasegura-129cc
 // API Key: Browser key con restricciones HTTP configuradas
 // ============================================================================
 
