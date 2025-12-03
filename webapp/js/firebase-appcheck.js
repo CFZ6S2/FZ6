@@ -237,6 +237,8 @@ async function initAppCheck() {
   */
 }
 
+// DESHABILITADO TEMPORALMENTE (24h) - Bootstrap de App Check
+/* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
 (async function bootstrap() {
   await initAppCheck();
 
@@ -279,6 +281,7 @@ async function initAppCheck() {
     }, 2000);
   }
 })();
+*/
 
 // Helper: obtener token manualmente (si appCheck inicializado)
 window.getAppCheckToken = async function() {
