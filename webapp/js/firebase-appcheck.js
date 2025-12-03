@@ -82,8 +82,7 @@ if (enableDebugToken) {
 }
 
 // ============================================================================
-// Funciones para detectar y limpiar el throttling de App Check (24h)
-// Sólo ejecutarlas en desarrollo (no borrar datos en producción)
+// Utilidades de limpieza local (solo desarrollo)
 // ============================================================================
 function keysToRemoveFromStorage() {
   const keys = [];
@@ -140,9 +139,9 @@ async function clearAppCheckStorage() {
 }
 
 window.clearAppCheckThrottle = async function({ reload = true } = {}) {
-  logger.info('🧹 Clearing App Check state...');
+  logger.info('🧹 Limpiando estado local de App Check...');
   await clearAppCheckStorage();
-  logger.success('✅ App Check state cleared locally. Si enforcement estaba activo, recuérdalo en Firebase Console.');
+  logger.success('✅ Estado local de App Check limpiado.');
 
   if (reload) {
     logger.info('🔁 Reloading page to apply changes...');
@@ -152,7 +151,6 @@ window.clearAppCheckThrottle = async function({ reload = true } = {}) {
 };
 
 window.detectAppCheckThrottled = function() {
-  // Detecta indicios de throttling en localStorage (busca el texto 'appCheck/throttled')
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!key) continue;
@@ -184,10 +182,10 @@ async function initAppCheck() {
     return;
   }
 
-  // Si estamos en desarrollo y parece throttleado, no lo inicializamos hasta limpiar
+  // Si estamos en desarrollo y hay estado local inconsistente, no inicializar hasta limpiar
   const throttled = window.detectAppCheckThrottled && window.detectAppCheckThrottled();
   if (throttled) {
-    logger.error('🚨 App Check parece throttled (bloqueo 24h). Llama a clearAppCheckThrottle() o abre /webapp/clear-appcheck-throttle.html para limpiar estado local.');
+    logger.warn('⚠️ App Check en estado local inconsistente. Usa clearAppCheckThrottle() o /webapp/clear-appcheck-throttle.html');
     window._appCheckInstance = null;
     return;
   }
@@ -198,6 +196,7 @@ async function initAppCheck() {
     }
 
     logger.info('🔐 Inicializando App Check...');
+    logger.info('ℹ️ Firebase app en uso', { projectId: app.options?.projectId, appId: app.options?.appId });
 
     // Configuración con manejo de errores mejorado
     appCheck = initializeAppCheck(app, {
@@ -238,17 +237,7 @@ async function initAppCheck() {
           logger.warn('⚠️  No fue posible obtener App Check token en producción');
         }
       } catch (err) {
-        // Manejar errores de throttling específicamente
-        if (err.message && err.message.includes('throttled')) {
-          logger.error('🚨 App Check throttled (403) - Bloqueo de 24h activo');
-          logger.info('🔧 SOLUCIÓN 1: Limpia el cache del navegador');
-          logger.info('   → Abre /webapp/clear-appcheck-throttle.html');
-          logger.info('   → O presiona Ctrl+Shift+Delete y borra todo');
-          logger.info('🔧 SOLUCIÓN 2: Configura reCAPTCHA Enterprise correctamente');
-          logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          logger.info('   → Agrega tucitasegura.com a dominios permitidos');
-          logger.info('💡 La aplicación funcionará sin App Check mientras tanto');
-        } else if (err.message && err.message.includes('403')) {
+        if (err.message && err.message.includes('403')) {
           logger.error('🚨 Error 403 en App Check - Dominio no configurado');
           logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
           logger.info('   → https://console.cloud.google.com/security/recaptcha');
@@ -257,7 +246,7 @@ async function initAppCheck() {
         } else {
           logger.warn('⚠️  App Check error en producción:', err.message || err);
         }
-        logger.info('✅ Firebase Auth y Firestore funcionan sin App Check');
+        logger.info('ℹ️ Continúa la app sin App Check si es necesario');
       }
     }, 2000);
   }

@@ -1383,6 +1383,11 @@
       saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
 
       try {
+        const recaptcha = await verifyRecaptchaScore('profile_update');
+        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+          showToast('Verificación reCAPTCHA fallida. Intenta de nuevo.', 'error');
+          return;
+        }
         let photoURL = currentUserData.photoURL;
 
         // Upload avatar photo if selected
@@ -1540,3 +1545,4 @@
 
 </body>
 </html>
+    import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';

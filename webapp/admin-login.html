@@ -417,6 +417,22 @@
       sendResetButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
 
       try {
+        const { verifyRecaptchaScore } = await import('./js/recaptcha-enterprise.js');
+        const recaptcha = await verifyRecaptchaScore('password_reset_admin');
+        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+          resetMessage.innerHTML = `
+            <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+              <div class="flex items-center text-red-300">
+                <i class="fas fa-exclamation-circle text-xl mr-3"></i>
+                <p class="text-sm font-semibold">Verificación reCAPTCHA fallida</p>
+              </div>
+            </div>
+          `;
+          resetMessage.classList.remove('hidden');
+          sendResetButton.disabled = false;
+          sendResetButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Enviar';
+          return;
+        }
         await sendPasswordResetEmail(auth, resetEmail);
 
         resetMessage.innerHTML = `
