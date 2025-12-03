@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TuCitaSegura: plataforma segura y accesible para encontrar conexiones auténticas con verificación, reputación transparente y protección de datos.">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+  <title>TuCitaSegura - Encuentra tu conexión perfecta</title>
+  <link rel="canonical" href="https://tucitasegura.com/">
+  <link rel="manifest" href="/assets/manifest-BJPVZesy.json">
+  <link rel="apple-touch-icon" sizes="192x192" href="/webapp/img/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta property="og:title" content="TuCitaSegura">
+  <meta property="og:description" content="Encuentra tu conexión perfecta con seguridad, transparencia y respeto.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tucitasegura.com/">
+  <meta property="og:image" content="https://tucitasegura.com/webapp/img/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TuCitaSegura">
+  <meta name="twitter:description" content="Encuentra tu conexión perfecta con seguridad, transparencia y respeto.">
+  <meta name="twitter:image" content="https://tucitasegura.com/webapp/img/og-image.jpg">
+  <script>
+    (function(){
+      var h = window.location && window.location.hostname ? window.location.hostname : '';
+      var isProdDomain = h && !(/localhost|127\.0\.0\.1|web\.app|firebaseapp\.com$/i.test(h));
+      if (isProdDomain) {
+        window.API_BASE_URL = 'https://t2c06-production.up.railway.app';
+      }
+    })();
+  </script>
+  <script>
+    (function(){
+      var GA = window.GA_MEASUREMENT_ID || (document.querySelector('meta[name="ga-id"]') && document.querySelector('meta[name="ga-id"]').content);
+      if(!GA) return;
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);} 
+      gtag('js', new Date());
+      gtag('config', GA, { 'anonymize_ip': true });
+      var s = document.createElement('script');
+      s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA;
+      document.head.appendChild(s);
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.8s ease-out;
+    }
+  </style>
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "TuCitaSegura",
+      "url": "https://tucitasegura.com/",
+      "description": "Plataforma segura para encontrar conexiones auténticas con verificación, reputación transparente y protección de datos"
+    }
+  </script>
+  <script type="module" crossorigin src="/assets/index-CWCJlIRK.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cnto1XvH.css">
+</head>
+<body class="text-white">
+  <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-slate-800 text-white px-3 py-2 rounded">Saltar al contenido</a>
+
+  <!-- Header -->
+  <header class="glass fixed top-0 w-full z-50" role="banner">
+    <nav class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between" role="navigation" aria-label="Principal">
+      <a href="/" class="flex items-center gap-2 z-50" aria-current="page">
+        <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
+        <span class="font-bold text-xl" data-i18n="home.title">TuCitaSegura</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center gap-4">
+        <div id="language-selector-container"></div>
+        <a href="/webapp/login.html" class="hover:text-blue-300 transition font-semibold px-4 py-3" data-i18n="common.login">
+          Iniciar Sesión
+        </a>
+        <a href="/webapp/register.html" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-3 rounded-lg font-semibold transition" data-i18n="common.register">
+          Registrarse
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden z-50 p-2 hover:bg-white/10 rounded-lg transition" aria-label="Menú" aria-expanded="false">
+        <div class="w-6 h-5 flex flex-col justify-between">
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-1"></span>
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-2"></span>
+          <span class="block h-0.5 w-full bg-white transition-all duration-300 ease-out" id="menu-line-3"></span>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/95 backdrop-blur-lg z-40 opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true">
+      <div class="flex flex-col items-center justify-center min-h-screen px-6 py-20">
+        <div class="w-full max-w-sm space-y-6">
+          <!-- Language Selector -->
+          <div id="language-selector-mobile" class="mb-8"></div>
+
+          <!-- Navigation Links -->
+          <a href="/webapp/login.html" class="block text-center text-2xl font-semibold py-4 px-6 hover:bg-white/10 rounded-xl transition" data-i18n="common.login">
+            <i class="fas fa-sign-in-alt mr-3 text-blue-400"></i>Iniciar Sesión
+          </a>
+          <a href="/webapp/register.html" class="block text-center text-2xl font-semibold py-4 px-6 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl transition" data-i18n="common.register">
+            <i class="fas fa-user-plus mr-3"></i>Registrarse
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main id="content" role="main" class="pt-24 pb-12 px-4">
+    <div class="max-w-7xl mx-auto">
+
+      <!-- Hero Content -->
+      <div class="text-center mb-12 md:mb-20 fade-in-up">
+        <div class="mb-6 md:mb-8 float-animation inline-block">
+          <i class="fas fa-heart-circle-check text-blue-400 text-6xl md:text-8xl" aria-hidden="true"></i>
+        </div>
+        <h1 class="text-3xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent px-4" data-i18n="home.title">
+          TuCitaSegura
+        </h1>
+        <p class="text-lg md:text-xl lg:text-2xl text-slate-300 mb-6 md:mb-8 max-w-3xl mx-auto px-4" data-i18n="home.subtitle">
+          Encuentra tu conexión perfecta con seguridad, transparencia y respeto
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center items-center px-4">
+          <a href="/webapp/register.html" class="w-full sm:w-auto bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-8 py-4 rounded-lg font-semibold text-base md:text-lg transition transform active:scale-95 sm:hover:scale-105 touch-manipulation" style="min-height: 48px;">
+            <i class="fas fa-user-plus mr-2" aria-hidden="true"></i><span data-i18n="home.cta.register">Registrarse Gratis</span>
+          </a>
+          <a href="#features" class="w-full sm:w-auto glass px-8 py-4 rounded-lg font-semibold text-base md:text-lg transition transform active:scale-95 sm:hover:scale-105 touch-manipulation" style="min-height: 48px;">
+            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i><span data-i18n="home.learnMore">Saber Más</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Features Section -->
+      <div id="features" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12 md:mb-20">
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up">
+          <div class="text-5xl mb-4">
+            <i class="fas fa-shield-heart text-blue-400" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.secure.title">100% Seguro</h3>
+          <p class="text-slate-300" data-i18n="home.features.secure.description">
+            Verificación de identidad, reputación transparente y protección de datos garantizada
+          </p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up" style="animation-delay: 0.2s;">
+          <div class="text-5xl mb-4">
+            <i class="fas fa-search-plus text-purple-400" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.search.title">Búsqueda Avanzada</h3>
+          <p class="text-slate-300" data-i18n="home.features.search.description">
+            Filtros inteligentes por edad, ciudad, reputación y más para encontrar tu match ideal
+          </p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 md:p-8 text-center fade-in-up" style="animation-delay: 0.4s;">
+          <div class="text-5xl mb-4">
+            <i class="fas fa-star text-yellow-400" aria-hidden="true"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-3" data-i18n="home.features.reputation.title">Sistema de Reputación</h3>
+          <p class="text-slate-300" data-i18n="home.features.reputation.description">
+            Badges de Bronce, Plata, Oro y Platino basados en comportamiento y feedback
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="glass rounded-2xl p-6 md:p-12 mb-12 md:mb-20 text-center">
+        <h2 class="text-3xl font-bold mb-8">
+          <i class="fas fa-chart-line mr-2 text-blue-400" aria-hidden="true"></i>
+          <span data-i18n="home.stats.title">Estadísticas de la Plataforma</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div>
+            <div class="text-5xl font-bold text-blue-400 mb-2">10K+</div>
+            <div class="text-slate-300" data-i18n="home.stats.users">Usuarios Activos</div>
+          </div>
+          <div>
+            <div class="text-5xl font-bold text-pink-400 mb-2">5K+</div>
+            <div class="text-slate-300" data-i18n="home.stats.matches">Matches Exitosos</div>
+          </div>
+          <div>
+            <div class="text-5xl font-bold text-green-400 mb-2">95%</div>
+            <div class="text-slate-300" data-i18n="home.stats.satisfaction">Satisfacción</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it Works -->
+      <div class="mb-20">
+        <h2 class="text-4xl font-bold text-center mb-12">
+          <i class="fas fa-lightbulb mr-2 text-yellow-400" aria-hidden="true"></i>
+          <span data-i18n="home.howItWorks.title">¿Cómo Funciona?</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="glass rounded-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step1.title">Regístrate</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step1.description">Crea tu perfil y verifica tu email</p>
+          </div>
+          <div class="glass rounded-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step2.title">Explora</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step2.description">Busca usuarios con filtros avanzados</p>
+          </div>
+          <div class="glass rounded-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step3.title">Conecta</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step3.description">Envía solicitudes de cita</p>
+          </div>
+          <div class="glass rounded-2xl p-6 text-center">
+            <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">4</div>
+            <h3 class="font-bold mb-2" data-i18n="home.howItWorks.step4.title">Conoce</h3>
+            <p class="text-sm text-slate-300" data-i18n="home.howItWorks.step4.description">Agenda citas seguras</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing Section -->
+      <div class="mb-12 md:mb-20">
+        <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">
+          <i class="fas fa-tags mr-2 text-green-400" aria-hidden="true"></i>
+          <span data-i18n="home.pricing.title">Precios Transparentes</span>
+        </h2>
+        <p class="text-center text-slate-300 mb-12 max-w-2xl mx-auto px-4" data-i18n="home.pricing.subtitle">
+          Precios justos y transparentes. Las mujeres siempre tienen acceso gratuito completo.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+
+          <!-- Membresía -->
+          <div class="glass rounded-2xl p-6 md:p-8 border-2 border-blue-500/30 hover:border-blue-500/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20">
+            <div class="text-center mb-6">
+              <div class="inline-block p-4 bg-blue-500/20 rounded-2xl mb-4">
+                <i class="fas fa-crown text-4xl text-blue-400" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-2xl font-bold mb-2" data-i18n="home.pricing.membership.title">Membresía Premium</h3>
+              <p class="text-sm text-slate-400" data-i18n="home.pricing.membership.subtitle">Acceso completo a la plataforma</p>
+            </div>
+
+            <div class="text-center mb-6">
+              <div class="flex items-baseline justify-center gap-2">
+                <span class="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">30€</span>
+                <span class="text-slate-400">/mes</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-2">+ IVA</p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.membership.feature1">Chat ilimitado con tus matches</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.membership.feature2">Envío de solicitudes de citas</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.membership.feature3">Filtros de búsqueda avanzados</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.membership.feature4">Ver quién visitó tu perfil</span>
+              </div>
+            </div>
+
+            <div class="bg-blue-500/10 border border-blue-400/30 rounded-xl p-4">
+              <p class="text-xs text-blue-300 text-center">
+                <i class="fas fa-venus text-pink-400 mr-1" aria-hidden="true"></i>
+                <strong data-i18n="home.pricing.membership.womenFree">Mujeres: GRATIS para siempre</strong>
+              </p>
+            </div>
+          </div>
+
+          <!-- Seguro Anti-Plantón -->
+          <div class="glass rounded-2xl p-6 md:p-8 border-2 border-green-500/30 hover:border-green-500/60 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/20">
+            <div class="text-center mb-6">
+              <div class="inline-block p-4 bg-green-500/20 rounded-2xl mb-4">
+                <i class="fas fa-shield-check text-4xl text-green-400" aria-hidden="true"></i>
+              </div>
+              <h3 class="text-2xl font-bold mb-2" data-i18n="home.pricing.insurance.title">Seguro Anti-Plantón</h3>
+              <p class="text-sm text-slate-400" data-i18n="home.pricing.insurance.subtitle">Protección garantizada para tus citas</p>
+            </div>
+
+            <div class="text-center mb-6">
+              <div class="flex items-baseline justify-center gap-2">
+                <span class="text-5xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">120€</span>
+                <span class="text-slate-400">/cita</span>
+              </div>
+              <p class="text-xs text-green-400 font-semibold mt-2">
+                <i class="fas fa-undo mr-1" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.insurance.refundable">100% REEMBOLSABLE</span>
+              </p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.insurance.feature1">Reembolso total si la cita es correcta</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.insurance.feature2">Penalización para quien falta sin avisar</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.insurance.feature3">Sistema de reputación mejorado</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm">
+                <i class="fas fa-check-circle text-green-400 flex-shrink-0" aria-hidden="true"></i>
+                <span data-i18n="home.pricing.insurance.feature4">Soporte prioritario ante incidencias</span>
+              </div>
+            </div>
+
+            <div class="bg-green-500/10 border border-green-400/30 rounded-xl p-4">
+              <p class="text-xs text-green-300 text-center">
+                <i class="fas fa-info-circle mr-1" aria-hidden="true"></i>
+                <strong data-i18n="home.pricing.insurance.note">Requiere Membresía Premium activa</strong>
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-8 text-center">
+          <p class="text-sm text-slate-400 max-w-3xl mx-auto px-4">
+            <i class="fas fa-lock mr-2 text-blue-400" aria-hidden="true"></i>
+            <span data-i18n="home.pricing.securePayment">Pagos 100% seguros procesados por Stripe. Cancela cuando quieras, sin compromisos.</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Trust & Verification Section -->
+      <div class="mb-12 md:mb-20">
+        <div class="glass rounded-2xl p-8 md:p-12 border-2 border-green-500/40">
+          <div class="text-center mb-8">
+            <div class="inline-block p-4 bg-green-500/20 rounded-full mb-4">
+              <i class="fas fa-shield-check text-5xl text-green-400" aria-hidden="true"></i>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">
+              <span data-i18n="home.verification.title">100% Usuarios Verificados y Reales</span>
+            </h2>
+            <p class="text-xl text-green-300 font-semibold mb-4">
+              <i class="fas fa-check-circle mr-2" aria-hidden="true"></i>
+              <span data-i18n="home.verification.noScams">Con TuCitaSegura no hay estafas posibles</span>
+            </p>
+            <p class="text-slate-300 max-w-3xl mx-auto" data-i18n="home.verification.description">
+              Todos nuestros usuarios pasan por un riguroso proceso de verificación. Garantizamos que cada perfil es real, auténtico y verificado.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <!-- Email Verification -->
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-green-500/20 hover:border-green-500/40 transition-all">
+              <div class="text-center mb-4">
+                <i class="fas fa-envelope-circle-check text-4xl text-green-400 mb-3" aria-hidden="true"></i>
+                <h3 class="text-xl font-bold mb-2" data-i18n="home.verification.email.title">Verificación de Email</h3>
+              </div>
+              <p class="text-sm text-slate-300 text-center" data-i18n="home.verification.email.description">
+                Todos los usuarios deben verificar su correo electrónico antes de acceder a la plataforma
+              </p>
+            </div>
+
+            <!-- ID Verification -->
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-green-500/20 hover:border-green-500/40 transition-all">
+              <div class="text-center mb-4">
+                <i class="fas fa-id-card text-4xl text-green-400 mb-3" aria-hidden="true"></i>
+                <h3 class="text-xl font-bold mb-2" data-i18n="home.verification.id.title">Verificación de Identidad</h3>
+              </div>
+              <p class="text-sm text-slate-300 text-center" data-i18n="home.verification.id.description">
+                Sistema de verificación de identidad opcional para mayor seguridad y confianza
+              </p>
+            </div>
+
+            <!-- Reputation System -->
+            <div class="bg-slate-800/50 rounded-xl p-6 border border-green-500/20 hover:border-green-500/40 transition-all">
+              <div class="text-center mb-4">
+                <i class="fas fa-star-half-stroke text-4xl text-green-400 mb-3" aria-hidden="true"></i>
+                <h3 class="text-xl font-bold mb-2" data-i18n="home.verification.reputation.title">Sistema de Reputación</h3>
+              </div>
+              <p class="text-sm text-slate-300 text-center" data-i18n="home.verification.reputation.description">
+                Reputación transparente basada en comportamiento real y feedback de la comunidad
+              </p>
+            </div>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="mt-8 flex flex-wrap justify-center gap-4 items-center">
+            <div class="glass px-6 py-3 rounded-full border border-green-500/30">
+              <i class="fas fa-user-check text-green-400 mr-2" aria-hidden="true"></i>
+              <span class="text-sm font-semibold" data-i18n="home.verification.badge1">Perfiles Verificados</span>
+            </div>
+            <div class="glass px-6 py-3 rounded-full border border-green-500/30">
+              <i class="fas fa-ban text-green-400 mr-2" aria-hidden="true"></i>
+              <span class="text-sm font-semibold" data-i18n="home.verification.badge2">Cero Tolerancia a Fakes</span>
+            </div>
+            <div class="glass px-6 py-3 rounded-full border border-green-500/30">
+              <i class="fas fa-lock text-green-400 mr-2" aria-hidden="true"></i>
+              <span class="text-sm font-semibold" data-i18n="home.verification.badge3">Datos Protegidos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Section -->
+      <div class="glass rounded-2xl p-6 md:p-12 text-center hero-gradient">
+        <h2 class="text-4xl font-bold mb-4" data-i18n="home.cta2.title">
+          ¿Listo para encontrar tu match perfecto?
+        </h2>
+        <p class="text-xl text-slate-300 mb-8" data-i18n="home.cta2.description">
+          Únete a miles de personas que ya encontraron su conexión especial
+        </p>
+        <a href="/webapp/register.html" class="inline-block bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-10 py-4 rounded-lg font-semibold text-lg transition transform hover:scale-105">
+          <i class="fas fa-heart mr-2" aria-hidden="true"></i><span data-i18n="home.cta2.button">Comenzar Ahora</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="glass mt-20 py-12" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <!-- Brand Column -->
+        <div class="text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+            <i class="fas fa-heart-circle-check text-blue-400 text-2xl" aria-hidden="true"></i>
+            <span class="font-bold text-xl">TuCitaSegura</span>
+          </div>
+          <p class="text-slate-400 text-sm" data-i18n="home.footer.tagline">
+            Encuentra conexiones auténticas con seguridad y respeto
+          </p>
+        </div>
+
+        <!-- Legal Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3" data-i18n="nav.help">Ayuda</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/webapp/terminos.html" class="text-slate-400 hover:text-blue-400 transition">Términos y Condiciones</a></li>
+            <li><a href="/webapp/privacidad.html" class="text-slate-400 hover:text-blue-400 transition">Política de Privacidad</a></li>
+            <li><a href="/webapp/cookies.html" class="text-slate-400 hover:text-blue-400 transition">Política de Cookies</a></li>
+            <li><a href="/webapp/ayuda.html" class="text-slate-400 hover:text-blue-400 transition" data-i18n="help.title">Central de Ayuda</a></li>
+          </ul>
+        </div>
+
+        <!-- Company Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3">Compañía</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/webapp/nosotros.html" class="text-slate-400 hover:text-blue-400 transition">Sobre Nosotros</a></li>
+            <li><a href="/webapp/contacto.html" class="text-slate-400 hover:text-blue-400 transition">Contacto</a></li>
+            <li><a href="/webapp/seguridad.html" class="text-slate-400 hover:text-blue-400 transition">Consejos de Seguridad</a></li>
+            <li><a href="/webapp/blog.html" class="text-slate-400 hover:text-blue-400 transition">Blog</a></li>
+          </ul>
+        </div>
+
+        <!-- Social Column -->
+        <div class="text-center md:text-left">
+          <h3 class="font-bold mb-3">Síguenos</h3>
+          <div class="flex justify-center md:justify-start gap-4 mb-4">
+            <a href="https://facebook.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-blue-400 transition" aria-label="Facebook">
+              <i class="fab fa-facebook text-2xl" aria-hidden="true"></i>
+            </a>
+            <a href="https://instagram.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-pink-400 transition" aria-label="Instagram">
+              <i class="fab fa-instagram text-2xl" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/tucitasegura" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-blue-300 transition" aria-label="Twitter">
+              <i class="fab fa-twitter text-2xl" aria-hidden="true"></i>
+            </a>
+          </div>
+          <p class="text-sm text-slate-400">
+            <i class="fas fa-envelope mr-2" aria-hidden="true"></i>
+            <a href="mailto:hola@tucitasegura.com" class="hover:text-blue-400 transition">hola@tucitasegura.com</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <div class="border-t border-slate-700 pt-6 text-center">
+        <p class="text-sm text-slate-500" data-i18n="home.footer.copyright">
+          © 2025 TuCitaSegura. Todos los derechos reservados.
+        </p>
+        <p class="text-xs text-slate-500 mt-3">
+          Este sitio está protegido por reCAPTCHA y se aplican la
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="underline hover:text-blue-300">Política de Privacidad</a>
+          y los
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener" class="underline hover:text-blue-300">Términos de Servicio</a>
+          de Google.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+  <!-- i18n System -->
+  <script>
+    // Inicializar i18n cuando el DOM esté listo
+    (async function() {
+      // Esperar a que i18n esté disponible
+      while (typeof window.i18n === 'undefined') {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Inicializar i18n
+      await window.i18n.init();
+
+      console.log('[App] i18n initialized with language:', window.i18n.getCurrentLanguage());
+    })();
+  </script>
+
+  <!-- Backend Integration Script -->
+
+  <!-- Firebase Integration -->
+  <script>
+    // Firebase config for compat version
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
+      projectId: "tuscitasseguras-2d1a6",
+      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
+      messagingSenderId: "924208562587",
+      appId: "1:180656060538:web:3168487130aa126db663c3"
+    };
+
+    // Initialize Firebase compat
+    if (typeof firebase !== 'undefined') {
+      try {
+        firebase.initializeApp(firebaseConfig);
+        firebase.auth().onAuthStateChanged(async (user) => {
+          if (user) {
+            const loginButton = document.querySelector('a[href="/webapp/login.html"]');
+            const registerButtons = document.querySelectorAll('a[href="/webapp/register.html"]');
+            if (loginButton) {
+              loginButton.textContent = 'Mi Perfil';
+              loginButton.href = '/webapp/perfil.html';
+            }
+            // Hide all register buttons for logged-in users
+            registerButtons.forEach(btn => {
+              btn.style.display = 'none';
+            });
+          }
+        });
+      } catch (err) {
+        console.error('Firebase initialization error:', err);
+      }
+    }
+  </script>
+
+  <!-- Offline Indicator -->
+  <div id="offline-indicator" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-lg z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2">
+    <i class="fas fa-wifi-slash"></i>
+    <span data-i18n="common.offline">Sin conexión</span>
+  </div>
+
+  <!-- PWA Install Prompt -->
+  <div id="pwa-install-prompt" class="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-2xl z-50 opacity-0 pointer-events-none transition-all duration-300 transform translate-y-4">
+    <button id="pwa-close-btn" class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded" aria-label="Cerrar">
+      <i class="fas fa-times text-sm"></i>
+    </button>
+    <div class="flex items-start gap-3">
+      <i class="fas fa-mobile-alt text-3xl mt-1"></i>
+      <div>
+        <h3 class="font-bold text-lg mb-1">Instala TuCitaSegura</h3>
+        <p class="text-sm opacity-90 mb-3">Accede más rápido desde tu pantalla de inicio</p>
+        <button id="pwa-install-btn" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition">
+          <i class="fas fa-download mr-2"></i>Instalar App
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Worker Registration & PWA -->
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered:', registration.scope);
+
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60000); // Check every minute
+          })
+          .catch((error) => {
+            console.warn('[PWA] Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const pwaPrompt = document.getElementById('pwa-install-prompt');
+    const pwaInstallBtn = document.getElementById('pwa-install-btn');
+    const pwaCloseBtn = document.getElementById('pwa-close-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Show install prompt after 3 seconds
+      setTimeout(() => {
+        pwaPrompt.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      }, 3000);
+    });
+
+    if (pwaInstallBtn) {
+      pwaInstallBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+
+        console.log('[PWA] User choice:', outcome);
+
+        deferredPrompt = null;
+        pwaPrompt.classList.add('opacity-0', 'pointer-events-none');
+      });
+    }
+
+    if (pwaCloseBtn) {
+      pwaCloseBtn.addEventListener('click', () => {
+        pwaPrompt.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      });
+    }
+
+    // Offline/Online Indicator
+    const offlineIndicator = document.getElementById('offline-indicator');
+
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        offlineIndicator.classList.add('opacity-0', 'pointer-events-none');
+        offlineIndicator.classList.remove('bg-red-500');
+        offlineIndicator.classList.add('bg-green-500');
+        offlineIndicator.querySelector('i').className = 'fas fa-wifi';
+        offlineIndicator.querySelector('span').textContent = 'Conectado';
+      } else {
+        offlineIndicator.classList.remove('opacity-0', 'pointer-events-none');
+        offlineIndicator.classList.add('bg-red-500');
+        offlineIndicator.classList.remove('bg-green-500');
+        offlineIndicator.querySelector('i').className = 'fas fa-wifi-slash';
+        offlineIndicator.querySelector('span').textContent = 'Sin conexión';
+      }
+    }
+
+    window.addEventListener('online', () => {
+      updateOnlineStatus();
+      setTimeout(() => {
+        offlineIndicator.classList.add('opacity-0', 'pointer-events-none');
+      }, 3000);
+    });
+
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // Check initial status
+    updateOnlineStatus();
+  </script>
+
+  <!-- Mobile Menu & Mobile Optimizations -->
+  <script>
+    (function() {
+      // Mobile Menu Toggle
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuLines = [
+        document.getElementById('menu-line-1'),
+        document.getElementById('menu-line-2'),
+        document.getElementById('menu-line-3')
+      ];
+
+      let isMenuOpen = false;
+
+      function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+
+        // Toggle menu visibility
+        mobileMenu.classList.toggle('opacity-0');
+        mobileMenu.classList.toggle('pointer-events-none');
+        mobileMenu.setAttribute('aria-hidden', !isMenuOpen);
+        mobileMenuBtn.setAttribute('aria-expanded', isMenuOpen);
+
+        // Animate hamburger to X
+        if (isMenuOpen) {
+          menuLines[0].style.transform = 'rotate(45deg) translateY(8px)';
+          menuLines[1].style.opacity = '0';
+          menuLines[2].style.transform = 'rotate(-45deg) translateY(-8px)';
+          document.body.style.overflow = 'hidden'; // Prevent scroll
+        } else {
+          menuLines[0].style.transform = '';
+          menuLines[1].style.opacity = '';
+          menuLines[2].style.transform = '';
+          document.body.style.overflow = '';
+        }
+      }
+
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+      }
+
+      // Close menu when clicking a link
+      const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+      mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (isMenuOpen) toggleMenu();
+        });
+      });
+
+      // Close menu on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) {
+          toggleMenu();
+        }
+      });
+
+      // Backend status observer removed per user request
+
+      // Clone language selector to mobile menu
+      function syncLanguageSelector() {
+        const desktopSelector = document.getElementById('language-selector-container');
+        const mobileSelector = document.getElementById('language-selector-mobile');
+
+        if (desktopSelector && mobileSelector && desktopSelector.innerHTML) {
+          mobileSelector.innerHTML = desktopSelector.innerHTML;
+
+          // Re-attach event listeners if needed
+          const mobileDropdown = mobileSelector.querySelector('.language-dropdown');
+          if (mobileDropdown && window.languageSelector) {
+            // LanguageSelector will handle this automatically
+          }
+        }
+      }
+
+      // Wait for language selector to load, then sync
+      const langObserver = new MutationObserver(() => {
+        syncLanguageSelector();
+      });
+
+      const langContainer = document.getElementById('language-selector-container');
+      if (langContainer) {
+        langObserver.observe(langContainer, { childList: true, subtree: true });
+      }
+
+      // Initial sync
+      setTimeout(syncLanguageSelector, 500);
+
+      // Prefers-reduced-motion: disable animations
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.float-animation, .fade-in-up').forEach(el => {
+          el.style.animation = 'none';
+        });
+      }
+
+      // Touch optimizations
+      document.querySelectorAll('a, button').forEach(el => {
+        el.style.webkitTapHighlightColor = 'rgba(255, 255, 255, 0.1)';
+      });
+
+      // Prevent pull-to-refresh on mobile (iOS)
+      let touchStartY = 0;
+      document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const touchDiff = touchY - touchStartY;
+
+        // If at top of page and pulling down
+        if (window.scrollY === 0 && touchDiff > 0) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    })();
+  </script>
+
+</body>
+</html>
