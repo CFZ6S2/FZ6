@@ -412,7 +412,7 @@
       getDocs,
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { showToast, calculateDistance } from './js/utils.js';
+    import { showToast, calculateDistance, requireChatAccess } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading
@@ -441,6 +441,15 @@
       if (user) {
         currentUser = user;
         await loadUserData();
+
+        // ✅ VALIDACIÓN: Verificar perfil completo + membresía (hombres) antes de permitir chat
+        if (currentUserData && !requireChatAccess(currentUserData, window.location.href)) {
+          // requireChatAccess redirige automáticamente:
+          // - Hombres sin membresía → /webapp/suscripcion.html
+          // - Perfil incompleto → /webapp/perfil.html
+          return;
+        }
+
         loadMessages();
       } else {
         window.location.href = '/login.html';

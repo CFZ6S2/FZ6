@@ -549,6 +549,162 @@ export function formatFileSize(bytes) {
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
+/**
+ * Validate if user profile is complete
+ * @param {Object} userData - User data from Firestore
+ * @returns {Object} { isComplete: boolean, missingFields: string[] }
+ */
+export function validateProfileComplete(userData) {
+  if (!userData) {
+    return { isComplete: false, missingFields: ['No user data'] };
+  }
+
+  const requiredFields = {
+    alias: 'Nombre de usuario',
+    gender: 'Género',
+    photoURL: 'Foto de perfil',
+    galleryPhotos: 'Fotos de galería (mínimo 2)',
+    bio: 'Biografía',
+    city: 'Ciudad',
+    profession: 'Profesión',
+    relationshipStatus: 'Estado sentimental',
+    lookingFor: 'Qué buscas'
+  };
+
+  const missingFields = [];
+
+  // Check each required field
+  for (const [field, label] of Object.entries(requiredFields)) {
+    if (field === 'galleryPhotos') {
+      // Gallery photos must have at least 2 photos
+      if (!userData[field] || !Array.isArray(userData[field]) || userData[field].length < 2) {
+        missingFields.push(label);
+      }
+    } else if (field === 'bio') {
+      // Bio must have at least 120 words
+      if (!userData[field] || userData[field].trim().length < 120) {
+        missingFields.push(label + ' (mínimo 120 caracteres)');
+      }
+    } else {
+      // Other fields must be non-empty strings
+      if (!userData[field] || userData[field].toString().trim() === '') {
+        missingFields.push(label);
+      }
+    }
+  }
+
+  return {
+    isComplete: missingFields.length === 0,
+    missingFields
+  };
+}
+
+/**
+ * Redirect to profile if incomplete with message
+ * @param {Object} userData - User data from Firestore
+ * @param {string} returnUrl - URL to return to after completing profile
+ */
+export function requireCompleteProfile(userData, returnUrl = null) {
+  const validation = validateProfileComplete(userData);
+
+  if (!validation.isComplete) {
+    // Build redirect URL
+    const params = new URLSearchParams();
+    params.set('incomplete', 'true');
+    if (returnUrl) {
+      params.set('returnUrl', returnUrl);
+    }
+
+    // Redirect to profile page
+    window.location.href = `/webapp/perfil.html?${params.toString()}`;
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validate if user can access chat (profile + membership for men)
+ * @param {Object} userData - User data from Firestore
+ * @returns {Object} { canAccess: boolean, reason: string, missingFields: string[] }
+ */
+export function canAccessChat(userData) {
+  if (!userData) {
+    return {
+      canAccess: false,
+      reason: 'no_user_data',
+      missingFields: ['No user data']
+    };
+  }
+
+  // First, check if profile is complete
+  const profileValidation = validateProfileComplete(userData);
+
+  if (!profileValidation.isComplete) {
+    return {
+      canAccess: false,
+      reason: 'incomplete_profile',
+      missingFields: profileValidation.missingFields
+    };
+  }
+
+  // For men, also check membership
+  if (userData.gender === 'masculino') {
+    if (!userData.hasActiveSubscription) {
+      return {
+        canAccess: false,
+        reason: 'no_membership',
+        missingFields: ['Membresía activa']
+      };
+    }
+  }
+
+  // All validations passed
+  return {
+    canAccess: true,
+    reason: 'ok',
+    missingFields: []
+  };
+}
+
+/**
+ * Redirect if user cannot access chat with appropriate message
+ * @param {Object} userData - User data from Firestore
+ * @param {string} returnUrl - URL to return to after fixing issue
+ * @returns {boolean} True if user can access, false if redirected
+ */
+export function requireChatAccess(userData, returnUrl = null) {
+  const validation = canAccessChat(userData);
+
+  if (!validation.canAccess) {
+    const params = new URLSearchParams();
+
+    if (validation.reason === 'incomplete_profile') {
+      // Redirect to profile to complete
+      params.set('incomplete', 'true');
+      params.set('reason', 'chat');
+      if (returnUrl) {
+        params.set('returnUrl', returnUrl);
+      }
+      window.location.href = `/webapp/perfil.html?${params.toString()}`;
+    } else if (validation.reason === 'no_membership') {
+      // Redirect to membership page
+      params.set('reason', 'chat');
+      if (returnUrl) {
+        params.set('returnUrl', returnUrl);
+      }
+      window.location.href = `/webapp/suscripcion.html?${params.toString()}`;
+    } else {
+      // Generic error - redirect to profile
+      window.location.href = '/webapp/perfil.html';
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 // Export all functions as default object
 export default {
   showToast,
@@ -571,5 +727,9 @@ export default {
   sanitizeHTML,
   sanitizeHTMLAllowTags,
   copyToClipboard,
-  formatFileSize
+  formatFileSize,
+  validateProfileComplete,
+  requireCompleteProfile,
+  canAccessChat,
+  requireChatAccess
 };
