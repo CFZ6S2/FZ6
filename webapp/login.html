@@ -177,7 +177,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
   <script type="module">
-    // Firebase configuration (App Check disabled for login page)
+    // Firebase configuration
     import { auth, db } from './js/firebase-config.js';
     import { sanitizer } from './js/sanitizer.js';
     import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
@@ -271,6 +271,11 @@
       }
 
       try {
+        const recaptcha = await verifyRecaptchaScore('password_reset');
+        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+          showToast('Verificación reCAPTCHA fallida. Intenta de nuevo.', 'error');
+          return;
+        }
         await sendPasswordResetEmail(auth, email);
         showToast('Correo de recuperación enviado. Revisa tu bandeja de entrada.', 'success');
       } catch (error) {
@@ -316,6 +321,13 @@
       loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
 
       try {
+        const recaptcha = await verifyRecaptchaScore('login');
+        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+          showToast('Verificación reCAPTCHA fallida. Intenta de nuevo.', 'error');
+          loginButton.disabled = false;
+          loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
+          return;
+        }
         // Set persistence based on "Remember Me"
         const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistence);
@@ -470,3 +482,4 @@
 
 </body>
 </html>
+    import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';

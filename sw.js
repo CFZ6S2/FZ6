@@ -1,7 +1,7 @@
 // Service Worker para TuCitaSegura
-// Versión: 1.0.0
+// Versión: 1.1.0
 
-const CACHE_NAME = 'tucitasegura-v1';
+const CACHE_NAME = 'tucitasegura-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Archivos críticos para cachear durante la instalación

@@ -78,3 +78,6 @@ tuscitasegura-loading.zip
 backup_*/
 *.backup
 .trae/
+# Build outputs
+dist/
+webapp/dist/
