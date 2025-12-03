@@ -29,8 +29,8 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || payload.data?.title || 'TuCitaSegura';
   const notificationOptions = {
     body: payload.notification?.body || payload.data?.body || 'Tienes una nueva notificación',
-    icon: payload.notification?.icon || '/webapp/assets/icon-192x192.png',
-    badge: '/webapp/assets/badge-72x72.png',
+    icon: payload.notification?.icon || '/assets/icon-192x192.png',
+    badge: '/assets/badge-72x72.png',
     tag: payload.data?.type || 'default',
     data: payload.data,
     requireInteraction: payload.data?.priority === 'high',
@@ -65,28 +65,28 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const data = event.notification.data;
-  let url = '/webapp/conversaciones.html';
+  let url = '/conversaciones.html';
 
   // Determine URL based on notification type
   if (event.action === 'view' || !event.action) {
     switch (data?.type) {
       case 'match':
-        url = `/webapp/perfil-usuario.html?uid=${data.senderId}`;
+        url = `/perfil-usuario.html?uid=${data.senderId}`;
         break;
       case 'message':
-        url = `/webapp/chat.html?conversationId=${data.conversationId}`;
+        url = `/chat.html?conversationId=${data.conversationId}`;
         break;
       case 'appointment':
-        url = `/webapp/cita-detalle.html?appointmentId=${data.appointmentId}`;
+        url = `/cita-detalle.html?appointmentId=${data.appointmentId}`;
         break;
       case 'vip_event':
-        url = `/webapp/eventos-vip.html`;
+        url = `/eventos-vip.html`;
         break;
       default:
-        url = '/webapp/conversaciones.html';
+        url = '/conversaciones.html';
     }
   } else if (event.action === 'reply') {
-    url = `/webapp/chat.html?conversationId=${data.conversationId}`;
+    url = `/chat.html?conversationId=${data.conversationId}`;
   } else if (event.action === 'dismiss') {
     return; // Just close the notification
   }

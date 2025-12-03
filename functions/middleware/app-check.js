@@ -1,6 +1,7 @@
 // functions/middleware/app-check.js
 // Middleware para verificar Firebase App Check en Cloud Functions
 
+const functions = require('firebase-functions/v1');
 const { createLogger } = require('../utils/structured-logger');
 const logger = createLogger('app-check-middleware');
 

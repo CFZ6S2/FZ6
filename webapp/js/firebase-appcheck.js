@@ -12,7 +12,7 @@ const __hideRecaptchaBadge = (() => { try { const s = document.createElement('st
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
+const RECAPTCHA_ENTERPRISE_SITE_KEY = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
@@ -210,7 +210,7 @@ async function initAppCheck() {
     // Instrucciones de configuración para producción
     if (location.hostname === 'tucitasegura.com') {
       logger.info('📝 Si ves errores 403: Configura tucitasegura.com en Google Cloud Console');
-      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
+      logger.info(`🔗 https://console.cloud.google.com/security/recaptcha → Edita key ${RECAPTCHA_ENTERPRISE_SITE_KEY}`);
     }
 
   } catch (e) {
@@ -241,7 +241,7 @@ async function initAppCheck() {
           logger.error('🚨 Error 403 en App Check - Dominio no configurado');
           logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
           logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          logger.info('   → Edita la key: 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
+          logger.info(`   → Edita la key: ${RECAPTCHA_ENTERPRISE_SITE_KEY}`);
           logger.info('   → Agrega tucitasegura.com a los dominios permitidos');
         } else {
           logger.warn('⚠️  App Check error en producción:', err.message || err);
