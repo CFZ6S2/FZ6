@@ -6,50 +6,83 @@ import app from './firebase-config.js';
 import { logger } from './logger.js';
 
 // ============================================================================
-// AUTO-LIMPIEZA DE THROTTLE DE APP CHECK
+// AUTO-LIMPIEZA AGRESIVA DE THROTTLE DE APP CHECK
 // ============================================================================
 (function autoCleanAppCheckThrottle() {
   try {
+    // Verificar si ya se limpió en esta sesión
+    if (sessionStorage.getItem('appCheckCleaned')) {
+      return; // Ya se limpió, no hacerlo de nuevo
+    }
+
     // Detectar si hay throttle de App Check
     const storageKeys = Object.keys(localStorage);
-    let hasAppCheckThrottle = false;
+    let needsClean = false;
 
-    // Buscar claves relacionadas con App Check throttle
+    // Buscar CUALQUIER dato de App Check (no solo throttled)
     storageKeys.forEach(key => {
-      if (key.includes('firebase:appCheck') || key.includes('firebase-app-check-store')) {
-        const value = localStorage.getItem(key);
-        if (value && value.includes('throttled')) {
-          hasAppCheckThrottle = true;
-        }
+      if (key.includes('firebase') ||
+          key.includes('appCheck') ||
+          key.includes('app-check') ||
+          key.toLowerCase().includes('recaptcha')) {
+        needsClean = true;
       }
     });
 
-    if (hasAppCheckThrottle) {
-      console.warn('🧹 Limpiando throttle de App Check automáticamente...');
+    // SIEMPRE limpiar en la primera carga para asegurar
+    if (needsClean || !sessionStorage.getItem('appCheckCleaned')) {
+      console.warn('🧹 LIMPIEZA COMPLETA de App Check y Firebase...');
 
-      // Limpiar localStorage de App Check
-      storageKeys.forEach(key => {
-        if (key.includes('firebase:appCheck') || key.includes('firebase-app-check-store')) {
+      // 1. Limpiar TODOS los datos de Firebase en localStorage
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (key.includes('firebase') ||
+            key.includes('appCheck') ||
+            key.includes('app-check') ||
+            key.toLowerCase().includes('recaptcha')) {
+          console.log('🗑️ Eliminando:', key);
           localStorage.removeItem(key);
         }
       });
 
-      // Limpiar IndexedDB de App Check
-      if (window.indexedDB) {
-        try {
-          indexedDB.deleteDatabase('firebase-app-check-database');
-          indexedDB.deleteDatabase('firebaseLocalStorageDb');
-        } catch (e) {
-          console.warn('No se pudo limpiar IndexedDB:', e);
+      // 2. Limpiar sessionStorage también
+      const sessionKeys = Object.keys(sessionStorage);
+      sessionKeys.forEach(key => {
+        if (key.includes('firebase') ||
+            key.includes('appCheck') ||
+            key !== 'appCheckCleaned') { // Mantener nuestra flag
+          sessionStorage.removeItem(key);
         }
+      });
+
+      // 3. Limpiar TODAS las bases de datos IndexedDB de Firebase
+      if (window.indexedDB) {
+        const databasesToDelete = [
+          'firebase-app-check-database',
+          'firebaseLocalStorageDb',
+          'firebase-heartbeat-database',
+          'firebase-installations-database'
+        ];
+
+        databasesToDelete.forEach(dbName => {
+          try {
+            console.log('🗑️ Eliminando DB:', dbName);
+            indexedDB.deleteDatabase(dbName);
+          } catch (e) {
+            console.warn('No se pudo eliminar DB:', dbName, e);
+          }
+        });
       }
 
-      console.info('✅ Throttle de App Check limpiado. Recargando página...');
+      // Marcar que ya se limpió
+      sessionStorage.setItem('appCheckCleaned', 'true');
+
+      console.info('✅ Limpieza completa. Recargando en 1 segundo...');
 
       // Recargar página después de limpiar
       setTimeout(() => {
         location.reload();
-      }, 500);
+      }, 1000);
 
       return; // Detener ejecución del resto del script
     }
