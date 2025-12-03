@@ -623,6 +623,88 @@ export function requireCompleteProfile(userData, returnUrl = null) {
   return true;
 }
 
+/**
+ * Validate if user can access chat (profile + membership for men)
+ * @param {Object} userData - User data from Firestore
+ * @returns {Object} { canAccess: boolean, reason: string, missingFields: string[] }
+ */
+export function canAccessChat(userData) {
+  if (!userData) {
+    return {
+      canAccess: false,
+      reason: 'no_user_data',
+      missingFields: ['No user data']
+    };
+  }
+
+  // First, check if profile is complete
+  const profileValidation = validateProfileComplete(userData);
+
+  if (!profileValidation.isComplete) {
+    return {
+      canAccess: false,
+      reason: 'incomplete_profile',
+      missingFields: profileValidation.missingFields
+    };
+  }
+
+  // For men, also check membership
+  if (userData.gender === 'masculino') {
+    if (!userData.hasActiveSubscription) {
+      return {
+        canAccess: false,
+        reason: 'no_membership',
+        missingFields: ['Membresía activa']
+      };
+    }
+  }
+
+  // All validations passed
+  return {
+    canAccess: true,
+    reason: 'ok',
+    missingFields: []
+  };
+}
+
+/**
+ * Redirect if user cannot access chat with appropriate message
+ * @param {Object} userData - User data from Firestore
+ * @param {string} returnUrl - URL to return to after fixing issue
+ * @returns {boolean} True if user can access, false if redirected
+ */
+export function requireChatAccess(userData, returnUrl = null) {
+  const validation = canAccessChat(userData);
+
+  if (!validation.canAccess) {
+    const params = new URLSearchParams();
+
+    if (validation.reason === 'incomplete_profile') {
+      // Redirect to profile to complete
+      params.set('incomplete', 'true');
+      params.set('reason', 'chat');
+      if (returnUrl) {
+        params.set('returnUrl', returnUrl);
+      }
+      window.location.href = `/webapp/perfil.html?${params.toString()}`;
+    } else if (validation.reason === 'no_membership') {
+      // Redirect to membership page
+      params.set('reason', 'chat');
+      if (returnUrl) {
+        params.set('returnUrl', returnUrl);
+      }
+      window.location.href = `/webapp/suscripcion.html?${params.toString()}`;
+    } else {
+      // Generic error - redirect to profile
+      window.location.href = '/webapp/perfil.html';
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 // Export all functions as default object
 export default {
   showToast,
@@ -647,5 +729,7 @@ export default {
   copyToClipboard,
   formatFileSize,
   validateProfileComplete,
-  requireCompleteProfile
+  requireCompleteProfile,
+  canAccessChat,
+  requireChatAccess
 };
