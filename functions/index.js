@@ -1688,3 +1688,38 @@ const recaptchaEnterprise = require('./recaptcha-enterprise');
 
 exports.verifyRecaptcha = recaptchaEnterprise.verifyRecaptcha;
 exports.verifyRecaptchaCallable = recaptchaEnterprise.verifyRecaptchaCallable;
+
+// ============================================================================
+// APPCHECK MONITORING: Recibir reportes de fallos desde frontend
+// ============================================================================
+exports.reportAppCheckFailure = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'method_not_allowed' });
+  }
+
+  try {
+    const { errorCode, message, hostname, userAgent, path } = req.body || {};
+    const db = admin.firestore();
+    await db.collection('appcheck_failures').add({
+      errorCode: errorCode || 'unknown',
+      message: message || 'unknown',
+      hostname: hostname || null,
+      userAgent: userAgent || null,
+      path: path || null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    logger.warn('AppCheck failure reported', { errorCode, hostname, path });
+    return res.status(200).json({ success: true });
+  } catch (e) {
+    logger.error('Error reporting AppCheck failure', { error: e.message });
+    return res.status(500).json({ error: 'internal_error' });
+  }
+});

@@ -41,6 +41,9 @@
       { "source": "/health", "function": "apiProxy" },
       { "source": "/api/**", "function": "apiProxy" }
     ],
+    "redirects": [
+      { "source": "/site.webmanifest", "destination": "/webapp/site.webmanifest", "type": 301 }
+    ],
     "headers": [
       {
         "source": "**/*.@(jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot)",

@@ -67,14 +67,14 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-    <script src="/webapp/js/sanitizer.js"></script>
+    <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
 
     // Import notification module
     import {
@@ -89,12 +89,12 @@
 
     // Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAs5def8VxOqF6oWESFbDwVjdMOQtbE-YY",
-      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
-      projectId: "tuscitasseguras-2d1a6",
-      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
-      messagingSenderId: "660685962081",
-      appId: "1:660685962081:web:3e2745ee2872e48a0f5f67"
+      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+      authDomain: "tucitasegura-129cc.firebaseapp.com",
+      projectId: "tucitasegura-129cc",
+      storageBucket: "tucitasegura-129cc.firebasestorage.app",
+      messagingSenderId: "180656060538",
+      appId: "1:180656060538:web:3168487130aa126db663c3"
     };
 
     const app = initializeApp(firebaseConfig);

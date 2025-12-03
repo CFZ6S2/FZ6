@@ -11,7 +11,7 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-  <script src="/webapp/js/sanitizer.js"></script>
+  <script type="module" src="./js/sanitizer.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -342,13 +342,13 @@
 
     // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
-      authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
-      databaseURL: "https://tuscitasseguras-2d1a6-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "tuscitasseguras-2d1a6",
-      storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
-      messagingSenderId: "924208562587",
-      appId: "1:924208562587:web:5291359426fe390b36213e"
+      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+      authDomain: "tucitasegura-129cc.firebaseapp.com",
+      databaseURL: "https://tucitasegura-129cc-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "tucitasegura-129cc",
+      storageBucket: "tucitasegura-129cc.firebasestorage.app",
+      messagingSenderId: "180656060538",
+      appId: "1:180656060538:web:3168487130aa126db663c3"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -356,13 +356,13 @@
 
     // NOTE: App Check is DISABLED for admin login to avoid auth issues
     // You MUST disable App Check enforcement in Firebase Console for this to work:
-    // 1. Go to: https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck
+    // 1. Go to: https://console.firebase.google.com/project/tucitasegura-129cc/appcheck
     // 2. Click on "Firebase Authentication" in the APIs section
     // 3. Change enforcement from "Enforced" to "Unenforced" or "Monitoring"
 
     console.log('✅ Firebase Auth initialized (App Check disabled for admin)');
     console.warn('⚠️  IMPORTANT: Make sure App Check enforcement is disabled in Firebase Console');
-    console.warn('⚠️  URL: https://console.firebase.google.com/project/tuscitasseguras-2d1a6/appcheck');
+    console.warn('⚠️  URL: https://console.firebase.google.com/project/tucitasegura-129cc/appcheck');
 
     // Toggle Password Visibility
     const togglePassword = document.getElementById('togglePassword');
