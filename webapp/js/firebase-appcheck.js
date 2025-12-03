@@ -9,20 +9,24 @@
 import { logger } from './logger.js';
 
 // ============================================================================
-// AUTO-LIMPIEZA AGRESIVA DE THROTTLE DE APP CHECK
+// AUTO-LIMPIEZA DE APP CHECK - DESHABILITADA
 // ============================================================================
+// NOTA: Auto-limpieza deshabilitada porque interfiere con la inicialización
+// normal de Firebase Auth. Como ya no importamos el módulo de App Check,
+// no debería haber throttle nuevo.
+
+console.info('ℹ️  App Check completamente deshabilitado - Sin auto-limpieza');
+
+/* CÓDIGO DE AUTO-LIMPIEZA COMENTADO - Causaba error "auth export not found"
 (function autoCleanAppCheckThrottle() {
   try {
-    // Verificar si ya se limpió en esta sesión
     if (sessionStorage.getItem('appCheckCleaned')) {
-      return; // Ya se limpió, no hacerlo de nuevo
+      return;
     }
 
-    // Detectar si hay throttle de App Check
     const storageKeys = Object.keys(localStorage);
     let needsClean = false;
 
-    // Buscar CUALQUIER dato de App Check (no solo throttled)
     storageKeys.forEach(key => {
       if (key.includes('firebase') ||
           key.includes('appCheck') ||
@@ -32,11 +36,9 @@ import { logger } from './logger.js';
       }
     });
 
-    // SIEMPRE limpiar en la primera carga para asegurar
     if (needsClean || !sessionStorage.getItem('appCheckCleaned')) {
       console.warn('🧹 LIMPIEZA COMPLETA de App Check y Firebase...');
 
-      // 1. Limpiar TODOS los datos de Firebase en localStorage
       const allKeys = Object.keys(localStorage);
       allKeys.forEach(key => {
         if (key.includes('firebase') ||
@@ -48,17 +50,15 @@ import { logger } from './logger.js';
         }
       });
 
-      // 2. Limpiar sessionStorage también
       const sessionKeys = Object.keys(sessionStorage);
       sessionKeys.forEach(key => {
         if (key.includes('firebase') ||
             key.includes('appCheck') ||
-            key !== 'appCheckCleaned') { // Mantener nuestra flag
+            key !== 'appCheckCleaned') {
           sessionStorage.removeItem(key);
         }
       });
 
-      // 3. Limpiar TODAS las bases de datos IndexedDB de Firebase
       if (window.indexedDB) {
         const databasesToDelete = [
           'firebase-app-check-database',
@@ -77,22 +77,19 @@ import { logger } from './logger.js';
         });
       }
 
-      // Marcar que ya se limpió
       sessionStorage.setItem('appCheckCleaned', 'true');
-
       console.info('✅ Limpieza completa. Recargando en 1 segundo...');
-
-      // Recargar página después de limpiar
       setTimeout(() => {
         location.reload();
       }, 1000);
 
-      return; // Detener ejecución del resto del script
+      return;
     }
   } catch (error) {
     console.error('Error al limpiar throttle de App Check:', error);
   }
 })();
+*/
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
