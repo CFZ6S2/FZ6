@@ -44,7 +44,7 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 # CORS Configuration
 origins_str = os.getenv(
     "CORS_ORIGINS",
-    "http://localhost:3000,https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com"
+    "http://localhost:3000,https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com,https://tucitasegura-129cc.web.app,https://tucitasegura-129cc.firebaseapp.com"
 )
 origins = [origin.strip() for origin in origins_str.split(",")]
 
@@ -138,7 +138,7 @@ def public_route():
 # ============================================================================
 
 @app.get("/api/protected")
-async def protected_route(user: dict = Depends(get_current_user)):
+async def protected_route(user: dict = Depends(get_current_user), _: None = Depends(require_app_check)):
     """Protected endpoint - requires valid Firebase token"""
     return {
         "message": "Ruta protegida 🔐",
@@ -169,7 +169,8 @@ async def get_user_profile(user: dict = Depends(get_current_user)):
 @app.post("/api/upload")
 async def upload_image(
     file: UploadFile = File(...),
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(get_current_user),
+    _: None = Depends(require_app_check)
 ):
     """
     Upload an image to Firebase Storage
@@ -196,7 +197,8 @@ async def upload_image(
 async def upload_profile_image(
     file: UploadFile = File(...),
     photo_type: PhotoType = PhotoType.avatar,  # SECURITY: Enum validation prevents injection
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(get_current_user),
+    _: None = Depends(require_app_check)
 ):
     """
     Upload a profile photo (avatar or gallery) to Firebase Storage
@@ -335,3 +337,11 @@ if __name__ == "__main__":
         port=8000,
         reload=True if os.getenv("ENVIRONMENT") == "development" else False
     )
+# App Check enforcement (HTTP header)
+def require_app_check(request: Request):
+    enforce = os.getenv("APP_CHECK_ENFORCE", "false").lower() == "true"
+    if not enforce:
+        return
+    token = request.headers.get("X-Firebase-AppCheck")
+    if not token or not token.strip():
+        raise HTTPException(status_code=401, detail="App Check token missing")
