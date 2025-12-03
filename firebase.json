@@ -45,7 +45,8 @@
       { "source": "/api/**", "function": "apiProxy" }
     ],
     "redirects": [
-      { "source": "/site.webmanifest", "destination": "/webapp/site.webmanifest", "type": 301 }
+      { "source": "/site.webmanifest", "destination": "/webapp/site.webmanifest", "type": 301 },
+      { "source": "/favicon.ico", "destination": "/favicon.svg", "type": 301 }
     ],
     "headers": [
       {
