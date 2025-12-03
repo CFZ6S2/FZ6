@@ -35,6 +35,9 @@
   "author": "TuCitaSegura Team",
   "license": "UNLICENSED",
   "private": true,
+  "engines": {
+    "node": "20"
+  },
   "devDependencies": {
     "vite": "^5.0.0",
     "@firebase/rules-unit-testing": "^5.0.0",
