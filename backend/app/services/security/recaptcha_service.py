@@ -73,8 +73,17 @@ class RecaptchaService:
             return DEFAULT_MIN_SCORE_DEVELOPMENT
 
     def is_enabled(self) -> bool:
-        """Check if reCAPTCHA is enabled (has secret key configured)."""
-        return bool(self.secret_key and self.secret_key != "tu_recaptcha_secret_key_aqui")
+        """
+        Check if reCAPTCHA is enabled (has secret key configured).
+
+        DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
+        """
+        # DESHABILITADO TEMPORALMENTE (24h)
+        logger.warning("🚨 reCAPTCHA DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle")
+        return False
+
+        # CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
+        # return bool(self.secret_key and self.secret_key != "tu_recaptcha_secret_key_aqui")
     
     async def verify_recaptcha(self, token: str, remote_ip: Optional[str] = None) -> Dict:
         """

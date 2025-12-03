@@ -7,9 +7,16 @@ const logger = createLogger('app-check-middleware');
 /**
  * Middleware para verificar App Check token en callable functions
  * @param {boolean} required - Si es true, rechaza requests sin App Check
+ *
+ * DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
  */
 function requireAppCheck(required = true) {
   return (context) => {
+    // DESHABILITADO TEMPORALMENTE (24h)
+    logger.info('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
+    return; // Permitir todas las requests sin validación
+
+    /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
     // App Check data está disponible en context.app
     // https://firebase.google.com/docs/app-check/cloud-functions
 
@@ -38,6 +45,7 @@ function requireAppCheck(required = true) {
         alreadyConsumed: context.app.alreadyConsumed
       });
     }
+    */
   };
 }
 
@@ -47,9 +55,16 @@ function requireAppCheck(required = true) {
  * @param {Object} res - Express response
  * @param {Function} next - Next middleware
  * @param {boolean} required - Si es true, rechaza requests sin App Check
+ *
+ * DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
  */
 function verifyAppCheckHTTP(required = true) {
   return async (req, res, next) => {
+    // DESHABILITADO TEMPORALMENTE (24h)
+    logger.info('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
+    return next(); // Permitir todas las requests sin validación
+
+    /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
     // Obtener App Check token del header
     const appCheckToken = req.header('X-Firebase-AppCheck');
 
@@ -109,6 +124,7 @@ function verifyAppCheckHTTP(required = true) {
       });
       next();
     }
+    */
   };
 }
 

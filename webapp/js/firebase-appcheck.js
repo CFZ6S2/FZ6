@@ -162,6 +162,13 @@ window.detectAppCheckThrottled = function() {
 let appCheck = null;
 
 async function initAppCheck() {
+  // DESHABILITADO TEMPORALMENTE (24h) para solucionar problemas de throttle
+  logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
+  logger.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
+  window._appCheckInstance = null;
+  return;
+
+  /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;
@@ -227,6 +234,7 @@ async function initAppCheck() {
   }
 
   window._appCheckInstance = appCheck;
+  */
 }
 
 (async function bootstrap() {
