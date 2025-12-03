@@ -11,8 +11,8 @@ const logger = createLogger('recaptcha-enterprise');
 const recaptchaClient = new RecaptchaEnterpriseServiceClient();
 
 // Configuración del proyecto
-const PROJECT_ID = 'tuscitasseguras-2d1a6';
-const SITE_KEY = '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
+const PROJECT_ID = 'tucitasegura-129cc';
+const SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
 
 /**
  * Verificar token de reCAPTCHA Enterprise
