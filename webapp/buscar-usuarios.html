@@ -738,7 +738,7 @@
       orderBy,
       limit
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { showToast, calculateAge, getReputationBadge, calculateDistance } from './js/utils.js';
+    import { showToast, calculateAge, getReputationBadge, calculateDistance, canAccessChat } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading
@@ -1041,11 +1041,28 @@
       if (SUPER_USERS.includes(currentUser.email)) {
         return { canUse: true, reason: null };
       }
+
+      // ✅ PRIMERO: Validar perfil completo (TODOS los usuarios)
+      const chatValidation = canAccessChat(currentUserData);
+      if (!chatValidation.canAccess) {
+        if (chatValidation.reason === 'incomplete_profile') {
+          return {
+            canUse: false,
+            reason: 'incomplete_profile',
+            title: 'Perfil Incompleto',
+            message: 'Debes completar tu perfil antes de enviar solicitudes de cita.'
+          };
+        }
+        // Si llegamos aquí por otra razón (ej: no_membership desde canAccessChat)
+        // continuamos con la validación normal abajo
+      }
+
       // Regla de negocio: Por ahora solo los hombres pagan
       const userMustPay = currentUserData.gender === 'masculino';
 
       if (!userMustPay) {
         // Las mujeres pueden usar libremente (por ahora)
+        // Pero ya validamos perfil completo arriba ✅
         return { canUse: true, reason: null };
       }
 
@@ -1081,7 +1098,49 @@
       paymentModalTitle.textContent = title;
       paymentModalMessage.textContent = message;
 
-      if (reason === 'membership') {
+      if (reason === 'incomplete_profile') {
+        // ✅ NUEVO: Caso de perfil incompleto
+        paymentDetails.innerHTML = `
+          <div class="space-y-4">
+            <div class="space-y-2 text-sm">
+              <div class="flex items-start gap-2">
+                <i class="fas fa-user-check text-purple-400 mt-1"></i>
+                <span>Completa tu nombre de usuario (alias)</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-venus-mars text-purple-400 mt-1"></i>
+                <span>Indica tu género</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-camera text-purple-400 mt-1"></i>
+                <span>Sube tu foto de perfil</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-images text-purple-400 mt-1"></i>
+                <span>Agrega mínimo 2 fotos a tu galería</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-pen text-purple-400 mt-1"></i>
+                <span>Escribe tu biografía (mínimo 120 caracteres)</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-map-marker-alt text-purple-400 mt-1"></i>
+                <span>Indica tu ciudad</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <i class="fas fa-briefcase text-purple-400 mt-1"></i>
+                <span>Completa tu profesión y preferencias</span>
+              </div>
+            </div>
+            <div class="bg-purple-500/20 border border-purple-500/50 rounded-lg p-3 text-xs">
+              <i class="fas fa-info-circle text-purple-400 mr-2"></i>
+              Un perfil completo aumenta tus posibilidades de encontrar tu match ideal.
+            </div>
+          </div>
+        `;
+        paymentBtnText.textContent = 'Completar Perfil';
+        goToPaymentBtn.onclick = () => window.location.href = '/webapp/perfil.html?incomplete=true&reason=chat';
+      } else if (reason === 'membership') {
         paymentDetails.innerHTML = `
           <div class="space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-white/10">

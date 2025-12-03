@@ -412,7 +412,7 @@
       getDocs,
       setDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { showToast, calculateDistance, requireCompleteProfile } from './js/utils.js';
+    import { showToast, calculateDistance, requireChatAccess } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading
@@ -442,9 +442,11 @@
         currentUser = user;
         await loadUserData();
 
-        // ✅ VALIDACIÓN: Verificar que el perfil esté completo antes de permitir chat
-        if (currentUserData && !requireCompleteProfile(currentUserData, window.location.href)) {
-          // requireCompleteProfile redirige automáticamente si el perfil está incompleto
+        // ✅ VALIDACIÓN: Verificar perfil completo + membresía (hombres) antes de permitir chat
+        if (currentUserData && !requireChatAccess(currentUserData, window.location.href)) {
+          // requireChatAccess redirige automáticamente:
+          // - Hombres sin membresía → /webapp/suscripcion.html
+          // - Perfil incompleto → /webapp/perfil.html
           return;
         }
 
