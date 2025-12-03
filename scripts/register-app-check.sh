@@ -13,7 +13,7 @@ echo ""
 # Project details
 PROJECT_ID="tuscitasseguras-2d1a6"
 WEB_APP_ID="1:924208562587:web:5291359426fe390b36213e"
-RECAPTCHA_SITE_KEY="6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w"
+RECAPTCHA_SITE_KEY="6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT"
 
 echo "📋 Project Information:"
 echo "  Project ID: $PROJECT_ID"

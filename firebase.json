@@ -20,7 +20,7 @@
   },
   "hosting": {
     "site": "tucitasegura-129cc",
-    "public": ".",
+    "public": "webapp/dist",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -28,8 +28,6 @@
       "functions/**",
       "backend/**",
       "src/**",
-      "dist/**",
-      "webapp/dist/**",
       "FZ6/**",
       "*.md",
       "firestore.rules",
@@ -45,8 +43,25 @@
       { "source": "/api/**", "function": "apiProxy" }
     ],
     "redirects": [
-      { "source": "/site.webmanifest", "destination": "/webapp/site.webmanifest", "type": 301 },
-      { "source": "/favicon.ico", "destination": "/favicon.svg", "type": 301 }
+      { "source": "/favicon.ico", "destination": "/favicon.svg", "type": 301 },
+      { "source": "/webapp/site.webmanifest", "destination": "/site.webmanifest", "type": 301 },
+      { "source": "/webapp/index.html", "destination": "/index.html", "type": 301 },
+      { "source": "/webapp/login.html", "destination": "/login.html", "type": 301 },
+      { "source": "/webapp/register.html", "destination": "/register.html", "type": 301 },
+      { "source": "/webapp/perfil.html", "destination": "/perfil.html", "type": 301 },
+      { "source": "/webapp/buscar-usuarios.html", "destination": "/buscar-usuarios.html", "type": 301 },
+      { "source": "/webapp/conversaciones.html", "destination": "/conversaciones.html", "type": 301 },
+      { "source": "/webapp/cita-detalle.html", "destination": "/cita-detalle.html", "type": 301 },
+      { "source": "/webapp/eventos-vip.html", "destination": "/eventos-vip.html", "type": 301 },
+      { "source": "/webapp/evento-detalle.html", "destination": "/evento-detalle.html", "type": 301 },
+      { "source": "/webapp/seguridad.html", "destination": "/seguridad.html", "type": 301 },
+      { "source": "/webapp/seguro.html", "destination": "/seguro.html", "type": 301 },
+      { "source": "/webapp/suscripcion.html", "destination": "/suscripcion.html", "type": 301 },
+      { "source": "/webapp/cuenta-pagos.html", "destination": "/cuenta-pagos.html", "type": 301 },
+      { "source": "/webapp/admin.html", "destination": "/admin.html", "type": 301 },
+      { "source": "/webapp/admin-login.html", "destination": "/admin-login.html", "type": 301 },
+      { "source": "/webapp/verify-email.html", "destination": "/verify-email.html", "type": 301 },
+      { "source": "/webapp/verificacion-identidad.html", "destination": "/verificacion-identidad.html", "type": 301 }
     ],
     "headers": [
       {

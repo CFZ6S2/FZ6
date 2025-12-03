@@ -7,6 +7,7 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       input: {
+        'index': resolve(__dirname, 'index.html'),
         'verify-appcheck': resolve(__dirname, 'verify-appcheck.html'),
         'admin-login': resolve(__dirname, 'admin-login.html'),
         'admin': resolve(__dirname, 'admin.html'),

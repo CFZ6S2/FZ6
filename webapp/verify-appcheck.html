@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/webapp/site.webmanifest">
+  <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#764ba2">
   <style>
     body {
@@ -153,7 +153,7 @@
       <div class="code-block">
         <strong>Project ID:</strong> tucitasegura-129cc<br>
         <strong>Web App ID:</strong> 1:180656060538:web:3168487130aa126db663c3<br>
-        <strong>reCAPTCHA Site Key:</strong> 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb<br>
+        <strong>reCAPTCHA Site Key:</strong> <span id="siteKeyDisplay"></span><br>
         <strong>Hostname:</strong> <span id="hostname"></span><br>
         <strong>Modo:</strong> <span id="mode"></span>
       </div>
@@ -378,3 +378,4 @@
   </script>
 </body>
 </html>
+    document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');

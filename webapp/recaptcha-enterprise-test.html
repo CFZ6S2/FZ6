@@ -11,7 +11,7 @@
     button:hover { background: #0056b3; }
   </style>
   <script>
-    const SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
+    const SITE_KEY = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
     window.addEventListener('DOMContentLoaded', () => {
       const out = document.getElementById('out');
       function log(...args) {
@@ -47,10 +47,10 @@
 <body>
   <h1>Test reCAPTCHA Enterprise</h1>
   <p>Dominio: <strong id="host"></strong></p>
-  <p>Site Key: <code>6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb</code></p>
+  <p>Site Key: <code id="siteKeyDisplay"></code></p>
   <button id="run">Ejecutar reCAPTCHA</button>
   <h2>Salida</h2>
   <pre id="out"></pre>
-  <script>document.getElementById('host').textContent = location.hostname;</script>
+  <script>document.getElementById('host').textContent = location.hostname;document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');</script>
 </body>
 </html>

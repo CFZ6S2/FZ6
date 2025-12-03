@@ -1,4 +1,4 @@
-const SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
+const SITE_KEY = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
 const VERIFY_URL = 'https://us-central1-tucitasegura-129cc.cloudfunctions.net/verifyRecaptcha';
 
 export async function verifyRecaptchaScore(action) {

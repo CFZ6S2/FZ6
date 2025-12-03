@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <path d="M50 10 L80 25 L80 50 Q80 75 50 90 Q20 75 20 50 L20 25 Z"
+        fill="url(#shieldGradient)" stroke="#fff" stroke-width="2"/>
+  <path d="M50 65 C50 65 65 50 65 42 C65 35 60 30 55 30 C52 30 50 32 50 32 C50 32 48 30 45 30 C40 30 35 35 35 42 C35 50 50 65 50 65 Z"
+        fill="url(#heartGradient)" stroke="#fff" stroke-width="1.5"/>
+  <rect x="46" y="45" width="8" height="10" rx="1" fill="#fff" opacity="0.9"/>
+  <circle cx="50" cy="43" r="3" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+</svg>
