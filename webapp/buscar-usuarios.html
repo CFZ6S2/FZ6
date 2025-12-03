@@ -18,35 +18,7 @@
   <link rel="stylesheet" href="./css/output.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<<<<<<< HEAD
-
-  <!--
-    ⚠️ CRITICAL: Google Maps API Configuration Required
-
-    ACTION NEEDED: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key
-
-    Documentation: See /GOOGLE_MAPS_API_SETUP.md for complete setup instructions
-
-    Quick setup:
-    1. Go to https://console.cloud.google.com/
-    2. Enable Maps JavaScript API + Places API
-    3. Create API key with HTTP referrer restrictions
-    4. Replace YOUR_GOOGLE_MAPS_API_KEY below
-
-    Status: ⚠️ API key should be configured via environment variables
-    See: SECURITY_API_KEYS.md for setup instructions
-  -->
-  <!-- Google Maps API - Loaded dynamically from config -->
-  <script type="module">
-    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config.js';
-
-    // Dynamically load Google Maps API with the configured key
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  </script>
+  <!-- Google Maps API will be loaded dynamically in module script -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -279,6 +251,11 @@
       color: #86efac;
     }
   </style>
+  <script>
+    if (!window.GOOGLE_MAPS_API_KEY) {
+      try { window.GOOGLE_MAPS_API_KEY = localStorage.getItem('GOOGLE_MAPS_API_KEY') || ''; } catch {}
+    }
+  </script>
 </head>
 <body class="text-white min-h-screen">
 
@@ -681,14 +658,10 @@
 
   <!-- Error Fixes -->
   <script src="/webapp/js/error-fixes.js"></script>
-
-  <!-- DOMPurify for XSS Protection -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-  <script src="/webapp/js/sanitizer.js"></script>
-
+  
   <!-- Demo Mode Banner -->
-  <script src="/webapp/js/demo-banner.js"></script>
-
+  <script type="module" src="./js/demo-banner.js"></script>
+  
   <!-- Demo Mode Utilities -->
   <script type="module">
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
@@ -720,6 +693,28 @@
   </script>
 
   <script type="module">
+    async function loadGoogleMaps() {
+      try {
+        const { GOOGLE_MAPS_API_KEY } = await import('./js/google-maps-config.js');
+        if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+          console.error('⚠️ Configure Google Maps API Key in /webapp/js/google-maps-config.js');
+          return false;
+        }
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&language=es&region=ES`;
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Google Maps failed to load'));
+          document.head.appendChild(script);
+        });
+        return true;
+      } catch (e) {
+        console.error('Error loading Google Maps API:', e);
+        return false;
+      }
+    }
+
     // Import App Check FIRST (must be before firebase-config.js)
     import './js/firebase-appcheck.js';
 
@@ -753,6 +748,7 @@
       requireCompleteProfile: true,
       silent: false
     });
+    await loadGoogleMaps();
 
     // DOM Elements
     const userGrid = document.getElementById('userGrid');
@@ -1058,7 +1054,7 @@
       }
 
       // Regla de negocio: Por ahora solo los hombres pagan
-      const userMustPay = currentUserData.gender === 'masculino';
+      const userMustPay = (currentUserData && currentUserData.gender === 'masculino');
 
       if (!userMustPay) {
         // Las mujeres pueden usar libremente (por ahora)
@@ -1067,7 +1063,7 @@
       }
 
       // Verificar membresía activa
-      if (!currentUserData.hasActiveSubscription) {
+      if (!currentUserData || !currentUserData.hasActiveSubscription) {
         return {
           canUse: false,
           reason: 'membership',
@@ -1077,7 +1073,7 @@
       }
 
       // Verificar seguro anti-plantón (120€)
-      if (!currentUserData.hasAntiGhostingInsurance) {
+      if (!currentUserData || !currentUserData.hasAntiGhostingInsurance) {
         return {
           canUse: false,
           reason: 'insurance',
@@ -1212,15 +1208,15 @@
         paymentStatusBanner.classList.add('hidden');
         return;
       }
-      const userMustPay = currentUserData.gender === 'masculino';
+      const userMustPay = (currentUserData && currentUserData.gender === 'masculino');
 
       if (!userMustPay) {
         paymentStatusBanner.classList.add('hidden');
         return;
       }
 
-      const hasMembership = currentUserData.hasActiveSubscription;
-      const hasInsurance = currentUserData.hasAntiGhostingInsurance;
+      const hasMembership = !!(currentUserData && currentUserData.hasActiveSubscription);
+      const hasInsurance = !!(currentUserData && currentUserData.hasAntiGhostingInsurance);
 
       if (hasMembership && hasInsurance) {
         // Todo pago OK - mostrar badge de estado premium
@@ -1317,6 +1313,12 @@
       showLoading();
 
       try {
+        if (!currentUserData || !currentUserData.gender) {
+          console.error('Error loading users: perfil no disponible');
+          hideLoading();
+          showToast('Tu perfil no está disponible. Revisa permisos o completa tu perfil.', 'warning');
+          return;
+        }
         const usersRef = collection(db, 'users');
         const oppositeGender = currentUserData.gender === 'masculino' ? 'femenino' : 'masculino';
         const q = query(usersRef, where('gender', '==', oppositeGender));
@@ -1468,16 +1470,12 @@
       if (filters.online) chips.push({ text: 'En línea', icon: 'circle' });
 
       if (chips.length > 0) {
-        filterChips.innerHTML = chips.map(chip => {
-          const safeIcon = sanitizer.text(chip.icon || '');
-          const safeText = sanitizer.text(chip.text || '');
-          return `
-            <span class="filter-chip">
-              <i class="fas fa-${safeIcon}"></i>
-              ${safeText}
-            </span>
-          `;
-        }).join('');
+        filterChips.innerHTML = chips.map(chip => `
+          <span class="filter-chip">
+            <i class="fas fa-${chip.icon}"></i>
+            ${chip.text}
+          </span>
+        `).join('');
         activeFilters.classList.remove('hidden');
       } else {
         activeFilters.classList.add('hidden');
@@ -1594,8 +1592,7 @@
 
     function openUserModal(user) {
       selectedUser = user;
-      // Sanitize user data
-      const avatarLetter = sanitizer.text((user.alias || user.email || 'U').charAt(0).toUpperCase());
+      const avatarLetter = (user.alias || user.email || 'U').charAt(0).toUpperCase();
       const reputation = getReputationBadge(user.reputation || 'BRONCE');
       const hasMatched = userMatches.includes(user.id);
 
@@ -1617,12 +1614,10 @@
         document.getElementById('modalDistance').classList.add('hidden');
       }
 
-      // Reputation - sanitize icon and label
+      // Reputation
       const repBadge = document.getElementById('modalReputation');
       repBadge.className = `badge ${reputation.color}`;
-      const safeIcon = sanitizer.text(reputation.icon || '');
-      const safeLabel = sanitizer.text(reputation.label || '');
-      repBadge.innerHTML = `${safeIcon} ${safeLabel}`;
+      repBadge.innerHTML = `${reputation.icon} ${reputation.label}`;
 
       // Last seen
       const lastSeen = user.isOnline ? 'En línea ahora' : 'Última vez hace 2 horas';
@@ -1681,10 +1676,9 @@
       }
       if (userInterests.length > 0) {
         document.getElementById('modalInterestsSection').classList.remove('hidden');
-        document.getElementById('modalInterests').innerHTML = userInterests.map(interest => {
-          const safeInterest = sanitizer.text(interest);
-          return `<span class="badge bg-blue-500/20 border border-blue-500/50">${safeInterest}</span>`;
-        }).join('');
+        document.getElementById('modalInterests').innerHTML = userInterests.map(interest =>
+          `<span class="badge bg-blue-500/20 border border-blue-500/50">${interest}</span>`
+        ).join('');
       } else {
         document.getElementById('modalInterestsSection').classList.add('hidden');
       }

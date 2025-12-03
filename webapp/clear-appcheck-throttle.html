@@ -3,303 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Limpiar Estado de App Check - TuCitaSegura</title>
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="alternate icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/webapp/site.webmanifest">
-  <meta name="theme-color" content="#764ba2">
-    <!-- DOMPurify for XSS Protection -->
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-
-    <script src="/webapp/js/sanitizer.js"></script>
-
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Clear App Check Throttle</title>
   <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .fade-in {
-      animation: fadeIn 0.5s ease-out;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
+    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; line-height: 1.5; }
+    .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+    .btn:hover { background: #0056b3; }
+    .success { color: green; background: #d4edda; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
   </style>
-</head>
-<body class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-  <div class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto">
-      <!-- Header -->
-      <div class="text-center mb-8 fade-in">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 mb-4">
-          <i class="fas fa-tools text-4xl text-red-400"></i>
-        </div>
-        <h1 class="text-4xl font-bold text-white mb-2">
-          Limpiar Estado de App Check
-        </h1>
-        <p class="text-gray-300">
-          Solución para el error de throttling de Firebase App Check
-        </p>
-      </div>
+  <script type="module">
+    import { logger } from './js/logger.js';
+    import './js/firebase-appcheck.js';
 
-      <!-- Error Info -->
-      <div class="glass rounded-2xl p-6 mb-6 fade-in border-l-4 border-red-500">
-        <div class="flex items-start space-x-4">
-          <i class="fas fa-exclamation-triangle text-3xl text-red-400 mt-1"></i>
-          <div>
-            <h2 class="text-xl font-bold text-white mb-2">
-              Error Detectado
-            </h2>
-            <p class="text-gray-300 mb-2">
-              Firebase App Check ha bloqueado las peticiones durante 24 horas debido a errores 403 repetidos.
-            </p>
-            <code class="text-sm bg-black/50 text-red-300 px-3 py-2 rounded block">
-              AppCheck: Requests throttled due to 403 error. Attempts allowed again after 23h:59m:11s
-            </code>
-          </div>
-        </div>
-      </div>
-
-      <!-- Solution Steps -->
-      <div class="glass rounded-2xl p-6 mb-6 fade-in">
-        <h2 class="text-2xl font-bold text-white mb-4">
-          <i class="fas fa-wrench text-yellow-400 mr-2"></i>
-          Pasos de Solución
-        </h2>
-
-        <div class="space-y-4">
-          <!-- Step 1 -->
-          <div class="bg-white/5 rounded-lg p-4">
-            <div class="flex items-center mb-2">
-              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white font-bold mr-3">
-                1
-              </span>
-              <h3 class="text-lg font-bold text-white">
-                Limpiar Estado del Navegador
-              </h3>
-            </div>
-            <p class="text-gray-300 ml-11 mb-3">
-              Haz click en el botón de abajo para limpiar el estado de throttling de App Check guardado en tu navegador:
-            </p>
-            <div class="ml-11">
-              <button
-                id="clearButton"
-                class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
-              >
-                <i class="fas fa-trash-alt mr-2"></i>
-                Limpiar Estado de App Check
-              </button>
-              <div id="clearResult" class="mt-3"></div>
-            </div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="bg-white/5 rounded-lg p-4">
-            <div class="flex items-center mb-2">
-              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white font-bold mr-3">
-                2
-              </span>
-              <h3 class="text-lg font-bold text-white">
-                Cerrar Todas las Pestañas
-              </h3>
-            </div>
-            <p class="text-gray-300 ml-11">
-              Cierra todas las pestañas de tu navegador relacionadas con este sitio (localhost:8000).
-            </p>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="bg-white/5 rounded-lg p-4">
-            <div class="flex items-center mb-2">
-              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white font-bold mr-3">
-                3
-              </span>
-              <h3 class="text-lg font-bold text-white">
-                Abrir Nueva Pestaña
-              </h3>
-            </div>
-            <p class="text-gray-300 ml-11 mb-3">
-              Abre una nueva pestaña y ve a la página de registro:
-            </p>
-            <div class="ml-11">
-              <a
-                href="/webapp/register.html"
-                class="inline-block bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
-              >
-                <i class="fas fa-user-plus mr-2"></i>
-                Ir a Registro
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Technical Details -->
-      <div class="glass rounded-2xl p-6 fade-in">
-        <h2 class="text-xl font-bold text-white mb-4">
-          <i class="fas fa-info-circle text-blue-400 mr-2"></i>
-          Detalles Técnicos
-        </h2>
-        <div class="space-y-3 text-gray-300 text-sm">
-          <div>
-            <strong class="text-white">Causa:</strong>
-            <p>Firebase App Check recibió errores 403 repetidos al intentar validar tokens en localhost porque:</p>
-            <ul class="list-disc ml-6 mt-1">
-              <li>localhost no está configurado en reCAPTCHA Enterprise como dominio permitido</li>
-              <li>O el enforcement de App Check está activado en Firebase Console</li>
-            </ul>
-          </div>
-          <div>
-            <strong class="text-white">Throttling:</strong>
-            <p>Firebase activa un throttling de protección que bloquea intentos durante 24 horas. Este estado se guarda en:</p>
-            <ul class="list-disc ml-6 mt-1">
-              <li>localStorage del navegador</li>
-              <li>IndexedDB de Firebase</li>
-            </ul>
-          </div>
-          <div>
-            <strong class="text-white">Solución:</strong>
-            <p>Limpiar el estado guardado permite que Firebase intente obtener tokens nuevamente sin esperar 24 horas.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Back Button -->
-      <div class="text-center mt-6">
-        <a href="/index.html" class="text-gray-400 hover:text-white transition-colors">
-          <i class="fas fa-arrow-left mr-2"></i>
-          Volver al Inicio
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.getElementById('clearButton').addEventListener('click', function() {
-      const resultDiv = document.getElementById('clearResult');
-
-      try {
-        // 1. Clear localStorage
-        const localStorageKeys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (
-            key.includes('firebase') ||
-            key.includes('appCheck') ||
-            key.includes('fac') ||
-            key.includes('heartbeat')
-          )) {
-            localStorageKeys.push(key);
-          }
-        }
-
-        localStorageKeys.forEach(key => {
-          localStorage.removeItem(key);
-          console.log('Removed from localStorage:', key);
-        });
-
-        // 2. Clear sessionStorage
-        const sessionStorageKeys = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && (
-            key.includes('firebase') ||
-            key.includes('appCheck') ||
-            key.includes('fac') ||
-            key.includes('heartbeat')
-          )) {
-            sessionStorageKeys.push(key);
-          }
-        }
-
-        sessionStorageKeys.forEach(key => {
-          sessionStorage.removeItem(key);
-          console.log('Removed from sessionStorage:', key);
-        });
-
-        // 3. Try to clear IndexedDB
-        const dbDeletePromises = [];
-        if (window.indexedDB) {
-          // Firebase uses these DB names
-          const firebaseDBs = [
-            'firebaseLocalStorageDb',
-            'firebase-app-check-database',
-            'firebase-heartbeat-database',
-            'firebase-installations-database'
-          ];
-
-          firebaseDBs.forEach(dbName => {
-            const deleteRequest = indexedDB.deleteDatabase(dbName);
-            const promise = new Promise((resolve) => {
-              deleteRequest.onsuccess = () => {
-                console.log('Deleted IndexedDB:', dbName);
-                resolve();
-              };
-              deleteRequest.onerror = () => {
-                console.log('Could not delete IndexedDB:', dbName);
-                resolve();
-              };
-            });
-            dbDeletePromises.push(promise);
-          });
-        }
-
-        Promise.all(dbDeletePromises).then(() => {
-          // Success message
-          resultDiv.innerHTML = `
-            <div class="bg-green-500/20 border border-green-500 rounded-lg p-4">
-              <div class="flex items-center text-green-400">
-                <i class="fas fa-check-circle text-2xl mr-3"></i>
-                <div>
-                  <p class="font-bold">¡Estado limpiado exitosamente!</p>
-                  <p class="text-sm text-green-300 mt-1">
-                    Eliminados: ${localStorageKeys.length} localStorage, ${sessionStorageKeys.length} sessionStorage, ${dbDeletePromises.length} databases
-                  </p>
-                  <p class="text-sm text-green-300 mt-2">
-                    Ahora cierra todas las pestañas y abre una nueva.
-                  </p>
-                </div>
-              </div>
-            </div>
-          `;
-
-          // Auto-scroll
-          resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-
-      } catch (error) {
-        console.error('Error clearing state:', error);
-        resultDiv.innerHTML = `
-          <div class="bg-red-500/20 border border-red-500 rounded-lg p-4">
-            <div class="flex items-center text-red-400">
-              <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
-              <div>
-                <p class="font-bold">Error al limpiar el estado</p>
-                <p class="text-sm text-red-300 mt-1">
-                  ${error.message}
-                </p>
-                <p class="text-sm text-red-300 mt-2">
-                  Intenta limpiar manualmente con Ctrl+Shift+Delete
-                </p>
-              </div>
-            </div>
-          </div>
-        `;
+    window.clearThrottle = async function () {
+      if (window.clearAppCheckThrottle) {
+        await window.clearAppCheckThrottle({ reload: false });
+        document.getElementById('status').style.display = 'block';
+        setTimeout(() => { window.location.href = 'verify-appcheck.html'; }, 1500);
+      } else {
+        alert('Error: clearAppCheckThrottle no está disponible. Asegúrate de cargar firebase-appcheck.js');
       }
-    });
+    };
   </script>
+</head>
+<body>
+  <h1>🧹 Clear App Check Throttle</h1>
+  <p>Si ves "Requests throttled" por App Check, usa este botón para limpiar el estado local del navegador.</p>
+  <button class="btn" onclick="clearThrottle()">Clear Throttle & Reload</button>
+  <div id="status" class="success">✅ Throttling state cleared! Redirecting...</div>
 </body>
 </html>
