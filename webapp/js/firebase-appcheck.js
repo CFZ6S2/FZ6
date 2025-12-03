@@ -6,6 +6,59 @@ import app from './firebase-config.js';
 import { logger } from './logger.js';
 
 // ============================================================================
+// AUTO-LIMPIEZA DE THROTTLE DE APP CHECK
+// ============================================================================
+(function autoCleanAppCheckThrottle() {
+  try {
+    // Detectar si hay throttle de App Check
+    const storageKeys = Object.keys(localStorage);
+    let hasAppCheckThrottle = false;
+
+    // Buscar claves relacionadas con App Check throttle
+    storageKeys.forEach(key => {
+      if (key.includes('firebase:appCheck') || key.includes('firebase-app-check-store')) {
+        const value = localStorage.getItem(key);
+        if (value && value.includes('throttled')) {
+          hasAppCheckThrottle = true;
+        }
+      }
+    });
+
+    if (hasAppCheckThrottle) {
+      console.warn('🧹 Limpiando throttle de App Check automáticamente...');
+
+      // Limpiar localStorage de App Check
+      storageKeys.forEach(key => {
+        if (key.includes('firebase:appCheck') || key.includes('firebase-app-check-store')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Limpiar IndexedDB de App Check
+      if (window.indexedDB) {
+        try {
+          indexedDB.deleteDatabase('firebase-app-check-database');
+          indexedDB.deleteDatabase('firebaseLocalStorageDb');
+        } catch (e) {
+          console.warn('No se pudo limpiar IndexedDB:', e);
+        }
+      }
+
+      console.info('✅ Throttle de App Check limpiado. Recargando página...');
+
+      // Recargar página después de limpiar
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+
+      return; // Detener ejecución del resto del script
+    }
+  } catch (error) {
+    console.error('Error al limpiar throttle de App Check:', error);
+  }
+})();
+
+// ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
 // ============================================================================
 
