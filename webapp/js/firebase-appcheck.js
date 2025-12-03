@@ -4,6 +4,7 @@
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
 import app from './firebase-config.js';
 import { logger } from './logger.js';
+const __hideRecaptchaBadge = (() => { try { const s = document.createElement('style'); s.setAttribute('data-hide-recaptcha', 'true'); s.textContent = '.grecaptcha-badge{visibility:hidden!important}'; document.head.appendChild(s); } catch {} })();
 
 // ============================================================================
 // CONFIGURACIÓN DE APP CHECK CON RECAPTCHA ENTERPRISE
@@ -11,7 +12,7 @@ import { logger } from './logger.js';
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-const RECAPTCHA_ENTERPRISE_SITE_KEY = '6Lc4QBcsAAAAACFZLEgaTz3DuLGiBuXpScrBKt7w';
+const RECAPTCHA_ENTERPRISE_SITE_KEY = '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb';
 
 // Detectar entorno
 const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
@@ -28,8 +29,8 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'tuscitasseguras-2d1a6.web.app',
-  'tuscitasseguras-2d1a6.firebaseapp.com',
+  'tucitasegura-129cc.web.app',
+  'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
   'vercel.app',
   'tucitasegura.com',
@@ -57,19 +58,27 @@ const DEBUG_TOKEN =
     (window.__FIREBASE_APPCHECK_DEBUG_TOKEN || window.FIREBASE_APPCHECK_DEBUG_TOKEN)) ||
   null;
 
-const enableDebugToken = isDevelopment && !!DEBUG_TOKEN;
+let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
+try {
+  const params = new URLSearchParams(location.search);
+  const qToken = params.get('debugToken');
+  if (!DEV_DEBUG_TOKEN && isDevelopment && qToken) DEV_DEBUG_TOKEN = qToken;
+  const lsToken = (typeof localStorage !== 'undefined') ? localStorage.getItem('APPCHECK_DEBUG_TOKEN') : null;
+  if (!DEV_DEBUG_TOKEN && isDevelopment && lsToken) DEV_DEBUG_TOKEN = lsToken;
+} catch {}
+if (!DEV_DEBUG_TOKEN && isDevelopment) {
+  DEV_DEBUG_TOKEN = '1ACC3630-42C6-4D01-92BA-ED0DE8C718FF';
+}
+
+const enableDebugToken = isDevelopment && !!DEV_DEBUG_TOKEN;
 
 if (enableDebugToken) {
-  logger.info('🔧 Activando App Check Debug Token (DESARROLLO) ANTES de inicializar SDK');
   try {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEBUG_TOKEN;
-  } catch (e) {
-    logger.warn('⚠️  No se pudo establecer debug token globalmente:', e.message);
-  }
-} else if (DEBUG_TOKEN && !isDevelopment) {
-  logger.warn('⚠️  Debug token detectado pero NO estamos en desarrollo — ignorándolo para producción');
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
+  } catch (e) {}
+} else if (DEV_DEBUG_TOKEN && !isDevelopment) {
 }
 
 // ============================================================================
@@ -162,13 +171,6 @@ window.detectAppCheckThrottled = function() {
 let appCheck = null;
 
 async function initAppCheck() {
-  // DESHABILITADO TEMPORALMENTE (24h) para solucionar problemas de throttle
-  logger.warn('🚨 App Check DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle');
-  logger.info('ℹ️  La aplicación funciona normalmente sin App Check durante este período');
-  window._appCheckInstance = null;
-  return;
-
-  /* CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;
@@ -182,10 +184,10 @@ async function initAppCheck() {
     return;
   }
 
-  // Si estamos en desarrollo y parece throttleado, no lo inicializamos hasta limpiar
+  // Si estamos en desarrollo y hay estado local inconsistente, no inicializar hasta limpiar
   const throttled = window.detectAppCheckThrottled && window.detectAppCheckThrottled();
   if (throttled) {
-    logger.error('🚨 App Check parece throttled (bloqueo 24h). Llama a clearAppCheckThrottle() o abre /webapp/clear-appcheck-throttle.html para limpiar estado local.');
+    logger.warn('⚠️ App Check en estado local inconsistente. Usa clearAppCheckThrottle() o /webapp/clear-appcheck-throttle.html');
     window._appCheckInstance = null;
     return;
   }
@@ -196,6 +198,7 @@ async function initAppCheck() {
     }
 
     logger.info('🔐 Inicializando App Check...');
+    logger.info('ℹ️ Firebase app en uso', { projectId: app.options?.projectId, appId: app.options?.appId });
 
     // Configuración con manejo de errores mejorado
     appCheck = initializeAppCheck(app, {
@@ -209,32 +212,16 @@ async function initAppCheck() {
     // Instrucciones de configuración para producción
     if (location.hostname === 'tucitasegura.com') {
       logger.info('📝 Si ves errores 403: Configura tucitasegura.com en Google Cloud Console');
-      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LfdTvQrAAAAA...');
+      logger.info('🔗 https://console.cloud.google.com/security/recaptcha → Edita key 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
     }
 
   } catch (e) {
-    // Suppress ReCAPTCHA configuration errors in production
-    const isReCaptchaError = e.message && (
-      e.message.includes('recaptcha') ||
-      e.message.includes('ReCAPTCHA') ||
-      e.code === 'appCheck/recaptcha-error'
-    );
-
-    if (isReCaptchaError) {
-      logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
-      if (isDevelopment) {
-        logger.info('💡 Para desarrollo: Configura un debug token o usa localhost');
-      }
-    } else {
-      logger.error('❌ Error inicializando App Check:', e.message);
-    }
-
-    logger.info('✅ La aplicación funciona normalmente sin App Check');
+    logger.error('❌ Error inicializando App Check:', e.message);
+    logger.warn('⚠️  La aplicación continuará sin App Check (funcionalidad reducida)');
     appCheck = null;
   }
 
   window._appCheckInstance = appCheck;
-  */
 }
 
 (async function bootstrap() {
@@ -252,29 +239,16 @@ async function initAppCheck() {
           logger.warn('⚠️  No fue posible obtener App Check token en producción');
         }
       } catch (err) {
-        // Manejar errores de ReCAPTCHA y throttling de manera más silenciosa
-        const errorCode = err.code || '';
-        const errorMsg = err.message || '';
-
-        if (errorMsg.includes('throttled') || errorCode === 'appCheck/throttled') {
-          logger.warn('⚠️  App Check: Límite de solicitudes alcanzado (continuando sin App Check)');
-          if (isDevelopment) {
-            logger.info('💡 Desarrollo: Visita /webapp/clear-appcheck-throttle.html para limpiar');
-          }
-        } else if (errorMsg.includes('403') || errorMsg.includes('recaptcha') || errorCode === 'appCheck/recaptcha-error') {
-          logger.warn('⚠️  App Check: ReCAPTCHA no disponible (continuando sin App Check)');
-          if (isDevelopment) {
-            logger.info('💡 Desarrollo: Configura dominio en Google Cloud Console');
-            logger.info('   → https://console.cloud.google.com/security/recaptcha');
-          }
-        } else if (errorMsg.includes('400')) {
-          // Suppress 400 errors - these are typically ReCAPTCHA configuration issues
-          logger.warn('⚠️  App Check: Configuración de ReCAPTCHA pendiente (continuando sin App Check)');
+        if (err.message && err.message.includes('403')) {
+          logger.error('🚨 Error 403 en App Check - Dominio no configurado');
+          logger.info('🔧 SOLUCIÓN: Configura tucitasegura.com en reCAPTCHA Enterprise');
+          logger.info('   → https://console.cloud.google.com/security/recaptcha');
+          logger.info('   → Edita la key: 6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
+          logger.info('   → Agrega tucitasegura.com a los dominios permitidos');
         } else {
-          // Only log unexpected errors
-          logger.debug('App Check token error:', errorMsg);
+          logger.warn('⚠️  App Check error en producción:', err.message || err);
         }
-        // Don't log success message - it's confusing when there's an error
+        logger.info('ℹ️ Continúa la app sin App Check si es necesario');
       }
     }, 2000);
   }

@@ -1,7 +1,7 @@
 // Firebase Configuration - TuCitaSegura Production
 // ============================================================================
 // IMPORTANTE: Esta es la configuración de producción del proyecto
-// Project ID: tuscitasseguras-2d1a6
+// Project ID: tucitasegura-129cc
 // API Key: Browser key con restricciones HTTP configuradas
 // ============================================================================
 
@@ -12,12 +12,12 @@ import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-
 import { getFunctions } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 export const firebaseConfig = {
-    apiKey: "AIzaSyAgFcoHwoBpo80rlEHL2hHVZ2DqtjWXh2s",
-    authDomain: "tuscitasseguras-2d1a6.firebaseapp.com",
-    projectId: "tuscitasseguras-2d1a6",
-    storageBucket: "tuscitasseguras-2d1a6.firebasestorage.app",
-    messagingSenderId: "924208562587",
-    appId: "1:924208562587:web:5291359426fe390b36213e"
+    apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+    authDomain: "tucitasegura-129cc.firebaseapp.com",
+    projectId: "tucitasegura-129cc",
+    storageBucket: "tucitasegura-129cc.firebasestorage.app",
+    messagingSenderId: "180656060538",
+    appId: "1:180656060538:web:3168487130aa126db663c3"
 };
 
 // Initialize Firebase
