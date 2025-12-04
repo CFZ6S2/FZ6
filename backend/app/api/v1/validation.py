@@ -4,7 +4,7 @@ Provides validation endpoints for user input
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 import re
 import logging
@@ -33,7 +33,8 @@ class PhoneValidation(BaseModel):
 class UsernameValidation(BaseModel):
     username: str = Field(min_length=3, max_length=30)
 
-    @validator('username')
+    @field_validator('username')
+    @classmethod
     def validate_username(cls, v):
         if not re.match(r'^[a-zA-Z0-9_.-]+$', v):
             raise ValueError('Username can only contain letters, numbers, dots, hyphens, and underscores')
