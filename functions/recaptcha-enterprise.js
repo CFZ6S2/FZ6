@@ -7,8 +7,14 @@ const { createLogger } = require('./utils/structured-logger');
 
 const logger = createLogger('recaptcha-enterprise');
 
-// Cliente de reCAPTCHA Enterprise
-const recaptchaClient = new RecaptchaEnterpriseServiceClient();
+// Cliente de reCAPTCHA Enterprise (lazy)
+let recaptchaClient = null;
+function getRecaptchaClient() {
+  if (!recaptchaClient) {
+    recaptchaClient = new RecaptchaEnterpriseServiceClient();
+  }
+  return recaptchaClient;
+}
 
 // Configuración del proyecto
 const PROJECT_ID = (functions.config()?.recaptcha?.project_id) || process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc';
@@ -25,7 +31,8 @@ async function verifyRecaptchaToken(token, expectedAction, recaptchaAction = nul
   const timer = logger.startTimer();
 
   try {
-    const projectPath = recaptchaClient.projectPath(PROJECT_ID);
+    const client = getRecaptchaClient();
+    const projectPath = client.projectPath(PROJECT_ID);
 
     // Crear el assessment
     const request = {
@@ -44,7 +51,7 @@ async function verifyRecaptchaToken(token, expectedAction, recaptchaAction = nul
       projectId: PROJECT_ID
     });
 
-    const [response] = await recaptchaClient.createAssessment(request);
+    const [response] = await client.createAssessment(request);
 
     // Verificar si el token es válido
     if (!response.tokenProperties.valid) {

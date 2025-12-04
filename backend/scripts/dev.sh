@@ -23,9 +23,9 @@ else
 fi
 
 # Run development server with hot reload
-echo "📍 Server will be available at: http://localhost:${PORT:-8000}"
-echo "📚 API Docs: http://localhost:${PORT:-8000}/docs"
-echo "📖 ReDoc: http://localhost:${PORT:-8000}/redoc"
+echo "📍 Server will be available at: http://localhost:${PORT:-8080}"
+echo "📚 API Docs: http://localhost:${PORT:-8080}/docs"
+echo "📖 ReDoc: http://localhost:${PORT:-8080}/redoc"
 echo ""
 
-python -m uvicorn main:app --reload --host ${HOST:-0.0.0.0} --port ${PORT:-8000}
+python -m uvicorn main:app --reload --host ${HOST:-0.0.0.0} --port ${PORT:-8080}

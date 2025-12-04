@@ -9,10 +9,10 @@ export class APIService {
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
     this.isLocal = isLocal;
     const override = (typeof window !== 'undefined' && window.API_BASE_URL) ? String(window.API_BASE_URL) : '';
-    const useSameOrigin = !isLocal && !override;
+    const useSameOrigin = !override; // usar origen siempre que no haya override
     this.useSameOrigin = useSameOrigin;
-    this.baseURL = override ? override : (isLocal ? 'http://localhost:8001' : '');
-    this.fallbackBaseURL = 'https://tucitasegura-129cc.web.app';
+    this.baseURL = override ? override : (isLocal ? 'http://localhost:8080' : '');
+    this.fallbackBaseURL = ''; // sin fallback externo
     
     this.token = null;
     this.headers = {
@@ -45,7 +45,7 @@ export class APIService {
    */
   async request(endpoint, options = {}) {
     if (!this.baseURL && !this.useSameOrigin) {
-      throw new Error('Backend disabled in production');
+      throw new Error('Backend base no configurada');
     }
     const url = this.useSameOrigin ? endpoint : `${this.baseURL}${endpoint}`;
     const method = (options.method ? String(options.method) : 'GET').toUpperCase();
@@ -98,27 +98,6 @@ export class APIService {
       
       // Manejar específicamente errores de CORS y conexión
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        if (this.useSameOrigin && this.fallbackBaseURL) {
-          try {
-            const fallbackUrl = `${this.fallbackBaseURL}${endpoint}`;
-            const resp = await fetch(fallbackUrl, { ...config });
-            if (!resp.ok) {
-              let detail = `HTTP ${resp.status}`;
-              try {
-                const json = await resp.json();
-                detail = json.detail || detail;
-              } catch {}
-              throw new Error(detail);
-            }
-            try {
-              return await resp.json();
-            } catch {
-              return {};
-            }
-          } catch (fallbackErr) {
-            console.warn(`Fallback request failed: ${ep}`, String(fallbackErr.message || fallbackErr));
-          }
-        }
         console.warn(`CORS/Network error - backend not reachable: ${ep}`, error.message);
         throw new Error('Backend connection failed - CORS or network issue');
       }
