@@ -1,0 +1,48 @@
+{
+  "logName": "projects/tucitasegura-129cc/logs/cloudaudit.googleapis.com%2Factivity",
+  "resource": {
+    "type": "build",
+    "labels": {
+      "build_trigger_id": "",
+      "build_id": "48c5f33d-d65f-4513-9458-a577568cfcc2",
+      "project_id": "tucitasegura-129cc"
+    }
+  },
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "status": {
+      "code": 9
+    },
+    "authenticationInfo": {
+      "principalEmail": "service-180656060538@gcp-sa-firebaseapphosting.iam.gserviceaccount.com"
+    },
+    "serviceName": "cloudbuild.googleapis.com",
+    "methodName": "google.devtools.cloudbuild.v1.CloudBuild.CreateBuild",
+    "authorizationInfo": [
+      {
+        "resource": "projects/tucitasegura-129cc",
+        "permission": "cloudbuild.builds.create",
+        "granted": true,
+        "resourceAttributes": {
+          "service": "cloudbuild.googleapis.com",
+          "name": "projects/tucitasegura-129cc/locations/us-east4/builds",
+          "type": "cloudbuild.googleapis.com/Build"
+        },
+        "permissionType": "ADMIN_WRITE"
+      }
+    ],
+    "resourceName": "projects/tucitasegura-129cc/builds",
+    "resourceLocation": {
+      "currentLocations": ["us-east4"]
+    }
+  },
+  "timestamp": "2025-12-04T03:55:40.699048Z",
+  "receiveTimestamp": "2025-12-04T03:55:40.771034537Z",
+  "severity": "ERROR",
+  "insertId": "-ugnns6c3dk",
+  "operation": {
+    "id": "operations/build/tucitasegura-129cc/NDhjNWYzM2QtZDY1Zi00NTEzLTk0NTgtYTU3NzU2OGNmY2My",
+    "producer": "cloudbuild.googleapis.com",
+    "last": true
+  }
+}
