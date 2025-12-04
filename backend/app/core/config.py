@@ -2,7 +2,7 @@
 Configuration management for TuCitaSegura Backend
 """
 from typing import List
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import validator
 
 
@@ -144,9 +144,12 @@ class Settings(BaseSettings):
             return v
         return v
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    # Pydantic v2 settings config
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        env_ignore_empty=True
+    )
 
 
 # Global settings instance
