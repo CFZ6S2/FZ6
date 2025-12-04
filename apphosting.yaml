@@ -1,0 +1,65 @@
+# Firebase App Hosting configuration
+# This file configures how Firebase App Hosting builds and deploys your backend
+
+# Specify the runtime environment
+runConfig:
+  # CPU and memory configuration
+  cpu: 1
+  memoryMiB: 512
+  # Maximum number of concurrent requests per instance
+  maxConcurrency: 100
+  # Minimum and maximum instances for auto-scaling
+  minInstances: 0
+  maxInstances: 4
+
+# Environment variables for the application
+env:
+  - variable: PORT
+    value: "8080"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: PYTHON_VERSION
+    value: "3.11"
+    availability:
+      - BUILD
+
+  # Add Firebase project ID
+  - variable: FIREBASE_PROJECT_ID
+    value: "tucitasegura-129cc"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Add build timestamp for tracking
+  - variable: BUILD_TIMESTAMP
+    value: GOOGLE_TIMESTAMP
+    availability:
+      - BUILD
+      - RUNTIME
+
+# Cloud Build configuration
+cloudBuildConfig:
+  # Use the root Dockerfile
+  dockerfilePath: "Dockerfile"
+
+  # Build context is the root directory
+  context: "."
+
+  # Cloud Build timeout (default is 10 minutes, increase if needed)
+  timeout: 1200s
+
+  # Logging configuration
+  logging: CLOUD_LOGGING_ONLY
+
+  # Machine type for the build
+  machineType: E2_HIGHCPU_8
+
+  # Disk size for the build (in GB)
+  diskSizeGb: 100
+
+  # Substitute variables in the build
+  substitutions:
+    _BACKEND_DIR: "backend"
+    _PYTHON_VERSION: "3.11"
