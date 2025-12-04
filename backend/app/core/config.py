@@ -1,9 +1,10 @@
 """
 Configuration management for TuCitaSegura Backend
 """
-from typing import List
+from typing import List, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import validator
+from pydantic import field_validator
+import json
 
 
 class Settings(BaseSettings):
@@ -78,15 +79,11 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 60
     RATE_LIMIT_PER_HOUR: int = 1000
 
-    # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000"
-    ]
+    # CORS - Using str to avoid pydantic-settings auto JSON-decoding
+    CORS_ORIGINS: str = ""
 
-    @validator("SECRET_KEY")
+    @field_validator("SECRET_KEY", mode="after")
+    @classmethod
     def validate_secret_key(cls, v):
         """
         Validate that SECRET_KEY is strong and not a default value.
@@ -135,14 +132,48 @@ class Settings(BaseSettings):
 
         return v
 
-    @validator("CORS_ORIGINS", pre=True)
-    def parse_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string"""
+    @field_validator("CORS_ORIGINS", mode="after")
+    @classmethod
+    def parse_cors_origins(cls, v) -> List[str]:
+        """Parse CORS origins from comma-separated string or JSON, handle empty values"""
+        # Default origins
+        default_origins = [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000"
+        ]
+
+        # Handle None or empty string - return default
+        if v is None or v == "":
+            return default_origins
+
+        # If string, try to parse as JSON first, then fall back to comma-separated
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        elif isinstance(v, list):
+            v = v.strip()
+
+            # Empty after strip
+            if not v:
+                return default_origins
+
+            # Try JSON parsing first
+            if v.startswith('['):
+                try:
+                    parsed = json.loads(v)
+                    if isinstance(parsed, list):
+                        return parsed
+                except (json.JSONDecodeError, ValueError):
+                    pass
+
+            # Fall back to comma-separated parsing
+            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+            return origins if origins else default_origins
+
+        # If already a list, return as-is (shouldn't happen with str type, but safe)
+        if isinstance(v, list):
             return v
-        return v
+
+        return default_origins
 
     # Pydantic v2 settings config
     model_config = SettingsConfigDict(
