@@ -1,7 +1,8 @@
 // functions/index.js (Node 18)
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
-const stripe = require('stripe')(functions.config().stripe?.secret_key || process.env.STRIPE_SECRET_KEY);
+const stripeSecret = (functions.config().stripe?.secret_key) || process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecret ? require('stripe')(stripeSecret) : null;
 const axios = require('axios');
 const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
 const { verifyAppCheckHTTP } = require('./middleware/app-check');
@@ -27,7 +28,7 @@ logger.info('Cloud Functions initialized', {
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
-  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
+  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://fz6-production-ea5d.up.railway.app';
   const url = base + req.originalUrl;
 
   logger.debug('API proxy request', {
@@ -552,6 +553,9 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
 // 7) STRIPE WEBHOOK: Manejar eventos de Stripe (subscriptions y payments)
 // ============================================================================
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+  if (!stripe || !(functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET)) {
+    return res.status(503).json({ error: 'payments_disabled', provider: 'stripe' });
+  }
   const sig = req.headers['stripe-signature'];
   const webhookSecret = functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -969,6 +973,12 @@ async function verifyPayPalWebhookSignature(req) {
 // 7) PAYPAL WEBHOOK: Manejar eventos de PayPal (subscriptions y payments)
 // ============================================================================
 exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
+  return res.status(503).json({ error: 'payments_disabled', provider: 'paypal' });
+});
+
+// Legacy implementation retained for future enablement
+/*
+exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
   const event = req.body;
   const eventId = event.id;
   const eventType = event.event_type;
@@ -1063,6 +1073,7 @@ exports.paypalWebhook = functions.https.onRequest(async (req, res) => {
     res.status(200).json({ received: true, error: error.message });
   }
 });
+*/
 
 /**
  * Manejar activación de suscripción PayPal

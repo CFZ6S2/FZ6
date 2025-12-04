@@ -27,12 +27,35 @@
   <meta name="twitter:image" content="https://tucitasegura.com/webapp/img/og-image.jpg">
   <link rel="stylesheet" href="./webapp/css/output.css">
   <script>
-    (function(){
-      var h = window.location && window.location.hostname ? window.location.hostname : '';
-      var isProdDomain = h && !(/localhost|127\.0\.0\.1|web\.app|firebaseapp\.com$/i.test(h));
-      if (isProdDomain) {
-        window.API_BASE_URL = 'https://t2c06-production.up.railway.app';
-      }
+    (async function(){
+      window.API_BASE_URL = window.API_BASE_URL || '';
+      try {
+        const r = await fetch('/config.json');
+        if (r.ok) {
+          const c = await r.json();
+          if (c.apiBaseUrl) window.API_BASE_URL = String(c.apiBaseUrl);
+          if (c.recaptchaSiteKey) window.RECAPTCHA_SITE_KEY = String(c.recaptchaSiteKey);
+          if (c.gaId) {
+            const m = document.createElement('meta');
+            m.setAttribute('name','ga-id');
+            m.setAttribute('content', String(c.gaId));
+            document.head.appendChild(m);
+          }
+        } else {
+          const r2 = await fetch('/webapp/config.json');
+          if (r2.ok) {
+            const c2 = await r2.json();
+            if (c2.apiBaseUrl) window.API_BASE_URL = String(c2.apiBaseUrl);
+            if (c2.recaptchaSiteKey) window.RECAPTCHA_SITE_KEY = String(c2.recaptchaSiteKey);
+            if (c2.gaId) {
+              const m2 = document.createElement('meta');
+              m2.setAttribute('name','ga-id');
+              m2.setAttribute('content', String(c2.gaId));
+              document.head.appendChild(m2);
+            }
+          }
+        }
+      } catch {}
     })();
   </script>
   <script>

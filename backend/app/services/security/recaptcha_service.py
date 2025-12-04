@@ -38,6 +38,7 @@ class RecaptchaService:
         self.settings = get_settings()
         self.secret_key = os.getenv("RECAPTCHA_SECRET_KEY")
         self.verify_url = "https://www.google.com/recaptcha/api/siteverify"
+        self.verify_url_enterprise = os.getenv("RECAPTCHA_VERIFY_URL")
 
         # Get environment
         self.environment = os.getenv("ENVIRONMENT", "development").lower()
@@ -73,17 +74,9 @@ class RecaptchaService:
             return DEFAULT_MIN_SCORE_DEVELOPMENT
 
     def is_enabled(self) -> bool:
-        """
-        Check if reCAPTCHA is enabled (has secret key configured).
-
-        DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle
-        """
-        # DESHABILITADO TEMPORALMENTE (24h)
-        logger.warning("🚨 reCAPTCHA DESHABILITADO TEMPORALMENTE (24h) - Solución de throttle")
+        if self.verify_url_enterprise:
+            return True
         return False
-
-        # CÓDIGO ORIGINAL COMENTADO - REACTIVAR DESPUÉS DE 24H
-        # return bool(self.secret_key and self.secret_key != "tu_recaptcha_secret_key_aqui")
     
     async def verify_recaptcha(self, token: str, remote_ip: Optional[str] = None) -> Dict:
         """
@@ -118,27 +111,14 @@ class RecaptchaService:
                 "hostname": "localhost",
                 "_bypassed": True  # Internal flag for monitoring
             }
-        
-        data = {
-            "secret": self.secret_key,
-            "response": token
-        }
-        
-        if remote_ip:
-            data["remoteip"] = remote_ip
-        
         try:
             async with httpx.AsyncClient(timeout=RECAPTCHA_TIMEOUT) as client:
-                response = await client.post(self.verify_url, data=data)
+                response = await client.post(self.verify_url_enterprise, json={"token": token, "action": "submit"})
                 response.raise_for_status()
-
                 result = response.json()
-
                 if not result.get("success"):
-                    logger.warning(f"reCAPTCHA verification failed: {result.get('error-codes', [])}")
-
+                    logger.warning(f"reCAPTCHA verification failed: {result.get('reason')}")
                 return result
-
         except httpx.TimeoutException as e:
             logger.error(f"Timeout verifying reCAPTCHA: {e}")
             return {"success": False, "error": "recaptcha_timeout"}
