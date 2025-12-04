@@ -1,30 +1,184 @@
+# Cloud Build configuration for TuCitaSegura backend
+# This configuration builds, pushes, and deploys the FastAPI backend to Cloud Run
+# with enhanced logging and error handling
+
+# Build options for better logging and reproducibility
+options:
+  # Enable detailed logging
+  logging: CLOUD_LOGGING_ONLY
+
+  # Use a more powerful machine for faster builds
+  machineType: 'E2_HIGHCPU_8'
+
+  # Increase disk size for Docker layers
+  diskSizeGb: 100
+
+  # Log streaming for real-time monitoring
+  logStreamingOption: 'STREAM_ON'
+
+  # Set timeout to 20 minutes (1200 seconds)
+  timeout: '1200s'
+
+# Substitution variables for flexibility
+substitutions:
+  _SERVICE_NAME: 'tuscitasseguras-api'
+  _REGION: 'us-central1'
+  _PORT: '8000'
+  _DOCKERFILE: 'Dockerfile.cloudrun'
+
 steps:
-  # Build the container image
+  # Step 0: Log build information
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'log-build-info'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================="
+        echo "Cloud Build Started"
+        echo "========================================="
+        echo "Project ID: $PROJECT_ID"
+        echo "Build ID: $BUILD_ID"
+        echo "Service Name: ${_SERVICE_NAME}"
+        echo "Region: ${_REGION}"
+        echo "Dockerfile: ${_DOCKERFILE}"
+        echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "========================================="
+
+        # Verify Dockerfile exists
+        if [ ! -f "${_DOCKERFILE}" ]; then
+          echo "ERROR: Dockerfile not found: ${_DOCKERFILE}"
+          exit 1
+        fi
+        echo "✓ Dockerfile found: ${_DOCKERFILE}"
+
+        # List files in current directory
+        echo "Files in build context:"
+        ls -lah
+        echo "========================================="
+
+  # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f', 'Dockerfile.cloudrun', '-t', 'gcr.io/$PROJECT_ID/tuscitasseguras-api', '.']
-  
-  # Push the container image to Container Registry
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-f'
+      - '${_DOCKERFILE}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+      - '--build-arg'
+      - 'BUILD_ID=$BUILD_ID'
+      - '--build-arg'
+      - 'BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)'
+      - '.'
+    timeout: '600s'
+
+  # Step 2: Log build success
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'log-build-success'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================="
+        echo "✓ Docker image built successfully"
+        echo "Image: gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID"
+        echo "========================================="
+
+  # Step 3: Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/tuscitasseguras-api']
-  
-  # Deploy container image to Cloud Run
+    id: 'push-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}'
+    timeout: '600s'
+
+  # Step 4: Log push success
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'log-push-success'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================="
+        echo "✓ Image pushed to Container Registry"
+        echo "Tags: $BUILD_ID, latest"
+        echo "========================================="
+
+  # Step 5: Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloudrun'
     entrypoint: gcloud
     args:
     - 'run'
     - 'deploy'
-    - 'tuscitasseguras-api'
+    - '${_SERVICE_NAME}'
     - '--image'
-    - 'gcr.io/$PROJECT_ID/tuscitasseguras-api'
+    - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
     - '--region'
-    - 'us-central1'
+    - '${_REGION}'
     - '--platform'
     - 'managed'
     - '--allow-unauthenticated'
     - '--port'
-    - '8000'
+    - '${_PORT}'
     - '--set-env-vars'
-    - 'PORT=8000'
+    - 'PORT=${_PORT},BUILD_ID=$BUILD_ID'
+    - '--min-instances'
+    - '0'
+    - '--max-instances'
+    - '4'
+    - '--cpu'
+    - '1'
+    - '--memory'
+    - '512Mi'
+    - '--timeout'
+    - '300s'
+    timeout: '600s'
 
+  # Step 6: Log deployment success and service URL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'log-deployment-success'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "========================================="
+        echo "✓ Deployment completed successfully"
+        echo "Service: ${_SERVICE_NAME}"
+        echo "Region: ${_REGION}"
+        echo "Build ID: $BUILD_ID"
+        echo "========================================="
+
+        # Get service URL
+        SERVICE_URL=$(gcloud run services describe ${_SERVICE_NAME} \
+          --region=${_REGION} \
+          --format='value(status.url)' 2>/dev/null || echo "URL not available")
+
+        echo "Service URL: $SERVICE_URL"
+        echo "========================================="
+
+        # Test health endpoint
+        if [ "$SERVICE_URL" != "URL not available" ]; then
+          echo "Testing health endpoint..."
+          curl -f "$SERVICE_URL/health" || echo "Health check failed (may be normal if service is starting)"
+        fi
+
+        echo "========================================="
+        echo "Cloud Build completed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "========================================="
+
+# Images to be pushed to Container Registry
 images:
-  - 'gcr.io/$PROJECT_ID/tuscitasseguras-api'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest'
+
+# Tags for organizing builds
+tags:
+  - 'backend'
+  - 'fastapi'
+  - 'cloudrun'
+  - 'tuscitasseguras'
