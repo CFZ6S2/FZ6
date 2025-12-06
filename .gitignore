@@ -24,6 +24,8 @@ backend/.env.railway
 webapp/js/google-maps-config.js
 **/api-config.js
 **/*-config.js
+config.json
+/config.json
 
 # Node modules
 node_modules/
@@ -51,6 +53,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+crash_logs.json
+deploy*.log
+build_error*.log
 
 # Python
 __pycache__/
@@ -77,18 +83,10 @@ tuscitasegura-loading.zip
 # Backup directories
 backup_*/
 *.backup
+*.old
+Dockerfile.backup
+Dockerfile.railway
 .trae/
 # Build outputs
 dist/
-
-# Security
-config.json
-backend/crash_logs.json
-backend/error_output.txt
-
-# Logs
-*.log
-**/*.log
-
-backend/.env.railway
-backend/crash_logs.json
+webapp/dist/

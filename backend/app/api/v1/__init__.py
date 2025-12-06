@@ -4,7 +4,6 @@ API Version 1 - Router Aggregation
 This module aggregates all v1 API routers and provides version management.
 """
 
-<<<<<<< HEAD
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 import logging
@@ -12,39 +11,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 api_v1_router = APIRouter(prefix="/v1")
-=======
-from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
-import logging
-
-logger = logging.getLogger(__name__)
-
-# Create main v1 router
-api_v1_router = APIRouter(prefix="/v1")
-
-# Import existing routers
-# try:
-#     from app.api.payments import router as payments_router
-#     # Include payments router under v1
-#     api_v1_router.include_router(
-#         payments_router,
-#         tags=["v1", "payments"]
-#     )
-#     logger.info("V1 Payments router included")
-# except Exception as e:
-#     logger.warning(f"Could not import payments router for v1: {e}")
-
-try:
-    from app.api.emergency_phones import router as emergency_phones_router
-    # Include emergency phones router under v1
-    api_v1_router.include_router(
-        emergency_phones_router,
-        tags=["v1", "emergency"]
-    )
-    logger.info("V1 Emergency phones router included")
-except Exception as e:
-    logger.warning(f"Could not import emergency phones router for v1: {e}")
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 # Import new v1 routers (using relative imports to avoid circular dependency)
 try:

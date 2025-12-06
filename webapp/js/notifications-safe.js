@@ -1,10 +1,9 @@
-
 // ===========================================================================
 // Firebase Cloud Messaging - Notifications Client
 // ===========================================================================
 // Manages push notifications for TuCitaSegura
 
-import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { auth, db } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
@@ -33,7 +32,7 @@ export async function initializeNotifications() {
 
     // Try to import Firebase Messaging dynamically
     try {
-      const messagingModule = await import('firebase/messaging');
+      const messagingModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
       const { getMessaging, getToken, onMessage } = messagingModule;
 
       await registerServiceWorker();
@@ -68,11 +67,11 @@ export async function initializeNotifications() {
 async function registerServiceWorker() {
   try {
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    console.log('✅ Service Worker registered with scope:', registration.scope);
+    console.log('✅ Service Worker registered for notifications:', registration.scope);
     return registration;
   } catch (error) {
     console.warn('Service Worker registration failed:', error);
-    // Don't throw, just log. We can continue without SW possibly (though notifications wont work)
+    throw error;
   }
 }
 

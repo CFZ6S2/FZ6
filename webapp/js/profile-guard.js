@@ -1,7 +1,14 @@
-import { auth, db } from './firebase-config-env.js';
-import { doc, getDoc } from "firebase/firestore";
+// Profile Guard - Bloquea acceso a funcionalidades hasta que el perfil esté completo
+// ============================================================================
+
+import { auth, db } from './firebase-config.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { logger } from './logger.js';
 
+/**
+ * Verifica si el perfil del usuario está completo
+ * @returns {Object} { isComplete: boolean, missingFields: string[], userData: Object }
+ */
 export async function checkProfileComplete() {
   const user = auth.currentUser;
 

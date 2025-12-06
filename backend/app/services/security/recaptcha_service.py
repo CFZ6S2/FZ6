@@ -103,7 +103,6 @@ class RecaptchaService:
                 "hostname": "localhost",
                 "_bypassed": True
             }
-<<<<<<< HEAD
         try:
             async with httpx.AsyncClient(timeout=RECAPTCHA_TIMEOUT) as client:
                 response = await client.post(self.verify_url_enterprise, json={"token": token, "action": "submit"})
@@ -118,54 +117,6 @@ class RecaptchaService:
         except httpx.HTTPError as e:
             logger.error(f"Error verifying reCAPTCHA: {e}")
             return {"success": False, "error": "recaptcha_service_unavailable"}
-=======
-
-        try:
-            from google.cloud import recaptchaenterprise_v1
-            
-            # Project ID is required for Enterprise
-            project_id = os.getenv("VITE_FIREBASE_PROJECT_ID", "tucitasegura-129cc")
-            recaptcha_site_key = os.getenv("VITE_RECAPTCHA_SITE_KEY", "6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb")
-
-            client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient()
-            project_path = f"projects/{project_id}"
-
-            # Build the assessment request
-            request = recaptchaenterprise_v1.CreateAssessmentRequest()
-            request.parent = project_path
-            request.assessment.event.token = token
-            request.assessment.event.site_key = recaptcha_site_key
-            
-            if action:
-                 request.assessment.event.expected_action = action
-
-            # Execute request
-            response = client.create_assessment(request=request)
-
-            # Check if the token is valid
-            if not response.token_properties.valid:
-                logger.warning(f"reCAPTCHA Invalid Token: {response.token_properties.invalid_reason}")
-                return {
-                    "success": False, 
-                    "error": f"Invalid Token: {response.token_properties.invalid_reason}",
-                    "valid": False
-                }
-
-            # Check action match
-            if response.token_properties.action != action:
-                 logger.warning(f"reCAPTCHA Action Mismatch: expected {action}, got {response.token_properties.action}")
-                 # We don't fail, but we warn. In strict mode, we might fail.
-
-            return {
-                "success": True,
-                "score": response.risk_analysis.score,
-                "reasons": response.risk_analysis.reason,
-                "action": response.token_properties.action,
-                "valid": True,
-                "assessment_name": response.name
-            }
-
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         except Exception as e:
             logger.error(f"Error validating reCAPTCHA Enterprise: {e}")
             # Fail open or closed depending on policy. For now, fail closed but with specific error.
