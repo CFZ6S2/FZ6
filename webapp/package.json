@@ -1,36 +1,22 @@
 {
-<<<<<<< HEAD
-  "name": "webapp",
+  "name": "tucitasegura-webapp",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "TuCitaSegura Web Application",
   "main": "firebase-messaging-sw.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "engines": {
     "node": "20"
   },
   "type": "commonjs",
   "devDependencies": {
-    "vite": "^7.2.6"
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "firebase": "^12.6.0"
   }
 }
-=======
-    "name": "tucitasegura-webapp",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "dev": "vite --host",
-        "build": "vite build",
-        "preview": "vite preview"
-    },
-    "devDependencies": {
-        "vite": "^5.0.0"
-    }
-}
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

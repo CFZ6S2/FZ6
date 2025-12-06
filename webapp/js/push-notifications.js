@@ -3,9 +3,9 @@
  * TuCitaSegura - Real-time notifications for matches, messages, and appointments
  */
 
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { app, VAPID_PUBLIC_KEY } from "./firebase-config-env.js";
-import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { createLogger } from "./logger.js";
 
 const messaging = getMessaging(app);
@@ -123,7 +123,7 @@ export function setupMessageListener(callback) {
  */
 export async function sendTestNotification() {
   try {
-    const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js");
+    const { getFunctions, httpsCallable } = await import("firebase/functions");
     const functions = getFunctions(app);
     const sendTest = httpsCallable(functions, 'sendTestNotification');
     const result = await sendTest();

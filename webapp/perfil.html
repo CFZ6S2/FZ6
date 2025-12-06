@@ -545,15 +545,7 @@
 
   <!-- Demo Mode Banner -->
   <script type="module" src="./js/demo-banner.js"></script>
-<<<<<<< HEAD
 
-  <script>
-    if (!window.GOOGLE_MAPS_API_KEY) {
-      try { window.GOOGLE_MAPS_API_KEY = localStorage.getItem('GOOGLE_MAPS_API_KEY') || ''; } catch {}
-    }
-  </script>
-=======
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -563,12 +555,10 @@
     // Then import Firebase services
     // Then import Firebase services
     import { auth, storage, app, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc, serverTimestamp, getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-<<<<<<< HEAD
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import { doc, getDoc, updateDoc, serverTimestamp, getFirestore } from "firebase/firestore";
+    import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
     import { showToast, validateProfileComplete } from './js/utils.js';
-=======
 
     // Initialize Firestore locally to ensure valid instance
     // Firestore imported from config
@@ -579,9 +569,7 @@
     window._debug_db = db;
     window._debug_app = app;
 
-    import { showToast } from './js/utils.js';
     import { apiService } from './js/api-service.js';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './js/theme.js';
     import { logger } from './js/logger.js';
     import { setupGlobalErrorHandling } from './js/error-handler.js';
@@ -589,6 +577,7 @@
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
     import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config-env.js';
     import { fileValidator, showValidationErrors } from './js/file-validator.js';
+    import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
 
     // Image optimization with lazy loading
     import './js/image-optimizer.js';
@@ -1387,19 +1376,16 @@
       saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
 
       try {
-<<<<<<< HEAD
         const recaptcha = await verifyRecaptchaScore('profile_update');
-        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+        if (!recaptcha.success || (recaptcha.score ?? 0) < 0.5) {
           showToast('Verificación reCAPTCHA fallida. Intenta de nuevo.', 'error');
           return;
         }
-        let photoURL = currentUserData.photoURL;
-=======
+
         // GLOBAL TOKEN REFRESH
         if (currentUser) {
           const token = await currentUser.getIdToken(true);
           apiService.setToken(token);
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
           // DEBUG: Analyze Token
           try {
@@ -1607,10 +1593,5 @@
   </script>
 
 </body>
-<<<<<<< HEAD
-</html>
-    import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
-=======
 
 </html>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

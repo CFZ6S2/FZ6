@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-// functions/index.js (Node 18)
-const functions = require('firebase-functions/v1');
-const admin = require('firebase-admin');
-const stripeSecret = (functions.config().stripe?.secret_key) || process.env.STRIPE_SECRET_KEY;
-const stripe = stripeSecret ? require('stripe')(stripeSecret) : null;
-=======
 // functions/index.js (Node 18) - Force redeploy
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
@@ -19,7 +12,6 @@ try {
 } catch (e) {
   console.warn('Stripe initialization failed', e);
 }
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
 const axios = require('axios');
 const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
 const { verifyAppCheckHTTP } = require('./middleware/app-check');
@@ -45,14 +37,7 @@ logger.info('Cloud Functions initialized', {
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://fz6-production-ea5d.up.railway.app';
-=======
-  let base = process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
-=======
-  let base = process.env.API_BASE_URL || 'https://api.tucitasegura.com';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+  let base = process.env.API_BASE_URL || 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
   try {
     if (functions.config().api && functions.config().api.base_url) {
       base = functions.config().api.base_url;
@@ -60,7 +45,6 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
   } catch (e) {
     logger.warn('Failed to read functions.config', { error: e.message });
   }
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
   const url = base + req.originalUrl;
 
   logger.debug('API proxy request', {

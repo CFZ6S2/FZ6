@@ -562,11 +562,7 @@
   </div>
 
   <!-- Error Fixes -->
-<<<<<<< HEAD
   <script type="module" src="../js/error-fixes.js"></script>
-=======
-  <script src="./js/error-fixes.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase Scripts -->
   <script type="module">
@@ -575,8 +571,8 @@
 
     // Then import Firebase services
     import { auth, db } from '../js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { onAuthStateChanged, signOut } from 'firebase/auth';
+    import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'firebase/firestore';
     import { loadTheme } from '../js/theme.js';
 
     let currentUser = null;
@@ -674,7 +670,7 @@
     async function loadStatistics() {
       try {
         // Total Users
-        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersSnapshot = await getDocs(query(collection(db, 'users'), limit(1000)));
         const totalUsers = usersSnapshot.size;
         document.getElementById('totalUsers').textContent = totalUsers;
 
@@ -689,12 +685,13 @@
         document.getElementById('activeSubscriptions').textContent = activeSubscriptions;
 
         // Total Reports (pending)
-        const reportsSnapshot = await getDocs(collection(db, 'reports'));
+        const reportsSnapshot = await getDocs(query(collection(db, 'reports'), limit(1000)));
         const pendingReports = reportsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
         document.getElementById('totalReports').textContent = pendingReports;
 
         // Total Revenue (this month)
-        const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+        // Optimization: Get recent payments first
+        const paymentsSnapshot = await getDocs(query(collection(db, 'payments'), orderBy('createdAt', 'desc'), limit(1000)));
         let totalRevenue = 0;
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -709,7 +706,7 @@
         document.getElementById('totalRevenue').textContent = `${totalRevenue.toFixed(2)} €`;
 
         // Date Statistics
-        const conversationsSnapshot = await getDocs(collection(db, 'conversations'));
+        const conversationsSnapshot = await getDocs(query(collection(db, 'conversations'), limit(1000)));
         let proposedDates = 0;
         let validatedDates = 0;
 

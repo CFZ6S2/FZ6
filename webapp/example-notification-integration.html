@@ -72,18 +72,14 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-<<<<<<< HEAD
-    <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+  <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js';
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, onAuthStateChanged } from 'firebase/auth';
+    import { getFirestore } from 'firebase/firestore';
+    import { getFunctions, httpsCallable } from 'firebase/functions';
 
     // Import notification module
     import {
@@ -95,20 +91,7 @@
     } from './js/notifications.js';
 
     import { showToast } from './js/utils.js';
-<<<<<<< HEAD
-
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
-      authDomain: "tucitasegura-129cc.firebaseapp.com",
-      projectId: "tucitasegura-129cc",
-      storageBucket: "tucitasegura-129cc.firebasestorage.app",
-      messagingSenderId: "180656060538",
-      appId: "1:180656060538:web:3168487130aa126db663c3"
-    };
-=======
     import firebaseConfig from './js/firebase-config-env.js';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);

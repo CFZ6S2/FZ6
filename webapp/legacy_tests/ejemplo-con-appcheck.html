@@ -31,11 +31,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
 
-<<<<<<< HEAD:webapp/ejemplo-con-appcheck.html
-    <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/ejemplo-con-appcheck.html
+  <script type="module" src="./js/sanitizer.js"></script>
 
 
 
@@ -49,7 +45,7 @@
     import { auth, db, storage } from './js/firebase-config-env.js';
 
     // 3️⃣ TERCERO: Tu código de app
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { onAuthStateChanged } from "firebase/auth";
 
     // Ahora todas las operaciones tendrán App Check token automático
     onAuthStateChanged(auth, async (user) => {
@@ -88,7 +84,7 @@
     import './js/firebase-appcheck.js';
   </script>
   <script type="module">
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "...";
     // Tu código aquí
   </script>

@@ -170,248 +170,223 @@
     <div class="status-box">
       <h3>ℹ️ Información del Proyecto</h3>
       <div class="code-block">
-<<<<<<< HEAD:webapp/verify-appcheck.html
         <strong>Project ID:</strong> tucitasegura-129cc<br>
-=======
-        <strong>Project ID:</strong> tuscitasseguras-2d1a6<br>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html
         <strong>Web App ID:</strong> 1:180656060538:web:3168487130aa126db663c3<br>
         <strong>reCAPTCHA Site Key:</strong> <span id="siteKeyDisplay"></span><br>
         <strong>Hostname:</strong> <span id="hostname"></span><br>
         <strong>Modo:</strong> <span id="mode"></span>
       </div>
     </div>
-  </div>
-
-  <!-- DOMPurify for XSS Protection -->
-
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<<<<<<< HEAD:webapp/verify-appcheck.html
-  <script type="module" src="./js/sanitizer.js"></script>
-=======
-
-
-  <script src="./js/sanitizer.js"></script>
-  <script>document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');</script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html
-
-
-
-  <script type="module">
-    // Capturar console.log para mostrar en la página
     const consoleLogElement = document.getElementById('consoleLog');
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
 
     function addToConsole(type, ...args) {
-      const message = args.map(arg => {
-        if (typeof arg === 'object') {
-          return JSON.stringify(arg, null, 2);
-        }
-        return String(arg);
-      }).join(' ');
+    const message = args.map(arg => {
+    if (typeof arg === 'object') {
+    return JSON.stringify(arg, null, 2);
+    }
+    return String(arg);
+    }).join(' ');
 
-      consoleLogElement.textContent += `[${type}] ${message}\n`;
-      consoleLogElement.scrollTop = consoleLogElement.scrollHeight;
+    consoleLogElement.textContent += `[${type}] ${message}\n`;
+    consoleLogElement.scrollTop = consoleLogElement.scrollHeight;
     }
 
     console.log = (...args) => {
-      originalLog(...args);
-      addToConsole('LOG', ...args);
+    originalLog(...args);
+    addToConsole('LOG', ...args);
     };
 
     console.warn = (...args) => {
-      originalWarn(...args);
-      addToConsole('WARN', ...args);
+    originalWarn(...args);
+    addToConsole('WARN', ...args);
     };
 
     console.error = (...args) => {
-      originalError(...args);
-      addToConsole('ERROR', ...args);
+    originalError(...args);
+    addToConsole('ERROR', ...args);
     };
 
     // Mostrar info del proyecto
     document.getElementById('hostname').textContent = location.hostname;
     const isDev = location.hostname === "localhost" ||
-      location.hostname === "127.0.0.1" ||
-      location.hostname.includes("192.168.");
+    location.hostname === "127.0.0.1" ||
+    location.hostname.includes("192.168.");
     document.getElementById('mode').textContent = isDev ? 'DESARROLLO (debug tokens)' : 'PRODUCCIÓN (reCAPTCHA v3)';
 
     // Importar y verificar App Check
     import './js/firebase-appcheck.js';
     import { auth, db, storage } from './js/firebase-config-env.js';
-    import { getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, getDownloadURL, uploadString } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { getDoc, doc, setDoc } from "firebase/firestore";
+    import { ref, getDownloadURL, uploadString } from "firebase/storage";
 
     // Esperar a que App Check se inicialice
     setTimeout(async () => {
-      const loadingStatus = document.getElementById('loadingStatus');
-      const appCheckStatus = document.getElementById('appCheckStatus');
-      const testControls = document.getElementById('testControls');
-      const debugTokenInfo = document.getElementById('debugTokenInfo');
-      const debugTokenDisplay = document.getElementById('debugTokenDisplay');
+    const loadingStatus = document.getElementById('loadingStatus');
+    const appCheckStatus = document.getElementById('appCheckStatus');
+    const testControls = document.getElementById('testControls');
+    const debugTokenInfo = document.getElementById('debugTokenInfo');
+    const debugTokenDisplay = document.getElementById('debugTokenDisplay');
 
-      // Verificar si hay debug token en los logs
-      const consoleText = consoleLogElement.textContent;
-      const tokenMatch = consoleText.match(/App Check debug token: ([a-f0-9-]+)/);
+    // Verificar si hay debug token en los logs
+    const consoleText = consoleLogElement.textContent;
+    const tokenMatch = consoleText.match(/App Check debug token: ([a-f0-9-]+)/);
 
-      if (tokenMatch) {
-        debugTokenInfo.style.display = 'block';
-        debugTokenDisplay.textContent = tokenMatch[1];
-      }
+    if (tokenMatch) {
+    debugTokenInfo.style.display = 'block';
+    debugTokenDisplay.textContent = tokenMatch[1];
+    }
 
-      // Intentar obtener token de App Check
-      try {
-        const tokenResult = await window.getAppCheckToken();
+    // Intentar obtener token de App Check
+    try {
+    const tokenResult = await window.getAppCheckToken();
 
-        if (tokenResult) {
-          loadingStatus.style.display = 'none';
-          appCheckStatus.style.display = 'block';
-          appCheckStatus.className = 'status-box success';
-          appCheckStatus.innerHTML = `
-            <h3><span class="icon">✅</span>App Check Funcionando</h3>
-            <p>Token obtenido exitosamente</p>
-            <div class="code-block">
-              Token (primeros 50 caracteres): ${tokenResult.token.substring(0, 50)}...<br>
-              Expira aproximadamente en: 1 hora
-            </div>
-            <p>✅ Todas las requests a Firebase incluirán este token automáticamente</p>
-          `;
-          testControls.style.display = 'block';
-        } else {
-          throw new Error('No se pudo obtener token');
-        }
-      } catch (error) {
-        loadingStatus.style.display = 'none';
-        appCheckStatus.style.display = 'block';
-        appCheckStatus.className = 'status-box error';
-        appCheckStatus.innerHTML = `
-          <h3><span class="icon">❌</span>App Check No Funcionando</h3>
-          <p><strong>Error:</strong> ${error.message}</p>
-          <p><strong>Causa más probable:</strong></p>
-          <ul>
-            <li>Debug token no registrado en Firebase Console</li>
-            <li>Enforcement activado pero token no válido</li>
-            <li>Site key incorrecta</li>
-          </ul>
-          <p><strong>Solución:</strong></p>
-          <ol>
-            <li>Registra el debug token mostrado arriba (si estás en localhost)</li>
-            <li>Desactiva Enforcement en Firebase Console → App Check</li>
-            <li>Verifica la site key en firebase-appcheck.js</li>
-            <li>Recarga esta página: Ctrl + Shift + R</li>
-          </ol>
-        `;
-      }
+    if (tokenResult) {
+    loadingStatus.style.display = 'none';
+    appCheckStatus.style.display = 'block';
+    appCheckStatus.className = 'status-box success';
+    appCheckStatus.innerHTML = `
+    <h3><span class="icon">✅</span>App Check Funcionando</h3>
+    <p>Token obtenido exitosamente</p>
+    <div class="code-block">
+      Token (primeros 50 caracteres): ${tokenResult.token.substring(0, 50)}...<br>
+      Expira aproximadamente en: 1 hora
+    </div>
+    <p>✅ Todas las requests a Firebase incluirán este token automáticamente</p>
+    `;
+    testControls.style.display = 'block';
+    } else {
+    throw new Error('No se pudo obtener token');
+    }
+    } catch (error) {
+    loadingStatus.style.display = 'none';
+    appCheckStatus.style.display = 'block';
+    appCheckStatus.className = 'status-box error';
+    appCheckStatus.innerHTML = `
+    <h3><span class="icon">❌</span>App Check No Funcionando</h3>
+    <p><strong>Error:</strong> ${error.message}</p>
+    <p><strong>Causa más probable:</strong></p>
+    <ul>
+      <li>Debug token no registrado en Firebase Console</li>
+      <li>Enforcement activado pero token no válido</li>
+      <li>Site key incorrecta</li>
+    </ul>
+    <p><strong>Solución:</strong></p>
+    <ol>
+      <li>Registra el debug token mostrado arriba (si estás en localhost)</li>
+      <li>Desactiva Enforcement en Firebase Console → App Check</li>
+      <li>Verifica la site key en firebase-appcheck.js</li>
+      <li>Recarga esta página: Ctrl + Shift + R</li>
+    </ol>
+    `;
+    }
     }, 3000);
 
     // Funciones de prueba
     window.testGetToken = async function () {
-      addTestResult('Obteniendo App Check Token...');
-      try {
-        const tokenResult = await window.getAppCheckToken();
-        if (tokenResult) {
-          addTestResult(`✅ Token obtenido: ${tokenResult.token.substring(0, 30)}...`, true);
-        } else {
-          addTestResult('❌ No se pudo obtener token', false);
-        }
-      } catch (error) {
-        addTestResult(`❌ Error: ${error.message}`, false);
-      }
+    addTestResult('Obteniendo App Check Token...');
+    try {
+    const tokenResult = await window.getAppCheckToken();
+    if (tokenResult) {
+    addTestResult(`✅ Token obtenido: ${tokenResult.token.substring(0, 30)}...`, true);
+    } else {
+    addTestResult('❌ No se pudo obtener token', false);
+    }
+    } catch (error) {
+    addTestResult(`❌ Error: ${error.message}`, false);
+    }
     };
 
     window.testFirestoreRead = async function () {
-      addTestResult('Probando Firestore Read...');
-      try {
-        const testDoc = await getDoc(doc(db, 'config', 'test'));
-        addTestResult('✅ Firestore Read exitoso (sin errores 401)', true);
-        console.log('Firestore Read result:', testDoc.exists() ? testDoc.data() : 'Documento no existe');
-      } catch (error) {
-        if (error.code === 'permission-denied') {
-          addTestResult('⚠️ Firestore Read falló: Permission denied (esto es normal si no tienes permisos en este documento)', true);
-        } else if (error.message.includes('401')) {
-          addTestResult('❌ Firestore Read falló: Error 401 - App Check token no válido', false);
-        } else {
-          addTestResult(`❌ Firestore Read falló: ${error.message}`, false);
-        }
-      }
+    addTestResult('Probando Firestore Read...');
+    try {
+    const testDoc = await getDoc(doc(db, 'config', 'test'));
+    addTestResult('✅ Firestore Read exitoso (sin errores 401)', true);
+    console.log('Firestore Read result:', testDoc.exists() ? testDoc.data() : 'Documento no existe');
+    } catch (error) {
+    if (error.code === 'permission-denied') {
+    addTestResult('⚠️ Firestore Read falló: Permission denied (esto es normal si no tienes permisos en este documento)',
+    true);
+    } else if (error.message.includes('401')) {
+    addTestResult('❌ Firestore Read falló: Error 401 - App Check token no válido', false);
+    } else {
+    addTestResult(`❌ Firestore Read falló: ${error.message}`, false);
+    }
+    }
     };
 
     window.testFirestoreWrite = async function () {
-      addTestResult('Probando Firestore Write...');
-      try {
-        await setDoc(doc(db, 'test', 'appcheck_test'), {
-          timestamp: new Date().toISOString(),
-          message: 'App Check test'
-        });
-        addTestResult('✅ Firestore Write exitoso (sin errores 401)', true);
-      } catch (error) {
-        if (error.code === 'permission-denied') {
-          addTestResult('⚠️ Firestore Write falló: Permission denied (esto es normal sin auth)', true);
-        } else if (error.message.includes('401')) {
-          addTestResult('❌ Firestore Write falló: Error 401 - App Check token no válido', false);
-        } else {
-          addTestResult(`❌ Firestore Write falló: ${error.message}`, false);
-        }
-      }
+    addTestResult('Probando Firestore Write...');
+    try {
+    await setDoc(doc(db, 'test', 'appcheck_test'), {
+    timestamp: new Date().toISOString(),
+    message: 'App Check test'
+    });
+    addTestResult('✅ Firestore Write exitoso (sin errores 401)', true);
+    } catch (error) {
+    if (error.code === 'permission-denied') {
+    addTestResult('⚠️ Firestore Write falló: Permission denied (esto es normal sin auth)', true);
+    } else if (error.message.includes('401')) {
+    addTestResult('❌ Firestore Write falló: Error 401 - App Check token no válido', false);
+    } else {
+    addTestResult(`❌ Firestore Write falló: ${error.message}`, false);
+    }
+    }
     };
 
     window.testStorageRead = async function () {
-      addTestResult('Probando Storage Read...');
-      try {
-        const testRef = ref(storage, 'test/dummy.txt');
-        const url = await getDownloadURL(testRef);
-        addTestResult('✅ Storage Read exitoso (sin errores 401)', true);
-      } catch (error) {
-        if (error.code === 'storage/object-not-found') {
-          addTestResult('⚠️ Storage Read: Archivo no existe (pero no error 401)', true);
-        } else if (error.code === 'storage/unauthorized') {
-          addTestResult('⚠️ Storage Read falló: Unauthorized (puede ser normal sin auth)', true);
-        } else if (error.message.includes('401')) {
-          addTestResult('❌ Storage Read falló: Error 401 - App Check token no válido', false);
-        } else {
-          addTestResult(`⚠️ Storage Read: ${error.message}`, true);
-        }
-      }
+    addTestResult('Probando Storage Read...');
+    try {
+    const testRef = ref(storage, 'test/dummy.txt');
+    const url = await getDownloadURL(testRef);
+    addTestResult('✅ Storage Read exitoso (sin errores 401)', true);
+    } catch (error) {
+    if (error.code === 'storage/object-not-found') {
+    addTestResult('⚠️ Storage Read: Archivo no existe (pero no error 401)', true);
+    } else if (error.code === 'storage/unauthorized') {
+    addTestResult('⚠️ Storage Read falló: Unauthorized (puede ser normal sin auth)', true);
+    } else if (error.message.includes('401')) {
+    addTestResult('❌ Storage Read falló: Error 401 - App Check token no válido', false);
+    } else {
+    addTestResult(`⚠️ Storage Read: ${error.message}`, true);
+    }
+    }
     };
 
     window.runAllTests = async function () {
-      document.getElementById('testResults').innerHTML = '<h2>Resultados de Pruebas</h2>';
-      await testGetToken();
-      await new Promise(r => setTimeout(r, 1000));
-      await testFirestoreRead();
-      await new Promise(r => setTimeout(r, 1000));
-      await testFirestoreWrite();
-      await new Promise(r => setTimeout(r, 1000));
-      await testStorageRead();
-      addTestResult('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      addTestResult('🏁 Pruebas completadas. Revisa los resultados arriba.');
+    document.getElementById('testResults').innerHTML = '<h2>Resultados de Pruebas</h2>';
+    await testGetToken();
+    await new Promise(r => setTimeout(r, 1000));
+    await testFirestoreRead();
+    await new Promise(r => setTimeout(r, 1000));
+    await testFirestoreWrite();
+    await new Promise(r => setTimeout(r, 1000));
+    await testStorageRead();
+    addTestResult('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    addTestResult('🏁 Pruebas completadas. Revisa los resultados arriba.');
     };
 
     function addTestResult(message, passed = null) {
-      const resultsDiv = document.getElementById('testResults');
-      const resultElement = document.createElement('div');
-      resultElement.className = 'test-result';
+    const resultsDiv = document.getElementById('testResults');
+    const resultElement = document.createElement('div');
+    resultElement.className = 'test-result';
 
-      if (passed === true) {
-        resultElement.classList.add('test-passed');
-      } else if (passed === false) {
-        resultElement.classList.add('test-failed');
-      }
-
-      resultElement.textContent = message;
-      resultsDiv.appendChild(resultElement);
+    if (passed === true) {
+    resultElement.classList.add('test-passed');
+    } else if (passed === false) {
+    resultElement.classList.add('test-failed');
     }
 
-  </script>
+    resultElement.textContent = message;
+    resultsDiv.appendChild(resultElement);
+    }
+
+    </script>
 </body>
 
 </html>
-<<<<<<< HEAD:webapp/verify-appcheck.html
 <script>
   document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
 </script>
-=======
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html
