@@ -25,16 +25,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy project
 COPY . .
 
-<<<<<<< HEAD
 # Expose port (Cloud Run sets PORT=8080)
 EXPOSE 8080
 
 # Start uvicorn reading Cloud Run PORT with fallback to 8080
 CMD ["sh","-c","uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]
-=======
-# Expose the port
-EXPOSE 8000
-
-# Run the application (PORT defaults to 8080 for Cloud Run)
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
