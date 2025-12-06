@@ -367,7 +367,7 @@
             class="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors text-sm">
             <i class="fas fa-eye mr-2"></i>Ver
           </button>
-          <button onclick="deleteUser('${user.id}', '${user.email?.replace(/'/g, " \\'")}', '${user.userRole}' )"
+          <button onclick="deleteUser('${user.id}')"
             class="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors text-sm ${user.userRole === 'admin' ? 'opacity-50 cursor-not-allowed' : ''}"
             ${user.userRole==='admin' ? 'disabled' : '' }>
             <i class="fas fa-trash mr-2"></i>Borrar
@@ -481,7 +481,12 @@
     };
 
     // Delete user function
-    window.deleteUser = async (userId, userEmail, userRole) => {
+    window.deleteUser = async (userId) => {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+    const userEmail = user.email;
+    const userRole = user.userRole;
+
     // Prevent deleting admins
     if (userRole === 'admin') {
     alert('⚠️ No se pueden borrar cuentas de administrador');
