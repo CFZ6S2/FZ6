@@ -504,8 +504,15 @@
                 </div>
               ` : ''}
             </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    // Open chat
+    window.openChat = async function (conversationId, otherUserId) {
       // ✅ Validación pasada, abrir chat
-      window.location.href = `/ webapp / chat.html ? conversationId = ${ conversationId }& userId=${ otherUserId } `;
+      window.location.href = `/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
     };
 
     // Show context menu
@@ -547,7 +554,7 @@
     // Report user
     window.reportUser = function () {
       if (selectedOtherUserId) {
-        window.location.href = `/ reportes.html ? type = user & userId=${ selectedOtherUserId }`;
+        window.location.href = `/ reportes.html ? type = user & userId=${selectedOtherUserId}`;
       }
     };
 
