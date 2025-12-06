@@ -12,30 +12,13 @@ const __hideRecaptchaBadge = (() => { try { const s = document.createElement('st
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-<<<<<<< HEAD
-const RECAPTCHA_ENTERPRISE_SITE_KEY = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
-
-// Detectar entorno
-const FORCE_DEVELOPMENT_MODE = location.hostname === 'localhost' ||
-  location.hostname === '127.0.0.1' ||
-  location.hostname === '' ||  // file://
-  location.protocol === 'file:';
-
-const isDevelopment = FORCE_DEVELOPMENT_MODE ||
-  location.hostname === "localhost" ||
-  location.hostname === "127.0.0.1" ||
-  location.hostname.includes("192.168.");
+const RECAPTCHA_ENTERPRISE_SITE_KEY = (import.meta.env && import.meta.env.VITE_RECAPTCHA_SITE_KEY) ||
+  (window.RECAPTCHA_SITE_KEY || '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
 
 // Dominios configurados en reCAPTCHA Enterprise
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-=======
-const RECAPTCHA_ENTERPRISE_SITE_KEY = (import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
-
-// Dominios configurados en reCAPTCHA Enterprise
-const ALLOWED_DOMAINS = [
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   'tucitasegura-129cc.web.app',
   'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
@@ -56,8 +39,7 @@ const isDevelopment = location.hostname === 'localhost' ||
 
 logger.info(`🚀 Entorno: ${location.hostname}`);
 
-<<<<<<< HEAD
-let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
+let DEV_DEBUG_TOKEN = (typeof DEBUG_TOKEN !== 'undefined' ? DEBUG_TOKEN : null);
 try {
   const params = new URLSearchParams(location.search);
   const qToken = params.get('debugToken');
@@ -65,6 +47,7 @@ try {
   const lsToken = (typeof localStorage !== 'undefined') ? localStorage.getItem('APPCHECK_DEBUG_TOKEN') : null;
   if (!DEV_DEBUG_TOKEN && isDevelopment && lsToken) DEV_DEBUG_TOKEN = lsToken;
 } catch { }
+
 if (!DEV_DEBUG_TOKEN && isDevelopment) {
   DEV_DEBUG_TOKEN = '1ACC3630-42C6-4D01-92BA-ED0DE8C718FF';
 }
@@ -77,23 +60,22 @@ if (enableDebugToken) {
     globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
     window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
   } catch (e) { }
-} else if (DEV_DEBUG_TOKEN && !isDevelopment) {
 }
 
 // ============================================================================
 // Utilidades de limpieza local (solo desarrollo)
 // ============================================================================
-=======
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 function keysToRemoveFromStorage() {
   const keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (!k) continue;
-    if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat') || k.includes('firebaseLocalStorage')) {
-      keys.push(k);
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k) continue;
+      if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat') || k.includes('firebaseLocalStorage')) {
+        keys.push(k);
+      }
     }
-  }
+  } catch (e) { }
   return keys;
 }
 
@@ -123,13 +105,16 @@ async function clearAppCheckStorage() {
   });
 
   const ssKeys = [];
-  for (let i = 0; i < sessionStorage.length; i++) {
-    const k = sessionStorage.key(i);
-    if (!k) continue;
-    if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat')) {
-      ssKeys.push(k);
+  try {
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (!k) continue;
+      if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat')) {
+        ssKeys.push(k);
+      }
     }
-  }
+  } catch (e) { }
+
   ssKeys.forEach(k => {
     try { sessionStorage.removeItem(k); logger.debug('Removed sessionStorage:', k); } catch (e) { logger.debug('Could not remove sessionStorage key', k, e.message); }
   });
@@ -153,14 +138,16 @@ window.clearAppCheckThrottle = async function ({ reload = true } = {}) {
 
 window.detectAppCheckThrottled = function () {
   // Detecta indicios de throttling en localStorage (busca el texto 'appCheck/throttled')
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key) continue;
-    const val = localStorage.getItem(key) || '';
-    if (val.includes('appCheck/throttled') || val.includes('Requests throttled')) {
-      return true;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      const val = localStorage.getItem(key) || '';
+      if (val.includes('appCheck/throttled') || val.includes('Requests throttled')) {
+        return true;
+      }
     }
-  }
+  } catch (e) { }
   return false;
 };
 

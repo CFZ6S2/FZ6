@@ -1,3 +1,4 @@
+
 // ===========================================================================
 // Firebase Cloud Messaging - Notifications Client
 // ===========================================================================
@@ -66,16 +67,12 @@ export async function initializeNotifications() {
  */
 async function registerServiceWorker() {
   try {
-<<<<<<< HEAD
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-=======
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
-    console.log('✅ Service Worker registered for notifications:', registration.scope);
+    console.log('✅ Service Worker registered with scope:', registration.scope);
     return registration;
   } catch (error) {
     console.warn('Service Worker registration failed:', error);
-    throw error;
+    // Don't throw, just log. We can continue without SW possibly (though notifications wont work)
   }
 }
 
