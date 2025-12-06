@@ -129,5 +129,6 @@ async def get_optional_user(
     try:
         decoded_token = auth.verify_id_token(token.credentials)
         return decoded_token
-    except:
+    except Exception as e:
+        logger.warning(f"Error decoding optional token: {e}")
         return None

@@ -135,7 +135,8 @@ class LocationIntelligence:
                 if location_info:
                     confidence += 0.1
                     confidence_factors.append("Ubicación verificada en base de datos")
-            except:
+            except Exception as e:
+                logger.warning(f"Error validating location existence: {e}")
                 confidence -= 0.1
                 confidence_factors.append("No se pudo verificar la ubicación")
             

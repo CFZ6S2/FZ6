@@ -756,7 +756,7 @@
 
           // Then import Firebase services
           import { auth, storage, app, db } from './js/firebase-config-env.js';
-          import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+          import { onAuthStateChanged, signOut } from "firebase/auth";
           import {
             getFirestore,
             collection,
@@ -768,10 +768,10 @@
             orderBy,
             limit,
             startAfter
-          } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+          } from "firebase/firestore";
           import { showToast, calculateAge, getReputationBadge, calculateDistance, canAccessChat } from './js/utils.js';
           import { loadTheme } from './js/theme.js';
-          import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+          import { getDownloadURL, ref } from "firebase/storage";
           import { isDemoMode, getDemoUser } from './js/demo-mode.js';
           import { GOOGLE_MAPS_API_KEY, MAP_CONFIG } from './js/google-maps-config-env.js';
 

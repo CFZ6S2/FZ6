@@ -262,7 +262,7 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { onAuthStateChanged, signOut } from 'firebase/auth';
     import {
       collection,
       query,
@@ -273,7 +273,7 @@
       doc,
       getDoc,
       serverTimestamp
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    } from 'firebase/firestore';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading

@@ -15,5 +15,8 @@
   "type": "commonjs",
   "devDependencies": {
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "firebase": "^12.6.0"
   }
 }

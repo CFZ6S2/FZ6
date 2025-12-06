@@ -259,8 +259,8 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
     import { showToast } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 

@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seed Demo User</title>
 </head>
 
@@ -12,8 +13,8 @@
 
     <script type="module">
         import { auth, db } from './js/firebase-config-env.js';
-        import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-        import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+        import { doc, setDoc } from 'firebase/firestore';
 
         const DEMO_EMAIL = 'demo@tucitasegura.com';
         const DEMO_PASSWORD = 'demo123';
