@@ -49,11 +49,7 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 # Removed localhost from defaults to encourage production security
 origins_str = os.getenv(
     "CORS_ORIGINS",
-<<<<<<< HEAD
-    "http://localhost:3000,https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com,https://tucitasegura-129cc.web.app,https://tucitasegura-129cc.firebaseapp.com"
-=======
     "https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com,https://tucitasegura-129cc.web.app,https://tucitasegura-129cc.firebaseapp.com"
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 )
 origins = [origin.strip() for origin in origins_str.split(",")]
 

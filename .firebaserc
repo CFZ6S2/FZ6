@@ -1,13 +1,5 @@
-<<<<<<< HEAD
 {
   "projects": {
     "default": "tucitasegura-129cc"
   }
 }
-=======
-{
-  "projects": {
-    "default": "tucitasegura-129cc"
-  }
-}
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

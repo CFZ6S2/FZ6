@@ -4,16 +4,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Mantenimiento</title>
+    <title>Panel de Administración - TuCitaSegura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
 </head>
 
-<body
-    style="background-color: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
-    <div style="text-align: center;">
-        <h1>Panel de Administración en Mantenimiento</h1>
-        <p>Estamos resolviendo conflictos técnicos. Vuelva pronto.</p>
-        <a href="/" style="color: #4ade80;">Volver al Inicio</a>
+<body class="min-h-screen gradient-bg text-white">
+
+    <!-- Header -->
+    <header class="glass-card sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-shield-halved text-3xl text-purple-300"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Panel de Administración</h1>
+                        <p class="text-sm text-gray-300">TuCitaSegura</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminName" class="text-sm text-gray-300"></span>
+                    <button onclick="logout()"
+                        class="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-6xl text-purple-300 mb-4"></i>
+            <p class="text-xl">Cargando datos...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" class="hidden">
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+                <!-- Total Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <i class="fas fa-users text-2xl text-blue-400"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">Total</span>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="totalUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Usuarios Registrados</p>
+                </div>
+
+                <!-- Total Money -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <i class="fas fa-wallet text-2xl text-green-400"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">Monederos</span>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="totalMoney">0€</h3>
+                    <p class="text-gray-400 text-sm">Total en el Sistema</p>
+                </div>
+
+                <!-- Active Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                            <i class="fas fa-user-check text-2xl text-purple-400"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">Activos</span>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="activeUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Usuarios Activos Hoy</p>
+                </div>
+
+                <!-- Premium Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                            <i class="fas fa-crown text-2xl text-yellow-400"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">Premium</span>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="premiumUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Suscripciones Activas</p>
+                </div>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="glass-card rounded-2xl p-6 mb-8 fade-in">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Buscar por email, nombre, alias..."
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <select id="roleFilter"
+                        class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Todos los roles</option>
+                        <option value="admin">Administradores</option>
+                        <option value="concierge">Concierge</option>
+                        <option value="regular">Regulares</option>
+                    </select>
+                    <select id="genderFilter"
+                        class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Todos los géneros</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="glass-card rounded-2xl overflow-hidden fade-in">
+                <div class="p-6 border-b border-white/10">
+                    <h2 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-list mr-3 text-purple-400"></i>
+                        Lista de Usuarios
+                    </h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-white/5">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Usuario</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Email</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Rol</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Género</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Monedero</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Premium</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-white/5">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-6 border-t border-white/10 flex items-center justify-between">
+                    <p class="text-sm text-gray-400">
+                        Mostrando <span id="showingCount">0</span> de <span id="totalCount">0</span> usuarios
+                    </p>
+                    <div class="flex space-x-2">
+                        <button id="prevBtn" onclick="previousPage()"
+                            class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="nextBtn" onclick="nextPage()"
+                            class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Detail Modal -->
+    <div id="userModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="glass-card rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Detalles del Usuario</h2>
+                <button onclick="closeUserModal()"
+                    class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="userModalContent">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+
     </div>
+
+    <script type="module">
+        import './js/firebase-appcheck.js';
+        import { auth, db } from './js/firebase-config-env.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { collection, getDocs, doc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        let allUsers = [];
+        let filteredUsers = [];
+        let currentPage = 0;
+        const usersPerPage = 10;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            // FORCE token refresh to get latest custom claims
+            console.log('🔄 Forcing token refresh to get latest custom claims...');
+            const idTokenResult = await user.getIdTokenResult(true); // true = force refresh
+
+            console.log('📋 Custom claims:', idTokenResult.claims);
+            console.log('👤 Role:', idTokenResult.claims.role);
+
+            // Verify admin role
+            if (idTokenResult.claims.role !== 'admin') {
+                console.error('❌ Access denied: role =', idTokenResult.claims.role);
+                alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role ||
+                    'undefined'));
+                await signOut(auth);
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            console.log('✅ Admin access granted');
+            document.getElementById('adminName').textContent = user.email;
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                // Get all users
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                allUsers = [];
+
+                usersSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allUsers.push({
+                        id: doc.id,
+                        ...data,
+                        balance: data.balance || 0
+                    });
+                });
+
+                // Calculate stats
+                const totalUsers = allUsers.length;
+                const totalMoney = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const activeUsers = allUsers.filter(user => {
+                    if (!user.lastActivity) return false;
+                    const lastActivity = user.lastActivity.toDate ? user.lastActivity.toDate() : new Date(user.lastActivity);
+                    return lastActivity >= today;
+                }).length;
+
+                const premiumUsers = allUsers.filter(user => user.hasActiveSubscription).length;
+
+                // Update stats
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalMoney').textContent = totalMoney.toFixed(2) + '€';
+                document.getElementById('activeUsers').textContent = activeUsers;
+                document.getElementById('premiumUsers').textContent = premiumUsers;
+
+                // Apply filters and render
+                applyFilters();
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error al cargar los datos: ' + error.message);
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const genderFilter = document.getElementById('genderFilter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                const matchesSearch = !searchTerm ||
+                    (user.email || '').toLowerCase().includes(searchTerm) ||
+                    (user.alias || '').toLowerCase().includes(searchTerm) ||
+                    (user.displayName || '').toLowerCase().includes(searchTerm);
+
+                const matchesRole = !roleFilter || user.userRole === roleFilter;
+                const matchesGender = !genderFilter || user.gender === genderFilter;
+
+                return matchesSearch && matchesRole && matchesGender;
+            });
+
+            currentPage = 0;
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const start = currentPage * usersPerPage;
+            const end = start + usersPerPage;
+            const pageUsers = filteredUsers.slice(start, end);
+
+            tbody.innerHTML = pageUsers.map(user => `
+    <tr class="hover:bg-white/5 transition-colors">
+      <td class="px-6 py-4">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+            ${(user.alias || user.email || 'U')[0].toUpperCase()}
+          </div>
+          <div>
+            <p class="font-semibold">${user.alias || user.displayName || 'Sin nombre'}</p>
+            <p class="text-xs text-gray-400">${user.uid}</p>
+          </div>
+        </div>
+      </td>
+      <td class="px-6 py-4 text-sm text-gray-300">${user.email || 'Sin email'}</td>
+      <td class="px-6 py-4">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user.userRole)}">
+          ${getRoleLabel(user.userRole)}
+        </span>
+      </td>
+      <td class="px-6 py-4">
+        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getGenderBadgeClass(user.gender)}">
+          ${user.gender === 'masculino' ? '♂ Masculino' : user.gender === 'femenino' ? '♀ Femenino' : 'No especificado'}
+        </span>
+      </td>
+      <td class="px-6 py-4">
+        <span class="text-green-400 font-bold">${(user.balance || 0).toFixed(2)}€</span>
+      </td>
+      <td class="px-6 py-4">
+        ${user.hasActiveSubscription ?
+                    '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i class="fas fa-crown mr-1"></i> Premium</span>' :
+                    '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">Free</span>'
+                }
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex gap-2">
+          <button onclick="viewUser('${user.id}')"
+            class="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors text-sm">
+            <i class="fas fa-eye mr-2"></i>Ver
+          </button>
+          <button onclick="deleteUser('${user.id}')"
+            class="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors text-sm ${user.userRole === 'admin' ? 'opacity-50 cursor-not-allowed' : ''}">
+            <i class="fas fa-trash mr-2"></i>Borrar
+          </button>
+        </div>
+      </td>
+    </tr>
+      `).join('');
+
+            // Update pagination
+            document.getElementById('showingCount').textContent = Math.min(end, filteredUsers.length);
+            document.getElementById('totalCount').textContent = filteredUsers.length;
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = end >= filteredUsers.length;
+        }
+
+        function getRoleBadgeClass(role) {
+            switch (role) {
+                case 'admin': return 'bg-red-500/20 text-red-400';
+                case 'concierge': return 'bg-blue-500/20 text-blue-400';
+                default: return 'bg-gray-500/20 text-gray-400';
+            }
+        }
+
+        function getRoleLabel(role) {
+            switch (role) {
+                case 'admin': return 'Admin';
+                case 'concierge': return 'Concierge';
+                default: return 'Regular';
+            }
+        }
+
+        function getGenderBadgeClass(gender) {
+            return gender === 'masculino' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400';
+        }
+
+        window.viewUser = async (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const modalContent = document.getElementById('userModalContent');
+            modalContent.innerHTML = `
+      <div class="space-y-6">
+      <!-- Avatar and Basic Info -->
+      <div class="text-center pb-6 border-b border-white/10">
+        <div
+          class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
+          ${(user.alias || user.email || 'U')[0].toUpperCase()}
+        </div>
+        <h3 class="text-2xl font-bold mb-1">${user.alias || user.displayName || 'Sin nombre'}</h3>
+        <p class="text-gray-400">${user.email || 'Sin email'}</p>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Rol</p>
+          <p class="font-semibold">${getRoleLabel(user.userRole)}</p>
+        </div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Género</p>
+          <p class="font-semibold">${user.gender === 'masculino' ? 'Masculino' : user.gender === 'femenino' ? 'Femenino'
+                    : 'No especificado'}</p>
+        </div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Monedero</p>
+          <p class="font-semibold text-green-400">${(user.balance || 0).toFixed(2)}€</p>
+        </div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Suscripción</p>
+          <p class="font-semibold">${user.hasActiveSubscription ? '✓ Premium' : '✗ Free'}</p>
+        </div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Edad</p>
+          <p class="font-semibold">${user.age || 'No especificada'}</p>
+        </div>
+        <div class="bg-white/5 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Ubicación</p>
+          <p class="font-semibold">${user.city || 'No especificada'}</p>
+        </div>
+      </div>
+
+      <!-- Full Details -->
+      <div class="bg-white/5 rounded-lg p-4">
+        <p class="text-xs text-gray-400 mb-2">UID</p>
+        <code class="text-xs bg-black/30 px-2 py-1 rounded">${user.uid}</code>
+      </div>
+
+      ${user.bio ? `
+      <div class="bg-white/5 rounded-lg p-4">
+        <p class="text-xs text-gray-400 mb-2">Biografía</p>
+        <p class="text-sm">${user.bio}</p>
+      </div>
+      ` : ''
+                }
+
+      <!-- Actions -->
+      <div class="pt-4 border-t border-white/10 flex space-x-3">
+        <button onclick="closeUserModal()"
+          class="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
+      `;
+
+            document.getElementById('userModal').classList.remove('hidden');
+        };
+
+        window.closeUserModal = () => {
+            document.getElementById('userModal').classList.add('hidden');
+        };
+
+        // Delete user function
+        window.deleteUser = async (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            const userEmail = user.email;
+            const userRole = user.userRole;
+
+            // Prevent deleting admins
+            if (userRole === 'admin') {
+                alert('⚠️ No se pueden borrar cuentas de administrador');
+                return;
+            }
+
+            // Confirm deletion
+            const confirmed = confirm(
+                `⚠️ ¿Estás seguro de que quieres borrar este usuario ?\n\n` +
+                `Email: ${userEmail} \n\n` +
+                `Esta acción NO se puede deshacer.`
+            );
+
+            if (!confirmed) return;
+
+            try {
+                console.log('🗑️ Deleting user:', userId, userEmail);
+
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'users', userId));
+
+                console.log('✅ User deleted from Firestore');
+
+                // Remove from local array
+                allUsers = allUsers.filter(u => u.id !== userId);
+
+                // Update display
+                applyFilters();
+
+                // Show success message
+                alert('✅ Usuario borrado exitosamente');
+
+            } catch (error) {
+                console.error('❌ Error deleting user:', error);
+                alert('❌ Error al borrar usuario: ' + error.message);
+            }
+        };
+
+        window.logout = async () => {
+            if (confirm('¿Seguro que quieres cerrar sesión?')) {
+                await signOut(auth);
+                window.location.href = '/admin-login.html';
+            }
+        };
+
+        window.previousPage = () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderUsers();
+            }
+        };
+
+        window.nextPage = () => {
+            if ((currentPage + 1) * usersPerPage < filteredUsers.length) { currentPage++; renderUsers(); }
+        };
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
+        document.getElementById('genderFilter').addEventListener('change', applyFilters); 
+    </script>
 </body>
 
 </html>
