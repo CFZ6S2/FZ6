@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
                     cuenta_pagos: path.resolve(__dirname, 'cuenta-pagos.html'),
                     evento_detalle: path.resolve(__dirname, 'evento-detalle.html'),
                     eventos_vip: path.resolve(__dirname, 'eventos-vip.html'),
-                    login: path.resolve(__dirname, 'login.html'),
+
                     logros: path.resolve(__dirname, 'logros.html'),
                     membresia: path.resolve(__dirname, 'membresia.html'),
                     perfil: path.resolve(__dirname, 'perfil.html'),
