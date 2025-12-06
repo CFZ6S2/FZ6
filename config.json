@@ -1,0 +1,19 @@
+{
+  "paypal": {
+    "client_id": "AZcPVPi1jquZguW8UkbI1...",
+    "mode": "live",
+    "secret": "EDXkZeOT5Ear3pXwza0B6NpOhwHSY-JLDN-AVK_4ut3Y6uaWPL02B897zQUgkIkfTzQv7l8IY7td4G8B",
+    "webhook_id": "4KU10759WG039003L"
+  },
+  "api": {
+    "base_url": "https://fz6-production.up.railway.app"
+  },
+  "stripe": {
+    "secret_key": "sk_test_PLACEHOLDER",
+    "webhook_secret": "whsec_PLACEHOLDER"
+  },
+  "recaptcha": {
+    "api_key": "TU_API_KEY",
+    "secret": "6LfdTvQrAAAAAGpXvK8OnaiqdYvESec6hMuk7ZHJ"
+  }
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,11 +55,19 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Header -->
@@ -66,7 +75,7 @@
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+          <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
           <h1 class="text-2xl font-bold">
@@ -76,7 +85,8 @@
         </div>
         <div class="flex items-center gap-4">
           <div id="userInfo" class="flex items-center gap-3">
-            <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+            <div id="userAvatar"
+              class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
               <i class="fas fa-user"></i>
             </div>
             <span id="userAlias" class="font-semibold hidden md:block">Usuario</span>
@@ -98,7 +108,8 @@
         <div>
           <h3 class="font-bold text-xl mb-2 text-yellow-400">Membresía Requerida</h3>
           <p class="text-slate-200 mb-3">Para enviar mensajes necesitas una membresía activa.</p>
-          <a href="/webapp/suscripcion.html" class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-xl transition">
+          <a href="/suscripcion.html"
+            class="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-xl transition">
             Activar Membresía
           </a>
         </div>
@@ -110,14 +121,11 @@
       <div class="flex flex-col md:flex-row gap-4">
         <div class="flex-1 relative">
           <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Buscar conversaciones..."
-            class="w-full pl-12 pr-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
+          <input type="text" id="searchInput" placeholder="Buscar conversaciones..."
+            class="w-full pl-12 pr-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
         </div>
-        <select id="filterSelect" class="px-4 py-3 rounded-xl glass text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <select id="filterSelect"
+          class="px-4 py-3 rounded-xl glass text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
           <option value="all">Todas</option>
           <option value="unread">No leídas</option>
           <option value="online">En línea</option>
@@ -127,7 +135,8 @@
 
     <!-- Loading State -->
     <div id="loadingState" class="glass-strong rounded-2xl p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-lg">Cargando conversaciones...</p>
     </div>
 
@@ -138,7 +147,8 @@
       </div>
       <h3 class="text-2xl font-bold mb-3">No hay conversaciones</h3>
       <p class="text-slate-300 mb-6">Comienza enviando solicitudes a otros usuarios</p>
-      <a href="/webapp/buscar-usuarios.html" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-xl transition">
+      <a href="/buscar-usuarios.html"
+        class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-xl transition">
         Buscar Usuarios
       </a>
     </div>
@@ -152,22 +162,26 @@
 
   <!-- Context Menu for Conversation Actions -->
   <div id="contextMenu" class="hidden fixed bg-slate-900 glass-strong rounded-xl shadow-2xl z-50 py-2 min-w-[200px]">
-    <button onclick="hideConversation()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3">
+    <button onclick="hideConversation()"
+      class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3">
       <i class="fas fa-eye-slash text-yellow-400"></i>
       <span>Ocultar conversación</span>
     </button>
-    <button onclick="reportUser()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-orange-400">
+    <button onclick="reportUser()"
+      class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-orange-400">
       <i class="fas fa-flag"></i>
       <span>Reportar usuario</span>
     </button>
-    <button onclick="blockUser()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-red-400">
+    <button onclick="blockUser()"
+      class="w-full px-4 py-3 text-left hover:bg-white/10 transition flex items-center gap-3 text-red-400">
       <i class="fas fa-ban"></i>
       <span>Bloquear usuario</span>
     </button>
   </div>
 
   <!-- Block User Confirmation Modal -->
-  <div id="blockModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="blockModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8">
       <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-ban text-4xl text-red-400"></i>
@@ -177,10 +191,12 @@
         <span id="blockUserName"></span> no podrá enviarte más mensajes ni verte en búsquedas.
       </p>
       <div class="flex gap-3">
-        <button onclick="closeBlockModal()" class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
+        <button onclick="closeBlockModal()"
+          class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
           Cancelar
         </button>
-        <button onclick="confirmBlock()" class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
+        <button onclick="confirmBlock()"
+          class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
           Bloquear
         </button>
       </div>
@@ -193,14 +209,18 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<<<<<<< HEAD
   <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       collection,
@@ -493,6 +513,7 @@
       }).join('');
     }
 
+<<<<<<< HEAD
     // Open chat - WITH PROFILE AND MEMBERSHIP VALIDATION
     window.openChat = function(conversationId, otherUserId) {
       // ✅ Validar perfil completo + membresía (hombres)
@@ -513,16 +534,30 @@
             const chatUrl = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
             window.location.href = `/webapp/suscripcion.html?reason=chat&returnUrl=${encodeURIComponent(chatUrl)}`;
           }
+=======
+    // Open chat - WITH MEMBERSHIP VALIDATION
+    window.openChat = function (conversationId, otherUserId) {
+      // Check membership requirement before opening chat
+      const userMustPay = currentUserData.gender === 'masculino';
+      if (userMustPay && !currentUserData.hasActiveSubscription) {
+        showToast('⚠️ Membresía requerida para chatear', 'error');
+        if (confirm('Necesitas una membresía activa (€29.99/mes) para acceder al chat.\n\n¿Deseas activar tu membresía ahora?')) {
+          window.location.href = '/suscripcion.html';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         }
         return;
       }
 
+<<<<<<< HEAD
       // ✅ Validación pasada, abrir chat
       window.location.href = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
+=======
+      window.location.href = `/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     };
 
     // Show context menu
-    window.showContextMenu = function(event, conversationId, otherUserId) {
+    window.showContextMenu = function (event, conversationId, otherUserId) {
       event.preventDefault();
       selectedConversationId = conversationId;
       selectedOtherUserId = otherUserId;
@@ -539,7 +574,7 @@
     });
 
     // Hide conversation
-    window.hideConversation = async function() {
+    window.hideConversation = async function () {
       try {
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
@@ -558,14 +593,14 @@
     };
 
     // Report user
-    window.reportUser = function() {
+    window.reportUser = function () {
       if (selectedOtherUserId) {
-        window.location.href = `/webapp/reportes.html?type=user&userId=${selectedOtherUserId}`;
+        window.location.href = `/reportes.html?type=user&userId=${selectedOtherUserId}`;
       }
     };
 
     // Block user
-    window.blockUser = function() {
+    window.blockUser = function () {
       const conv = conversations.find(c => c.id === selectedConversationId);
       if (conv) {
         document.getElementById('blockUserName').textContent = conv.otherUser.alias || 'Este usuario';
@@ -573,11 +608,11 @@
       }
     };
 
-    window.closeBlockModal = function() {
+    window.closeBlockModal = function () {
       document.getElementById('blockModal').classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.confirmBlock = async function() {
+    window.confirmBlock = async function () {
       try {
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
@@ -606,4 +641,5 @@
   </script>
 
 </body>
+
 </html>

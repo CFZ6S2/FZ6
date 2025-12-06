@@ -161,6 +161,55 @@ class MatchingEngine:
         except Exception as e:
             logger.error(f"[MatchingEngine] Error generando recomendaciones: {e}", exc_info=True)
             return []
+
+    def calculate_compatibility(self, user_id_1: str, user_id_2: str) -> Optional[Dict]:
+        """
+        Calcular compatibilidad detallada entre dos usuarios específicos
+        
+        Args:
+            user_id_1: ID del primer usuario
+            user_id_2: ID del segundo usuario
+            
+        Returns:
+            Diccionario con detalles de compatibilidad o None si hay error
+        """
+        try:
+            # Obtener perfiles
+            user1 = self._get_user_profile(user_id_1)
+            user2 = self._get_user_profile(user_id_2)
+            
+            if not user1 or not user2:
+                logger.warning(f"[MatchingEngine] Perfil no encontrado para {user_id_1} o {user_id_2}")
+                return None
+            
+            # Calcular score interno
+            score, reasons = self._calculate_compatibility_score(user1, user2)
+            
+            # Calcular desglose detallado
+            collaborative = self._calculate_collaborative_score(user1, user2)
+            # Para content, necesitamos pasar 'reasons' para que se popule
+            temp_reasons = []
+            content = self._calculate_content_score(user1, user2, temp_reasons)
+            geo = self._calculate_geographic_score(user1, user2)
+            behavioral = self._calculate_behavioral_score(user1, user2)
+            
+            return {
+                "total_score": score,
+                "breakdown": {
+                    "collaborative": collaborative,
+                    "content": content,
+                    "geographic": geo,
+                    "behavioral": behavioral
+                },
+                "reasons": reasons,
+                "common_interests": list(set(user1.interests) & set(user2.interests)),
+                "distance_km": self._calculate_distance(user1.location, user2.location),
+                "predicted_success": self._predict_success_rate(user1, user2)
+            }
+            
+        except Exception as e:
+            logger.error(f"[MatchingEngine] Error calculando compatibilidad entre pares: {e}")
+            return None
     
     def _get_user_profile(self, user_id: str) -> Optional[UserProfile]:
         """Obtener perfil completo de usuario desde Firestore o modo demo"""

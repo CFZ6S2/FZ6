@@ -2,7 +2,7 @@
 // Importar ANTES de otros módulos de Firebase en archivos HTML
 
 import { getPerformance, trace } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-performance.js";
-import app from './firebase-config.js';
+import app from './firebase-config-env.js';
 import { logger } from './logger.js';
 
 // ============================================================================

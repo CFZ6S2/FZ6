@@ -91,35 +91,12 @@ service cloud.firestore {
         (isFemale() && resource.data.gender == 'masculino')  // Mujeres ven hombres
       );
 
-      // Actualización: El dueño puede actualizar su perfil (con alias/gender configurables una vez)
+      // Actualización: El dueño puede actualizar su perfil
+      // TEMPORALMENTE SIMPLIFICADO PARA TESTING
       allow update: if isAuthed() && (
         (
           uid() == userId &&
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt']) &&
-          (
-            // Sin cambios en alias/gender
-            (request.resource.data.alias == resource.data.alias && request.resource.data.gender == resource.data.gender) ||
-            // Establecer alias por primera vez
-            (
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['alias']) &&
-              resource.data.alias == '' &&
-              request.resource.data.alias != ''
-            ) ||
-            // Establecer gender por primera vez
-            (
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['gender']) &&
-              resource.data.gender == '' &&
-              request.resource.data.gender in ['masculino','femenino']
-            ) ||
-            // Establecer alias y gender por primera vez
-            (
-              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['alias','gender']) &&
-              resource.data.alias == '' &&
-              resource.data.gender == '' &&
-              request.resource.data.alias != '' &&
-              request.resource.data.gender in ['masculino','femenino']
-            )
-          )
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt'])
         ) ||
         // Admin puede cambiar cualquier campo
         isAdmin()

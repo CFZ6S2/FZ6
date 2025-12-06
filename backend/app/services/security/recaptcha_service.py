@@ -78,39 +78,32 @@ class RecaptchaService:
             return True
         return False
     
-    async def verify_recaptcha(self, token: str, remote_ip: Optional[str] = None) -> Dict:
+    async def verify_recaptcha(self, token: str, remote_ip: Optional[str] = None, action: str = "LOGIN") -> Dict:
         """
-        Verifica un token de reCAPTCHA con Google.
+        Verifica un token de reCAPTCHA Enterprise.
 
         Args:
             token: Token de reCAPTCHA proporcionado por el frontend
-            remote_ip: (Opcional) IP del usuario para verificación adicional
+            remote_ip: (Opcional) IP del usuario para verificación adicional (No usado en Enterprise normalmente por privacidad)
+            action: Acción esperada (ej. 'LOGIN', 'SIGNUP')
 
         Returns:
             Dict con el resultado de la verificación
-
-        Example:
-            {
-                "success": True,
-                "score": 0.9,
-                "action": "submit",
-                "challenge_ts": "2025-01-01T12:00:00Z",
-                "hostname": "example.com"
-            }
         """
         if not self.is_enabled():
             # Development mode - bypass validation
             logger.warning(
                 f"reCAPTCHA bypassed (not configured) - Environment: {self.environment}. "
-                "Configure RECAPTCHA_SECRET_KEY for production!"
+                "Configure RECAPTCHA_SECRET_KEY/PROJECT_ID for production!"
             )
             return {
                 "success": True,
-                "score": 0.9,  # High score for dev mode
-                "action": "submit",
+                "score": 0.9,
+                "action": action,
                 "hostname": "localhost",
-                "_bypassed": True  # Internal flag for monitoring
+                "_bypassed": True
             }
+<<<<<<< HEAD
         try:
             async with httpx.AsyncClient(timeout=RECAPTCHA_TIMEOUT) as client:
                 response = await client.post(self.verify_url_enterprise, json={"token": token, "action": "submit"})
@@ -125,9 +118,58 @@ class RecaptchaService:
         except httpx.HTTPError as e:
             logger.error(f"Error verifying reCAPTCHA: {e}")
             return {"success": False, "error": "recaptcha_service_unavailable"}
+=======
+
+        try:
+            from google.cloud import recaptchaenterprise_v1
+            
+            # Project ID is required for Enterprise
+            project_id = os.getenv("VITE_FIREBASE_PROJECT_ID", "tucitasegura-129cc")
+            recaptcha_site_key = os.getenv("VITE_RECAPTCHA_SITE_KEY", "6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb")
+
+            client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient()
+            project_path = f"projects/{project_id}"
+
+            # Build the assessment request
+            request = recaptchaenterprise_v1.CreateAssessmentRequest()
+            request.parent = project_path
+            request.assessment.event.token = token
+            request.assessment.event.site_key = recaptcha_site_key
+            
+            if action:
+                 request.assessment.event.expected_action = action
+
+            # Execute request
+            response = client.create_assessment(request=request)
+
+            # Check if the token is valid
+            if not response.token_properties.valid:
+                logger.warning(f"reCAPTCHA Invalid Token: {response.token_properties.invalid_reason}")
+                return {
+                    "success": False, 
+                    "error": f"Invalid Token: {response.token_properties.invalid_reason}",
+                    "valid": False
+                }
+
+            # Check action match
+            if response.token_properties.action != action:
+                 logger.warning(f"reCAPTCHA Action Mismatch: expected {action}, got {response.token_properties.action}")
+                 # We don't fail, but we warn. In strict mode, we might fail.
+
+            return {
+                "success": True,
+                "score": response.risk_analysis.score,
+                "reasons": response.risk_analysis.reason,
+                "action": response.token_properties.action,
+                "valid": True,
+                "assessment_name": response.name
+            }
+
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         except Exception as e:
-            logger.error(f"Unexpected error in reCAPTCHA verification: {e}")
-            return {"success": False, "error": "internal_error"}
+            logger.error(f"Error validating reCAPTCHA Enterprise: {e}")
+            # Fail open or closed depending on policy. For now, fail closed but with specific error.
+            return {"success": False, "error": str(e)}
     
     async def is_human(
         self,
@@ -176,6 +218,45 @@ class RecaptchaService:
             )
 
         return is_valid
+
+    async def annotate_assessment(self, assessment_name: str, annotation: str) -> bool:
+        """
+        Envía feedback a Google sobre si una evaluación fue correcta o no.
+        
+        Args:
+            assessment_name: El nombre del recurso de evaluación (devuelto por verify_recaptcha)
+                            format: projects/{project_id}/assessments/{assessment_id}
+            annotation: 'LEGITIMATE' o 'FRAUDULENT'
+            
+        Returns:
+            bool: True si se envió correctamente
+        """
+        if not assessment_name or not self.is_enabled():
+            return False
+            
+        try:
+            from google.cloud import recaptchaenterprise_v1
+            
+            client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient()
+            
+            # Map simplified strings to Enums
+            annotation_enum = recaptchaenterprise_v1.AnnotateAssessmentRequest.Annotation.ANNOTATION_UNSPECIFIED
+            if annotation == "LEGITIMATE":
+                annotation_enum = recaptchaenterprise_v1.AnnotateAssessmentRequest.Annotation.LEGITIMATE
+            elif annotation == "FRAUDULENT":
+                annotation_enum = recaptchaenterprise_v1.AnnotateAssessmentRequest.Annotation.FRAUDULENT
+            
+            request = recaptchaenterprise_v1.AnnotateAssessmentRequest()
+            request.name = assessment_name
+            request.annotation = annotation_enum
+            
+            client.annotate_assessment(request=request)
+            logger.info(f"reCAPTCHA Annotation sent: {annotation} for {assessment_name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error annotating reCAPTCHA: {e}")
+            return False
 
 # Instancia global del servicio
 recaptcha_service = RecaptchaService()

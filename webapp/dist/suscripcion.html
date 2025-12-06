@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membresía Premium - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon-ucFM3VZS.svg">
+  <link rel="alternate icon" href="/assets/favicon-Cun14U_G.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-Crbd7A89.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192-CsJCmVbd.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512-BuBNreg2.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32-BBREFL-q.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16-be4EoATY.png">
+  <link rel="manifest" href="/assets/site-WhAqb5Xc.webmanifest">
+  <meta name="theme-color" content="#764ba2">
+
+  <!-- Tailwind CSS -->
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- PayPal SDK -->
+  <!-- DOMPurify for XSS Protection -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+  <script src="./js/sanitizer.js"></script>
+
+
+  <script
+    src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&vault=true&intent=subscription"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .shimmer {
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/suscripcion--jTKF7TG.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-env-BtJ4KElt.js">
+  <link rel="modulepreload" crossorigin href="/assets/logger-CnI7WBtq.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-appcheck-B5Dlx5A0.js">
+  <link rel="modulepreload" crossorigin href="/assets/error-fixes-B-QQl9aC.js">
+  <link rel="modulepreload" crossorigin href="/assets/theme-BOByySXs.js">
+  <link rel="stylesheet" crossorigin href="/assets/output-D--XYbyl.css">
+</head>
+
+<body class="text-white">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+    <div class="text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
+      <p class="text-xl font-semibold">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-check text-4xl text-white"></i>
+      </div>
+      <h3 class="text-3xl font-bold mb-4">¡Membresía Activada!</h3>
+      <p class="text-slate-200 mb-6">Tu membresía premium ha sido activada exitosamente. Ahora puedes disfrutar de todas
+        las funciones de TuCitaSegura.</p>
+      <button onclick="redirectToSearch()"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+        Comenzar a Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div id="errorModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-exclamation-circle text-4xl text-white"></i>
+      </div>
+      <h3 class="text-3xl font-bold mb-4">Error en el Pago</h3>
+      <p id="errorMessage" class="text-slate-200 mb-6">Hubo un problema al procesar tu pago. Por favor, intenta
+        nuevamente.</p>
+      <button onclick="closeErrorModal()"
+        class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+        Intentar Nuevamente
+      </button>
+      <button onclick="redirectToSearch()"
+        class="w-full mt-3 glass hover:glass-strong text-white font-semibold py-3 px-6 rounded-xl transition">
+        Volver a Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <a href="/buscar-usuarios.html"
+        class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
+        <i class="fas fa-arrow-left"></i>
+        <span>Volver a búsqueda</span>
+      </a>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        <i class="fas fa-crown text-yellow-400"></i>
+        Membresía Premium
+      </h1>
+      <p class="text-xl text-slate-200">Accede a todas las funciones de TuCitaSegura</p>
+    </div>
+
+    <!-- Pricing Card -->
+    <div class="glass-strong rounded-2xl p-8 mb-8 fade-in">
+      <div class="text-center mb-8">
+        <div
+          class="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
+          MEJOR VALOR
+        </div>
+        <div class="text-6xl font-bold mb-2">
+          €29<span class="text-3xl text-slate-300">.99</span>
+        </div>
+        <p class="text-slate-300 text-lg">por mes</p>
+      </div>
+
+      <!-- Features List -->
+      <div class="space-y-4 mb-8">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Envía Solicitudes de Cita</h4>
+            <p class="text-slate-300">Conecta con personas que te interesan sin límites</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Chat sin Restricciones</h4>
+            <p class="text-slate-300">Mantén conversaciones con todos tus matches</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Búsqueda Avanzada</h4>
+            <p class="text-slate-300">Filtros por ubicación, edad, reputación y más</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Vista en Mapa</h4>
+            <p class="text-slate-300">Encuentra personas cerca de ti con geolocalización</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Sistema de Reputación</h4>
+            <p class="text-slate-300">Construye tu reputación y gana confianza</p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fas fa-check text-green-400"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">Soporte Prioritario</h4>
+            <p class="text-slate-300">Atención al cliente con respuesta prioritaria</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PayPal Button Container -->
+      <div id="paypal-button-container" class="mb-4"></div>
+
+      <!-- Security Notice -->
+      <div class="glass rounded-xl p-4 text-center text-sm text-slate-300">
+        <i class="fas fa-lock mr-2"></i>
+        Pago seguro procesado por PayPal. Cancela en cualquier momento.
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="glass-strong rounded-2xl p-8 fade-in">
+      <h3 class="text-2xl font-bold mb-6 text-center">Preguntas Frecuentes</h3>
+
+      <div class="space-y-4">
+        <details class="glass rounded-xl p-4 cursor-pointer">
+          <summary class="font-bold text-lg">¿Puedo cancelar en cualquier momento?</summary>
+          <p class="mt-3 text-slate-300">Sí, puedes cancelar tu suscripción en cualquier momento desde tu cuenta de
+            PayPal. No hay cargos por cancelación y seguirás teniendo acceso hasta el final del período que pagaste.</p>
+        </details>
+
+        <details class="glass rounded-xl p-4 cursor-pointer">
+          <summary class="font-bold text-lg">¿Qué pasa si cancelo mi membresía?</summary>
+          <p class="mt-3 text-slate-300">Si cancelas, perderás acceso a las funciones premium (enviar solicitudes y
+            chat) pero mantendrás tu perfil y podrás reactivar tu membresía cuando quieras.</p>
+        </details>
+
+        <details class="glass rounded-xl p-4 cursor-pointer">
+          <summary class="font-bold text-lg">¿Necesito también el seguro anti-plantón?</summary>
+          <p class="mt-3 text-slate-300">La membresía te permite chatear y enviar solicitudes. Para agendar citas
+            presenciales necesitarás también contratar el seguro anti-plantón de 120€ (pago único).</p>
+        </details>
+
+        <details class="glass rounded-xl p-4 cursor-pointer">
+          <summary class="font-bold text-lg">¿Es seguro el pago?</summary>
+          <p class="mt-3 text-slate-300">Absolutamente. Todos los pagos son procesados por PayPal, uno de los sistemas
+            de pago más seguros del mundo. No almacenamos tu información de pago.</p>
+        </details>
+
+        <details class="glass rounded-xl p-4 cursor-pointer">
+          <summary class="font-bold text-lg">¿Qué métodos de pago aceptan?</summary>
+          <p class="mt-3 text-slate-300">Aceptamos tarjetas de crédito, débito y cuenta PayPal a través de PayPal
+            Checkout.</p>
+        </details>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Error Fixes -->
+
+  <!-- Firebase SDK -->
+
+</body>
+
+</html>

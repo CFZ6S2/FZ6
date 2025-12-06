@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,14 +63,18 @@
       border: 4px solid rgba(255, 255, 255, 0.3);
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       transition: all 0.3s;
     }
 
-    input:focus, select:focus, textarea:focus {
+    input:focus,
+    select:focus,
+    textarea:focus {
       outline: none;
       border-color: #667eea;
       background: rgba(255, 255, 255, 0.15);
@@ -123,18 +128,21 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-xl font-semibold">Cargando perfil...</p>
     </div>
   </div>
 
   <!-- Success Modal -->
-  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="successModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center">
       <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-check-circle text-5xl text-green-400"></i>
@@ -142,10 +150,12 @@
       <h3 class="text-3xl font-bold mb-4">¡Perfil Actualizado!</h3>
       <p class="text-slate-200 mb-6">Tus cambios han sido guardados exitosamente.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <button onclick="goToSearch()" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
+        <button onclick="goToSearch()"
+          class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
           Buscar
         </button>
-        <button onclick="closeSuccessModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
+        <button onclick="closeSuccessModal()"
+          class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
           Seguir aquí
         </button>
       </div>
@@ -157,7 +167,7 @@
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+          <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
           <h1 class="text-2xl font-bold">
@@ -188,7 +198,8 @@
             <div id="photoPlaceholder" class="photo-placeholder">
               <span id="photoInitial">U</span>
             </div>
-            <button type="button" onclick="document.getElementById('photoInput').click()" class="absolute bottom-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" onclick="document.getElementById('photoInput').click()"
+              class="absolute bottom-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-12 h-12 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-camera text-xl"></i>
             </button>
             <input type="file" id="photoInput" accept="image/*" class="hidden">
@@ -211,11 +222,13 @@
         <div class="grid grid-cols-3 md:grid-cols-5 gap-4">
           <!-- Gallery Photo 1 -->
           <div class="relative aspect-square">
-            <div id="galleryPreview1" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+            <div id="galleryPreview1"
+              class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
               <i class="fas fa-plus text-white/50 text-2xl"></i>
             </div>
             <img id="galleryImage1" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 1">
-            <button type="button" id="galleryRemove1" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" id="galleryRemove1"
+              class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-times text-white"></i>
             </button>
             <input type="file" id="galleryInput1" accept="image/*" class="hidden">
@@ -223,11 +236,13 @@
 
           <!-- Gallery Photo 2 -->
           <div class="relative aspect-square">
-            <div id="galleryPreview2" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+            <div id="galleryPreview2"
+              class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
               <i class="fas fa-plus text-white/50 text-2xl"></i>
             </div>
             <img id="galleryImage2" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 2">
-            <button type="button" id="galleryRemove2" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" id="galleryRemove2"
+              class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-times text-white"></i>
             </button>
             <input type="file" id="galleryInput2" accept="image/*" class="hidden">
@@ -235,11 +250,13 @@
 
           <!-- Gallery Photo 3 -->
           <div class="relative aspect-square">
-            <div id="galleryPreview3" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+            <div id="galleryPreview3"
+              class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
               <i class="fas fa-plus text-white/50 text-2xl"></i>
             </div>
             <img id="galleryImage3" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 3">
-            <button type="button" id="galleryRemove3" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" id="galleryRemove3"
+              class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-times text-white"></i>
             </button>
             <input type="file" id="galleryInput3" accept="image/*" class="hidden">
@@ -247,11 +264,13 @@
 
           <!-- Gallery Photo 4 -->
           <div class="relative aspect-square">
-            <div id="galleryPreview4" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+            <div id="galleryPreview4"
+              class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
               <i class="fas fa-plus text-white/50 text-2xl"></i>
             </div>
             <img id="galleryImage4" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 4">
-            <button type="button" id="galleryRemove4" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" id="galleryRemove4"
+              class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-times text-white"></i>
             </button>
             <input type="file" id="galleryInput4" accept="image/*" class="hidden">
@@ -259,11 +278,13 @@
 
           <!-- Gallery Photo 5 -->
           <div class="relative aspect-square">
-            <div id="galleryPreview5" class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
+            <div id="galleryPreview5"
+              class="w-full h-full rounded-xl border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-white/60 transition bg-white/5">
               <i class="fas fa-plus text-white/50 text-2xl"></i>
             </div>
             <img id="galleryImage5" class="hidden w-full h-full rounded-xl object-cover" src="" alt="Foto 5">
-            <button type="button" id="galleryRemove5" class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
+            <button type="button" id="galleryRemove5"
+              class="opacity-0 pointer-events-none absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 w-8 h-8 rounded-full flex items-center justify-center transition shadow-lg">
               <i class="fas fa-times text-white"></i>
             </button>
             <input type="file" id="galleryInput5" accept="image/*" class="hidden">
@@ -302,15 +323,8 @@
             <i class="fas fa-user text-purple-400 mr-2"></i>
             Nombre de Usuario (Alias)
           </label>
-          <input
-            type="text"
-            id="alias"
-            class="w-full px-4 py-3 rounded-xl bg-slate-700"
-            placeholder="Tu nombre de usuario"
-            required
-            minlength="3"
-            maxlength="30"
-          >
+          <input type="text" id="alias" class="w-full px-4 py-3 rounded-xl bg-slate-700"
+            placeholder="Tu nombre de usuario" required minlength="3" maxlength="30">
           <p class="text-xs text-slate-400 mt-2">
             <i class="fas fa-info-circle mr-1"></i>
             Este nombre será visible para otros usuarios.
@@ -323,12 +337,7 @@
             <i class="fas fa-calendar text-purple-400 mr-2"></i>
             Fecha de Nacimiento
           </label>
-          <input
-            type="date"
-            id="birthDate"
-            class="w-full px-4 py-3 rounded-xl"
-            required
-          >
+          <input type="date" id="birthDate" class="w-full px-4 py-3 rounded-xl" required>
         </div>
 
         <!-- Género -->
@@ -345,7 +354,8 @@
           <div class="mt-2 p-3 bg-blue-500/20 border border-blue-400/30 rounded-lg">
             <p class="text-xs text-blue-300">
               <i class="fas fa-info-circle mr-1"></i>
-              <strong>Plataforma exclusivamente heterosexual:</strong> Los hombres solo verán mujeres y las mujeres solo verán hombres
+              <strong>Plataforma exclusivamente heterosexual:</strong> Los hombres solo verán mujeres y las mujeres solo
+              verán hombres
             </p>
           </div>
         </div>
@@ -357,14 +367,8 @@
             Ubicación (Municipio)
           </label>
           <div class="space-y-3">
-            <input
-              type="text"
-              id="city"
-              class="w-full px-4 py-3 rounded-xl"
-              placeholder="Tu municipio"
-              required
-              readonly
-            >
+            <input type="text" id="city" class="w-full px-4 py-3 rounded-xl" placeholder="Tu municipio" required
+              readonly>
             <input type="hidden" id="latitude" value="">
             <input type="hidden" id="longitude" value="">
 
@@ -388,13 +392,8 @@
             <i class="fas fa-briefcase text-purple-400 mr-2"></i>
             ¿A Qué Te Dedicas?
           </label>
-          <input
-            type="text"
-            id="profession"
-            class="w-full px-4 py-3 rounded-xl"
-            placeholder="Tu profesión u ocupación"
-            required
-          >
+          <input type="text" id="profession" class="w-full px-4 py-3 rounded-xl" placeholder="Tu profesión u ocupación"
+            required>
         </div>
 
         <!-- Autodescripción -->
@@ -403,17 +402,15 @@
             <i class="fas fa-pen text-purple-400 mr-2"></i>
             Autodescripción
           </label>
-          <textarea
-            id="bio"
-            rows="6"
-            class="w-full px-4 py-3 rounded-xl resize-none"
+          <textarea id="bio" rows="6" class="w-full px-4 py-3 rounded-xl resize-none"
             placeholder="Escribe una descripción sobre ti, tus intereses, qué te gusta hacer, qué buscas... (Mínimo 100 caracteres)"
-            minlength="100"
-          ></textarea>
+            minlength="100"></textarea>
           <p class="text-xs text-slate-400 mt-2">
             <span id="bioCharCount">0</span> caracteres
-            <span id="bioMinWarning" class="text-yellow-400 hidden"> - <i class="fas fa-exclamation-triangle"></i> Mínimo 100 caracteres</span>
-            <span id="bioMinSuccess" class="text-green-400 hidden"> - <i class="fas fa-check-circle"></i> Descripción completa</span>
+            <span id="bioMinWarning" class="text-yellow-400 hidden"> - <i class="fas fa-exclamation-triangle"></i>
+              Mínimo 100 caracteres</span>
+            <span id="bioMinSuccess" class="text-green-400 hidden"> - <i class="fas fa-check-circle"></i> Descripción
+              completa</span>
           </p>
         </div>
 
@@ -472,25 +469,13 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-sm text-slate-300 mb-2 block">Edad mínima</label>
-              <input
-                type="number"
-                id="ageRangeMin"
-                min="18"
-                max="99"
-                class="w-full px-4 py-3 rounded-xl"
-                placeholder="18"
-              >
+              <input type="number" id="ageRangeMin" min="18" max="99" class="w-full px-4 py-3 rounded-xl"
+                placeholder="18">
             </div>
             <div>
               <label class="text-sm text-slate-300 mb-2 block">Edad máxima</label>
-              <input
-                type="number"
-                id="ageRangeMax"
-                min="18"
-                max="99"
-                class="w-full px-4 py-3 rounded-xl"
-                placeholder="99"
-              >
+              <input type="number" id="ageRangeMax" min="18" max="99" class="w-full px-4 py-3 rounded-xl"
+                placeholder="99">
             </div>
           </div>
         </div>
@@ -522,18 +507,12 @@
 
     <!-- Save Button -->
     <div class="flex gap-4">
-      <button
-        type="button"
-        onclick="window.location.href='/webapp/buscar-usuarios.html'"
-        class="flex-1 glass hover:glass-strong text-white font-bold py-4 px-6 rounded-xl transition"
-      >
+      <button type="button" onclick="window.location.href='/buscar-usuarios.html'"
+        class="flex-1 glass hover:glass-strong text-white font-bold py-4 px-6 rounded-xl transition">
         Cancelar
       </button>
-      <button
-        id="saveButton"
-        onclick="saveProfile()"
-        class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl transition"
-      >
+      <button id="saveButton" onclick="saveProfile()"
+        class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-6 rounded-xl transition">
         <i class="fas fa-save mr-2"></i>
         Guardar Cambios
       </button>
@@ -548,10 +527,8 @@
       <p class="text-sm text-slate-300 mb-4">
         Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, estate seguro.
       </p>
-      <button
-        onclick="confirmDeleteAccount()"
-        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
-      >
+      <button onclick="confirmDeleteAccount()"
+        class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">
         <i class="fas fa-trash mr-2"></i>
         Eliminar mi Cuenta
       </button>
@@ -568,12 +545,15 @@
 
   <!-- Demo Mode Banner -->
   <script type="module" src="./js/demo-banner.js"></script>
+<<<<<<< HEAD
 
   <script>
     if (!window.GOOGLE_MAPS_API_KEY) {
       try { window.GOOGLE_MAPS_API_KEY = localStorage.getItem('GOOGLE_MAPS_API_KEY') || ''; } catch {}
     }
   </script>
+=======
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -581,17 +561,33 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db, storage } from './js/firebase-config.js';
+    // Then import Firebase services
+    import { auth, storage, app, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, serverTimestamp, getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+<<<<<<< HEAD
     import { showToast, validateProfileComplete } from './js/utils.js';
+=======
+
+    // Initialize Firestore locally to ensure valid instance
+    // Firestore imported from config
+    console.log('🔥 DEBUG: Firestore imported from config:', db);
+    console.log('🔥 DEBUG: App initialized:', app);
+
+    // Expose for debugging
+    window._debug_db = db;
+    window._debug_app = app;
+
+    import { showToast } from './js/utils.js';
+    import { apiService } from './js/api-service.js';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './js/theme.js';
     import { logger } from './js/logger.js';
     import { setupGlobalErrorHandling } from './js/error-handler.js';
     import { initializeNotifications } from './js/notifications-safe.js';
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
-    import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config.js';
+    import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config-env.js';
     import { fileValidator, showValidationErrors } from './js/file-validator.js';
 
     // Image optimization with lazy loading
@@ -631,13 +627,35 @@
     // Load Google Maps API dynamically
     function loadGoogleMapsAPI() {
       return new Promise((resolve, reject) => {
+        if (window.google && window.google.maps) {
+          googleMapsLoaded = true;
+          geocoder = new google.maps.Geocoder();
+          resolve();
+          return;
+        }
+
         if (googleMapsLoaded) {
           resolve();
           return;
         }
 
+        // Check if script already exists
+        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+        if (existingScript) {
+          if (window.google && window.google.maps) {
+            resolve();
+          } else {
+            existingScript.addEventListener('load', () => {
+              googleMapsLoaded = true;
+              geocoder = new google.maps.Geocoder();
+              resolve();
+            });
+          }
+          return;
+        }
+
         if (GOOGLE_MAPS_API_KEY === 'TU_API_KEY_AQUI') {
-          const errorMsg = '⚠️ IMPORTANTE: Configura tu Google Maps API Key en /webapp/js/google-maps-config.js';
+          const errorMsg = '⚠️ IMPORTANTE: Configura tu Google Maps API Key en ./js/google-maps-config.js';
           console.error(errorMsg);
           showToast('Configura la API Key de Google Maps', 'error');
           reject(new Error(errorMsg));
@@ -645,14 +663,19 @@
         }
 
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=es&region=ES`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=es&region=ES&callback=initMapCallback`;
         script.async = true;
         script.defer = true;
-        script.onload = () => {
+        script.id = 'google-maps-script';
+
+        // Global callback for safety
+        window.initMapCallback = () => {
+          console.log('🗺️ Google Maps loaded via callback');
           googleMapsLoaded = true;
           geocoder = new google.maps.Geocoder();
           resolve();
         };
+
         script.onerror = () => {
           reject(new Error('Error al cargar Google Maps API'));
         };
@@ -871,24 +894,24 @@
     // Auth State - FIXED TO PREVENT INFINITE LOOPS
     let authStateChangeCount = 0;
     let lastAuthStateChangeTime = 0;
-    
+
     onAuthStateChanged(auth, async (user) => {
       try {
         authStateChangeCount++;
         const currentTime = Date.now();
         const timeSinceLastChange = currentTime - lastAuthStateChangeTime;
         lastAuthStateChangeTime = currentTime;
-        
+
         console.log(`🔍 Auth state change #${authStateChangeCount}:`, user ? 'User logged in' : 'No user');
         console.log(`⏱️ Time since last change: ${timeSinceLastChange}ms`);
-        
+
         // EMERGENCY LOOP PREVENTION: If auth changes too frequently, stop processing
         if (authStateChangeCount > 10 && timeSinceLastChange < 1000) {
           console.error('🚨 EMERGENCY: Auth state changing too rapidly - stopping to prevent infinite loop');
           showToast('Error de autenticación - por favor recarga la página', 'error');
           return;
         }
-        
+
         if (isLoadingProfile || hasLoadedProfile) {
           console.log('🛑 Preventing duplicate profile load');
           return;
@@ -906,14 +929,14 @@
             return;
           }
         }
-        
+
         if (user) {
           currentUser = user;
           isLoadingProfile = true;
           await loadUserProfile();
           isLoadingProfile = false;
           hasLoadedProfile = true;
-          
+
           try {
             const notificationsEnabled = await initializeNotifications();
             if (notificationsEnabled) {
@@ -926,7 +949,7 @@
           console.log('🔄 Redirecting to login - no user');
           // Add delay to prevent rapid redirects
           setTimeout(() => {
-            window.location.href = '/webapp/login.html';
+            window.location.href = '/login.html';
           }, 1000);
         }
       } catch (e) {
@@ -945,56 +968,56 @@
         console.log('🛑 Preventing duplicate demo profile load');
         return;
       }
-      
+
       try {
         console.log('🎯 Loading demo user profile...');
-        
+
         // Use demo user data
         const demoUser = getDemoUser();
         if (!demoUser) {
           console.error('No demo user found');
           return;
         }
-        
+
         // Basic info
         const userNameEl = document.getElementById('userName');
         const userEmailEl = document.getElementById('userEmail');
         const photoInitialEl = document.getElementById('photoInitial');
-        
+
         if (userNameEl) userNameEl.textContent = demoUser.displayName || 'Usuario Demo';
         if (userEmailEl) userEmailEl.textContent = demoUser.email;
-        
+
         // Photo placeholder
         if (photoInitialEl) {
           const initial = (demoUser.displayName || demoUser.email || 'D').charAt(0).toUpperCase();
           photoInitialEl.textContent = initial;
         }
-        
+
         // Profile form - SAFE ELEMENT ACCESS
         const aliasInput = document.getElementById('alias');
         const bioInput = document.getElementById('bio');
-        
+
         if (aliasInput) aliasInput.value = demoUser.displayName || 'Usuario Demo';
         if (bioInput) bioInput.value = 'Usuario en modo demo - funcionalidad limitada';
-        
+
         // Set hidden fields safely
         const firstNameInput = document.getElementById('firstName');
         const lastNameInput = document.getElementById('lastName');
         const emailInput = document.getElementById('email');
-        
+
         if (firstNameInput) firstNameInput.value = demoUser.displayName?.split(' ')[0] || '';
         if (lastNameInput) lastNameInput.value = demoUser.displayName?.split(' ')[1] || '';
         if (emailInput) emailInput.value = demoUser.email;
-        
+
         // Demo stats - CHECK IF ELEMENTS EXIST
         const reputationEl = document.getElementById('reputation');
         const reputationBadgeEl = document.getElementById('reputationBadge');
         const reputationTextEl = document.getElementById('reputationText');
-        
+
         if (reputationEl) reputationEl.textContent = 'BRONCE';
         if (reputationBadgeEl) reputationBadgeEl.className = 'reputation-badge reputation-bronce';
         if (reputationTextEl) reputationTextEl.textContent = 'Bronce';
-        
+
         // Disable save button for demo mode
         const saveButton = document.querySelector('button[onclick="saveProfile()"]');
         if (saveButton) {
@@ -1002,9 +1025,9 @@
           saveButton.innerHTML = '<i class="fas fa-lock mr-2"></i>Guardar Perfil (Deshabilitado en Demo)';
           saveButton.classList.add('opacity-50', 'cursor-not-allowed');
         }
-        
+
         console.log('✅ Demo user profile loaded successfully');
-        
+
       } catch (error) {
         console.error('Error loading demo profile:', error);
         showToast('Error al cargar perfil demo', 'error');
@@ -1017,7 +1040,7 @@
         console.log('🛑 Preventing duplicate user profile load');
         return;
       }
-      
+
       try {
         console.log('📋 Loading user profile for:', currentUser.uid);
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
@@ -1029,7 +1052,7 @@
           // Basic info - SAFE ELEMENT ACCESS
           const userNameEl = document.getElementById('userName');
           const userEmailEl = document.getElementById('userEmail');
-          
+
           if (userNameEl) userNameEl.textContent = currentUserData.alias || 'Usuario';
           if (userEmailEl) userEmailEl.textContent = currentUser.email;
 
@@ -1037,7 +1060,7 @@
           const profilePhotoEl = document.getElementById('profilePhoto');
           const photoPlaceholderEl = document.getElementById('photoPlaceholder');
           const photoInitialEl = document.getElementById('photoInitial');
-          
+
           if (currentUserData.photoURL) {
             if (profilePhotoEl) {
               profilePhotoEl.src = currentUserData.photoURL;
@@ -1100,7 +1123,7 @@
           const lookingForInput = document.getElementById('lookingFor');
           const ageRangeMinInput = document.getElementById('ageRangeMin');
           const ageRangeMaxInput = document.getElementById('ageRangeMax');
-          
+
           if (relationshipStatusInput) relationshipStatusInput.value = currentUserData.relationshipStatus || '';
           if (lookingForInput) lookingForInput.value = currentUserData.lookingFor || '';
           if (ageRangeMinInput) ageRangeMinInput.value = currentUserData.ageRangeMin || 18;
@@ -1112,7 +1135,7 @@
 
           // Update bio counter
           updateBioCounter();
-          
+
           console.log('✅ Profile loaded successfully');
         } else {
           console.log('⚠️ No user document found, creating default profile');
@@ -1141,11 +1164,10 @@
 
         const themeCard = document.createElement('button');
         themeCard.type = 'button';
-        themeCard.className = `relative p-4 rounded-xl border-2 transition-all ${
-          isSelected
-            ? 'border-white shadow-lg scale-105'
-            : 'border-white/20 hover:border-white/50'
-        }`;
+        themeCard.className = `relative p-4 rounded-xl border-2 transition-all ${isSelected
+          ? 'border-white shadow-lg scale-105'
+          : 'border-white/20 hover:border-white/50'
+          }`;
         themeCard.style.background = theme.gradient;
         themeCard.onclick = () => selectTheme(themeKey);
 
@@ -1301,24 +1323,23 @@
       });
 
       // Remove photo
-        removeBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          galleryFiles[i - 1] = null;
-          inputEl.value = '';
-          imageEl.classList.add('hidden');
-          imageEl.src = '';
-          previewEl.classList.remove('hidden');
-          removeBtn.classList.add('opacity-0', 'pointer-events-none');
-          showToast(`Foto ${i} eliminada`, 'info');
-        });
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        galleryFiles[i - 1] = null;
+        inputEl.value = '';
+        imageEl.classList.add('hidden');
+        imageEl.src = '';
+        previewEl.classList.remove('hidden');
+        removeBtn.classList.add('opacity-0', 'pointer-events-none');
+        showToast(`Foto ${i} eliminada`, 'info');
+      });
     }
-
     // Save profile
-    window.saveProfile = async function() {
+    window.saveProfile = async function () {
       const saveButton = document.getElementById('saveButton');
       const originalText = saveButton.innerHTML;
 
-      // EDITABLE FIELDS: Read all from form inputs (including alias and gender)
+      // EDITABLE FIELDS
       const alias = document.getElementById('alias').value.trim();
       const gender = document.getElementById('gender').value;
       const birthDate = document.getElementById('birthDate').value;
@@ -1328,102 +1349,151 @@
       const relationshipStatus = document.getElementById('relationshipStatus').value;
       const lookingFor = document.getElementById('lookingFor').value;
 
-      if (!alias || !birthDate || !gender || !city || !profession || !relationshipStatus || !lookingFor) {
-        showToast('Por favor completa todos los campos obligatorios', 'warning');
+      // RELAXED VALIDATION
+      if (!alias) {
+        showToast('El nombre de usuario (Alias) es obligatorio', 'warning');
         return;
       }
 
-      // Validate bio (minimum 100 characters)
-      if (bio.length < 100) {
-        showToast(`La autodescripción debe tener al menos 100 caracteres. Actualmente tiene ${bio.length}`, 'warning');
-        return;
+      if (!birthDate || !gender || !city || !profession || !relationshipStatus || !lookingFor) {
+        showToast('Perfil incompleto: Se recomienda completar todos los campos', 'info');
       }
 
-      // Validate gallery photos (minimum 2 required)
+      if (bio.length > 0 && bio.length < 10) {
+        showToast(`La descripción es muy corta, se recomienda explayarse más.`, 'info');
+      }
+
       const uploadedGalleryCount = galleryFiles.filter(file => file !== null).length;
-      const existingGalleryCount = currentUserData.galleryPhotos ? currentUserData.galleryPhotos.filter(url => url).length : 0;
-
-      // Count total gallery photos (existing + new)
-      let totalGalleryPhotos = existingGalleryCount;
-      galleryFiles.forEach((file, index) => {
-        if (file !== null) {
-          // New file will replace existing
-          if (!currentUserData.galleryPhotos || !currentUserData.galleryPhotos[index]) {
-            totalGalleryPhotos++;
-          }
-        }
-      });
-
-      if (totalGalleryPhotos < 2) {
-        for (let i = 0; i < 2 - totalGalleryPhotos; i++) {
-          const idx = galleryFiles.findIndex(f => f === null);
-          if (idx !== -1) {
-            const blob = await fetch(`https://picsum.photos/seed/${currentUser.uid}-${idx}/600/600`).then(r => r.blob());
-            galleryFiles[idx] = blob;
-          }
-        }
-        showToast('Se añadieron fotos de galería de ejemplo para completar el perfil', 'info');
+      const existingGalleryCount = (currentUserData && currentUserData.galleryPhotos) ? currentUserData.galleryPhotos.filter(url => url).length : 0;
+      if (uploadedGalleryCount + existingGalleryCount === 0) {
+        showToast('Tip: Sube fotos a tu galería para tener más matches', 'info');
       }
 
-      // Validate age (must be 18+)
-      const birthDateObj = new Date(birthDate);
-      const today = new Date();
-      let age = today.getFullYear() - birthDateObj.getFullYear();
-      const monthDiff = today.getMonth() - birthDateObj.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-        age--;
-      }
-
-      if (age < 18) {
-        showToast('Debes ser mayor de 18 años para usar TuCitaSegura', 'error');
-        return;
+      if (birthDate) {
+        const birthDateObj = new Date(birthDate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDateObj.getFullYear();
+        const monthDiff = today.getMonth() - birthDateObj.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          showToast('Debes ser mayor de 18 años para usar TuCitaSegura', 'error');
+          return;
+        }
       }
 
       saveButton.disabled = true;
       saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
 
       try {
+<<<<<<< HEAD
         const recaptcha = await verifyRecaptchaScore('profile_update');
         if(!recaptcha.success || (recaptcha.score??0) < 0.5){
           showToast('Verificación reCAPTCHA fallida. Intenta de nuevo.', 'error');
           return;
         }
         let photoURL = currentUserData.photoURL;
+=======
+        // GLOBAL TOKEN REFRESH
+        if (currentUser) {
+          const token = await currentUser.getIdToken(true);
+          apiService.setToken(token);
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
-        // Upload avatar photo if selected
-        if (photoFile) {
+          // DEBUG: Analyze Token
           try {
-            const storageRef = ref(storage, `profile_photos/${gender}/${currentUser.uid}/avatar`);
-            await uploadBytes(storageRef, photoFile);
-            photoURL = await getDownloadURL(storageRef);
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const payload = JSON.parse(jsonPayload);
+            console.log('🔍 DEBUG JWT:', {
+              aud: payload.aud,
+              iss: payload.iss,
+              sub: payload.sub,
+              exp: new Date(payload.exp * 1000).toISOString(),
+              project_match: payload.aud === 'tucitasegura-129cc' ? 'YES' : 'NO'
+            });
+
+            if (payload.aud !== 'tucitasegura-129cc') {
+              showToast(`⚠️ Token Project Mismatch: ${payload.aud}`, 'error');
+            }
           } catch (e) {
-            photoURL = `https://picsum.photos/seed/${currentUser.uid}-avatar/600/600`;
+            console.error('Error decoding token:', e);
           }
         }
-        if (!photoURL) {
-          photoURL = `https://picsum.photos/seed/${currentUser.uid}-avatar/600/600`;
+
+        let photoURL = (currentUserData && currentUserData.photoURL) ? currentUserData.photoURL : null;
+
+        // 1. Avatar Upload
+        if (photoFile) {
+          try {
+            showToast('⏳ Subiendo foto de perfil...', 'info');
+            const result = await apiService.uploadProfilePhoto(photoFile, 'avatar');
+
+            if (result.success) {
+              const status = result.verification?.status;
+              const warnings = result.verification?.warnings || [];
+
+              if (status === 'REJECT' || status === 'CONTENT_VIOLATION') {
+                showToast(`❌ Foto rechazada: ${warnings[0] || 'Contenido no permitido'}`, 'error');
+                saveButton.disabled = false;
+                saveButton.innerHTML = originalText;
+                return;
+              } else if (status === 'FILTER_WARNING' || status === 'REVIEW_REQUIRED') {
+                showToast(`⚠️ Advertencia: ${warnings[0] || 'Revisión requerida'}`, 'warning');
+                photoURL = result.url;
+              } else {
+                showToast('✅ Foto subida y verificada', 'success');
+                photoURL = result.url;
+              }
+            }
+          } catch (err) {
+            console.error('Avatar upload failed:', err);
+            if (err.message && err.message.includes('Backend')) {
+              showToast('⚠️ Error conectando con el servidor. Usando imagen local.', 'warning');
+            } else {
+              showToast('❌ Error al subir avatar: ' + (err.message || 'Error desconocido'), 'error');
+            }
+            if (!photoURL) photoURL = `https://picsum.photos/seed/${currentUser.uid}/600/600`;
+          }
         }
 
-        // Upload gallery photos
-        const galleryPhotos = currentUserData.galleryPhotos || [];
+        if (!photoURL) {
+          photoURL = `https://picsum.photos/seed/${currentUser.uid}/600/600`;
+        }
+
+        // 2. Gallery Upload
+        const galleryPhotos = (currentUserData && currentUserData.galleryPhotos) ? [...currentUserData.galleryPhotos] : [];
         for (let i = 0; i < 5; i++) {
           if (galleryFiles[i]) {
             try {
-              const storageRef = ref(storage, `profile_photos/${gender}/${currentUser.uid}/gallery_${i + 1}`);
-              await uploadBytes(storageRef, galleryFiles[i]);
-              const url = await getDownloadURL(storageRef);
-              galleryPhotos[i] = url;
-            } catch (e) {
-              galleryPhotos[i] = `https://picsum.photos/seed/${currentUser.uid}-gallery-${i + 1}/600/600`;
+              showToast(`⏳ Subiendo foto ${i + 1}...`, 'info');
+              const result = await apiService.uploadProfilePhoto(galleryFiles[i], `gallery_${i + 1}`);
+
+              if (result.success) {
+                const status = result.verification?.status;
+                const warnings = result.verification?.warnings || [];
+
+                if (status === 'REJECT' || status === 'CONTENT_VIOLATION') {
+                  showToast(`❌ Foto ${i + 1} rechazada: ${warnings[0] || 'Inapropiada'}`, 'error');
+                  continue;
+                } else {
+                  galleryPhotos[i] = result.url;
+                }
+              }
+            } catch (err) {
+              console.error(`Gallery ${i + 1} upload failed:`, err);
             }
           }
         }
 
-        // Get geolocation data
+        // 3. Update Firestore
         const latitude = document.getElementById('latitude').value;
         const longitude = document.getElementById('longitude').value;
 
-        // Update Firestore
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
           alias: alias,
@@ -1440,34 +1510,27 @@
           ageRangeMax: parseInt(document.getElementById('ageRangeMax').value) || 99,
           photoURL: photoURL,
           galleryPhotos: galleryPhotos,
-          theme: selectedTheme,
+          theme: currentUserData?.theme || 'light',
           updatedAt: serverTimestamp()
         });
 
         logger.info('Profile updated successfully');
-
-        // Show success modal
         document.getElementById('successModal').classList.remove('opacity-0', 'pointer-events-none');
-
-        // Reset photo file
         photoFile = null;
 
       } catch (error) {
         logger.error('Error saving profile:', error);
-        showToast('Error al guardar los cambios', 'error');
+        showToast('Error al guardar los cambios: ' + error.message, 'error');
       } finally {
         saveButton.disabled = false;
         saveButton.innerHTML = originalText;
       }
     };
 
-    // Close success modal - FIXED TO PREVENT LOOPS
-    window.closeSuccessModal = function() {
+    // Close success modal
+    window.closeSuccessModal = function () {
       document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
-      // DON'T reload profile data - this can cause loops
-      // Instead, just update the specific fields that might have changed
       if (currentUserData) {
-        // Update any fields that might have changed from the save
         const aliasInput = document.getElementById('alias');
         if (aliasInput && currentUserData.alias) {
           aliasInput.value = currentUserData.alias;
@@ -1475,13 +1538,13 @@
       }
     };
 
-    window.goToSearch = function() {
+    window.goToSearch = function () {
       document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
-      window.location.href = '/webapp/buscar-usuarios.html';
+      window.location.href = '/buscar-usuarios.html';
     };
 
     // Confirm delete account
-    window.confirmDeleteAccount = function() {
+    window.confirmDeleteAccount = function () {
       const confirmed = confirm('¿Estás COMPLETAMENTE SEGURO de que quieres eliminar tu cuenta?\n\nEsta acción NO se puede deshacer.\n\nPerderás:\n- Todas tus conversaciones\n- Todas tus citas\n- Tu perfil completo\n- Acceso a la plataforma\n\nEscribe "ELIMINAR" para confirmar.');
 
       if (confirmed) {
@@ -1532,7 +1595,7 @@
 
         // Redirect to login after 2 seconds
         setTimeout(() => {
-          window.location.href = '/webapp/login.html';
+          window.location.href = '/login.html';
         }, 2000);
 
       } catch (error) {
@@ -1544,5 +1607,10 @@
   </script>
 
 </body>
+<<<<<<< HEAD
 </html>
     import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
+=======
+
+</html>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

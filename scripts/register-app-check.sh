@@ -12,8 +12,13 @@ echo ""
 
 # Project details
 PROJECT_ID="tuscitasseguras-2d1a6"
+<<<<<<< HEAD
 WEB_APP_ID="1:924208562587:web:5291359426fe390b36213e"
 RECAPTCHA_SITE_KEY="6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT"
+=======
+WEB_APP_ID="1:180656060538:web:3168487130aa126db663c3"
+RECAPTCHA_SITE_KEY="6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT"
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 echo "📋 Project Information:"
 echo "  Project ID: $PROJECT_ID"

@@ -1,0 +1,116 @@
+{
+  "apiVersion": "serving.knative.dev/v1",
+  "kind": "Service",
+  "metadata": {
+    "annotations": {
+      "run.googleapis.com/build-enable-automatic-updates": "false",
+      "run.googleapis.com/build-id": "ed565f55-e144-475d-b8fa-d0b6051b0db0",
+      "run.googleapis.com/build-image-uri": "us-central1-docker.pkg.dev/tucitasegura-129cc/cloud-run-source-deploy/tucitasegura-backend",
+      "run.googleapis.com/build-name": "projects/180656060538/locations/us-central1/builds/ed565f55-e144-475d-b8fa-d0b6051b0db0",
+      "run.googleapis.com/build-source-location": "gs://run-sources-tucitasegura-129cc-us-central1/services/tucitasegura-backend/1764968405.469494-3e4693c9fcd4451aa0176099b63e8b48.zip#1764968400537905",
+      "run.googleapis.com/client-name": "gcloud",
+      "run.googleapis.com/client-version": "544.0.0",
+      "run.googleapis.com/ingress": "all",
+      "run.googleapis.com/ingress-status": "all",
+      "run.googleapis.com/operation-id": "593c9d2c-28a4-4e77-9d7b-da9acc2c0c97",
+      "run.googleapis.com/urls": "[\"https://tucitasegura-backend-180656060538.us-central1.run.app\"]",
+      "serving.knative.dev/creator": "CESAR.HERRERA.ROJO@gmail.com",
+      "serving.knative.dev/lastModifier": "CESAR.HERRERA.ROJO@gmail.com"
+    },
+    "creationTimestamp": "2025-12-03T08:14:47.849146Z",
+    "generation": 6,
+    "labels": {
+      "cloud.googleapis.com/location": "us-central1"
+    },
+    "name": "tucitasegura-backend",
+    "namespace": "180656060538",
+    "resourceVersion": "AAZFOsq96oM",
+    "selfLink": "/apis/serving.knative.dev/v1/namespaces/180656060538/services/tucitasegura-backend",
+    "uid": "a7778b73-273a-4a6f-ac6e-a125fec1bfe0"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "autoscaling.knative.dev/maxScale": "20",
+          "run.googleapis.com/client-name": "gcloud",
+          "run.googleapis.com/client-version": "544.0.0",
+          "run.googleapis.com/startup-cpu-boost": "true"
+        },
+        "labels": {
+          "client.knative.dev/nonce": "ncxouqdmtb",
+          "run.googleapis.com/startupProbeType": "Default"
+        }
+      },
+      "spec": {
+        "containerConcurrency": 80,
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "ENVIRONMENT",
+                "value": "production APP_CHECK_ENFORCE=true CORS_ORIGINS=https://tucitasegura.com https://www.tucitasegura.com https://tucitasegura-129cc.web.app https://tucitasegura-129cc.firebaseapp.com"
+              }
+            ],
+            "image": "us-central1-docker.pkg.dev/tucitasegura-129cc/cloud-run-source-deploy/tucitasegura-backend@sha256:a5b6923987fa38ebcda1696f857921f3a97b123063ef58096d2c199e59ccaa6c",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "name": "http1"
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1000m",
+                "memory": "512Mi"
+              }
+            },
+            "startupProbe": {
+              "failureThreshold": 1,
+              "periodSeconds": 240,
+              "tcpSocket": {
+                "port": 8080
+              },
+              "timeoutSeconds": 240
+            }
+          }
+        ],
+        "serviceAccountName": "180656060538-compute@developer.gserviceaccount.com",
+        "timeoutSeconds": 300
+      }
+    },
+    "traffic": [
+      {
+        "latestRevision": true,
+        "percent": 100
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastTransitionTime": "2025-12-05T21:04:32.042919Z",
+        "message": "Revision 'tucitasegura-backend-00006-5hs' is not ready and cannot serve traffic. The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=tucitasegura-129cc&resource=cloud_run_revision/service_name/tucitasegura-backend/revision_name/tucitasegura-backend-00006-5hs&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tucitasegura-backend%22%0Aresource.labels.revision_name%3D%22tucitasegura-backend-00006-5hs%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+        "reason": "HealthCheckContainerError",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastTransitionTime": "2025-12-05T21:04:32.037254Z",
+        "message": "The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=tucitasegura-129cc&resource=cloud_run_revision/service_name/tucitasegura-backend/revision_name/tucitasegura-backend-00006-5hs&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tucitasegura-backend%22%0Aresource.labels.revision_name%3D%22tucitasegura-backend-00006-5hs%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+        "reason": "HealthCheckContainerError",
+        "status": "False",
+        "type": "ConfigurationsReady"
+      },
+      {
+        "lastTransitionTime": "2025-12-05T21:04:32.042919Z",
+        "message": "Revision 'tucitasegura-backend-00006-5hs' is not ready and cannot serve traffic. The user-provided container failed to start and listen on the port defined provided by the PORT=8080 environment variable within the allocated timeout. This can happen when the container port is misconfigured or if the timeout is too short. The health check timeout can be extended. Logs for this revision might contain more information.\n\nLogs URL: https://console.cloud.google.com/logs/viewer?project=tucitasegura-129cc&resource=cloud_run_revision/service_name/tucitasegura-backend/revision_name/tucitasegura-backend-00006-5hs&advancedFilter=resource.type%3D%22cloud_run_revision%22%0Aresource.labels.service_name%3D%22tucitasegura-backend%22%0Aresource.labels.revision_name%3D%22tucitasegura-backend-00006-5hs%22 \nFor more troubleshooting guidance, see https://cloud.google.com/run/docs/troubleshooting#container-failed-to-start",
+        "reason": "HealthCheckContainerError",
+        "status": "False",
+        "type": "RoutesReady"
+      }
+    ],
+    "latestCreatedRevisionName": "tucitasegura-backend-00006-5hs",
+    "observedGeneration": 6
+  }
+}

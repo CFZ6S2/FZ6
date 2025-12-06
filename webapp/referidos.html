@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <style>
     * {
@@ -53,8 +55,15 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
     }
 
     @keyframes fadeIn {
@@ -62,6 +71,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -69,9 +79,12 @@
     }
 
     @keyframes pulse-glow {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
       }
+
       50% {
         box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
       }
@@ -110,6 +123,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="relative z-10 min-h-screen py-8 px-4">
     <!-- Header -->
@@ -143,15 +157,18 @@
         <p class="text-gray-600 mb-6">Comparte este código con tus amigos</p>
 
         <div class="flex gap-4 justify-center flex-wrap">
-          <button id="copyCodeBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+          <button id="copyCodeBtn"
+            class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
             <i class="fas fa-copy mr-2"></i>
             Copiar Código
           </button>
-          <button id="shareCodeBtn" class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+          <button id="shareCodeBtn"
+            class="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
             <i class="fas fa-share-alt mr-2"></i>
             Compartir
           </button>
-          <button id="shareWhatsappBtn" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+          <button id="shareWhatsappBtn"
+            class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
             <i class="fab fa-whatsapp mr-2"></i>
             WhatsApp
           </button>
@@ -191,7 +208,8 @@
             <span id="progressPercentage">0%</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-            <div id="progressBar" class="progress-bar h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full" style="width: 0%"></div>
+            <div id="progressBar" class="progress-bar h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"
+              style="width: 0%"></div>
           </div>
         </div>
         <p id="progressDescription" class="text-gray-600"></p>
@@ -219,19 +237,23 @@
   </div>
 
   <!-- Firebase SDKs -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
     import './js/firebase-appcheck.js';
-    
+
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import {
       doc,
       getDoc,
@@ -458,4 +480,5 @@
 
   </script>
 </body>
+
 </html>

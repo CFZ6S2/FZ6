@@ -4,7 +4,7 @@
 // Manages push notifications for TuCitaSegura
 
 import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
 // VAPID key - use environment variable or hardcoded fallback
@@ -34,27 +34,27 @@ export async function initializeNotifications() {
     try {
       const messagingModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
       const { getMessaging, getToken, onMessage } = messagingModule;
-      
+
       await registerServiceWorker();
-      
+
       // Initialize messaging
       messaging = getMessaging();
-      
+
       // Request permission and get token
       const hasPermission = await requestNotificationPermission();
       if (hasPermission) {
         await getAndSaveFCMToken(getToken);
         listenForForegroundMessages(onMessage);
       }
-      
+
       return hasPermission;
-      
+
     } catch (importError) {
       console.warn('Firebase Messaging not available:', importError.message);
       console.log('💡 Notifications disabled - using basic functionality');
       return false;
     }
-    
+
   } catch (error) {
     console.error('Error initializing notifications:', error);
     return false;
@@ -66,7 +66,11 @@ export async function initializeNotifications() {
  */
 async function registerServiceWorker() {
   try {
+<<<<<<< HEAD
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+=======
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     console.log('✅ Service Worker registered for notifications:', registration.scope);
     return registration;
   } catch (error) {
@@ -113,10 +117,10 @@ async function getAndSaveFCMToken(getTokenFunction) {
     if (token) {
       console.log('✅ FCM Token obtained');
       currentToken = token;
-      
+
       // Save token to Firestore
       await saveTokenToFirestore(token);
-      
+
       // Show success message
       if (typeof showToast === 'function') {
         showToast('Notificaciones activadas', 'success');
@@ -126,7 +130,7 @@ async function getAndSaveFCMToken(getTokenFunction) {
     }
   } catch (error) {
     console.warn('Error getting FCM token:', error);
-    
+
     // Show user-friendly error
     if (error.code === 'messaging/permission-blocked') {
       if (typeof showToast === 'function') {
@@ -145,23 +149,23 @@ async function saveTokenToFirestore(token) {
   try {
     const userRef = doc(db, 'users', auth.currentUser.uid);
     const userDoc = await getDoc(userRef);
-    
+
     if (userDoc.exists()) {
       const userData = userDoc.data();
       const tokens = userData.fcmTokens || {};
-      
+
       // Add current token with timestamp
       tokens[token] = {
         createdAt: new Date(),
         platform: navigator.platform,
         userAgent: navigator.userAgent.substring(0, 100)
       };
-      
+
       await updateDoc(userRef, {
         fcmTokens: tokens,
         lastNotificationToken: token
       });
-      
+
       console.log('✅ FCM token saved to Firestore');
     }
   } catch (error) {
@@ -178,7 +182,7 @@ function listenForForegroundMessages(onMessageFunction) {
   try {
     onMessageFunction(messaging, (payload) => {
       console.log('📨 Foreground message received:', payload);
-      
+
       // Show notification
       const notificationTitle = payload.notification?.title || 'TuCitaSegura';
       const notificationOptions = {
@@ -188,18 +192,18 @@ function listenForForegroundMessages(onMessageFunction) {
         vibrate: [200, 100, 200],
         tag: 'tucitasegura-notification'
       };
-      
+
       // Show browser notification
       if (Notification.permission === 'granted') {
         new Notification(notificationTitle, notificationOptions);
       }
-      
+
       // Show in-app toast
       if (typeof showToast === 'function') {
         showToast(notificationOptions.body, 'info');
       }
     });
-    
+
     console.log('✅ Foreground message listener set up');
   } catch (error) {
     console.warn('Error setting up foreground message listener:', error);
@@ -229,21 +233,21 @@ export async function removeFCMToken() {
   try {
     const userRef = doc(db, 'users', auth.currentUser.uid);
     const userDoc = await getDoc(userRef);
-    
+
     if (userDoc.exists()) {
       const userData = userDoc.data();
       const tokens = userData.fcmTokens || {};
-      
+
       // Remove current token
       delete tokens[currentToken];
-      
+
       await updateDoc(userRef, {
         fcmTokens: tokens
       });
-      
+
       console.log('✅ FCM token removed from Firestore');
     }
-    
+
     currentToken = null;
   } catch (error) {
     console.warn('Error removing FCM token:', error);

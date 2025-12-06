@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,11 @@
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<<<<<<< HEAD
   <link rel="manifest" href="/site.webmanifest">
+=======
+  <link rel="manifest" href="/site.webmanifest">
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
@@ -83,9 +88,13 @@
     }
 
     @keyframes blink {
-      0%, 80%, 100% {
+
+      0%,
+      80%,
+      100% {
         opacity: 0;
       }
+
       40% {
         opacity: 1;
       }
@@ -106,6 +115,7 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Header -->
@@ -114,14 +124,17 @@
       <div class="flex items-center justify-between">
         <!-- User Info -->
         <div class="flex items-center gap-3">
-          <a href="/webapp/conversaciones.html" class="text-white/80 hover:text-white transition">
+          <a href="/conversaciones.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
           <div class="relative">
-            <div id="otherUserAvatar" class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-lg">
+            <div id="otherUserAvatar"
+              class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-lg">
               U
             </div>
-            <div id="onlineIndicator" class="hidden absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
+            <div id="onlineIndicator"
+              class="hidden absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full">
+            </div>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -140,10 +153,13 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2">
-          <button id="videoCallBtn" onclick="startVideoCall()" class="glass hover:glass-strong p-3 rounded-xl transition bg-gradient-to-r from-blue-500/20 to-purple-500/20" title="Iniciar video llamada">
+          <button id="videoCallBtn" onclick="startVideoCall()"
+            class="glass hover:glass-strong p-3 rounded-xl transition bg-gradient-to-r from-blue-500/20 to-purple-500/20"
+            title="Iniciar video llamada">
             <i class="fas fa-video text-lg"></i>
           </button>
-          <button onclick="openDateProposal()" class="glass hover:glass-strong p-3 rounded-xl transition" title="Proponer cita">
+          <button onclick="openDateProposal()" class="glass hover:glass-strong p-3 rounded-xl transition"
+            title="Proponer cita">
             <i class="fas fa-calendar-plus text-lg"></i>
           </button>
           <button onclick="showOptionsMenu()" class="glass hover:glass-strong p-3 rounded-xl transition">
@@ -186,7 +202,8 @@
         <div class="flex items-center gap-3">
           <i class="fas fa-lock text-yellow-400"></i>
           <p class="text-sm flex-1">Necesitas una membresía activa para enviar mensajes</p>
-          <a href="/webapp/suscripcion.html" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+          <a href="/suscripcion.html"
+            class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
             Activar
           </a>
         </div>
@@ -194,19 +211,12 @@
 
       <div class="flex items-end gap-3">
         <div class="flex-1">
-          <textarea
-            id="messageInput"
-            rows="1"
-            placeholder="Escribe un mensaje..."
+          <textarea id="messageInput" rows="1" placeholder="Escribe un mensaje..."
             class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-            maxlength="1000"
-          ></textarea>
+            maxlength="1000"></textarea>
         </div>
-        <button
-          id="sendButton"
-          onclick="sendMessage()"
-          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed p-4 rounded-xl transition"
-        >
+        <button id="sendButton" onclick="sendMessage()"
+          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed p-4 rounded-xl transition">
           <i class="fas fa-paper-plane text-lg"></i>
         </button>
       </div>
@@ -214,25 +224,30 @@
   </div>
 
   <!-- Options Menu -->
-  <div id="optionsMenu" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-end justify-center z-50 p-4" onclick="closeOptionsMenu()">
+  <div id="optionsMenu"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-end justify-center z-50 p-4"
+    onclick="closeOptionsMenu()">
     <div class="glass-strong rounded-2xl w-full max-w-md p-6" onclick="event.stopPropagation()">
       <h3 class="text-xl font-bold mb-4">Opciones</h3>
       <div class="space-y-2">
-        <button onclick="hideConversation()" class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition">
+        <button onclick="hideConversation()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition">
           <i class="fas fa-eye-slash text-yellow-400"></i>
           <div>
             <div class="font-semibold">Ocultar conversación</div>
             <div class="text-sm text-slate-300">No aparecerá en tu lista</div>
           </div>
         </button>
-        <button onclick="reportUser()" class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-orange-400">
+        <button onclick="reportUser()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-orange-400">
           <i class="fas fa-flag"></i>
           <div>
             <div class="font-semibold">Reportar usuario</div>
             <div class="text-sm text-slate-300">Notificar comportamiento inapropiado</div>
           </div>
         </button>
-        <button onclick="blockUser()" class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-red-400">
+        <button onclick="blockUser()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-red-400">
           <i class="fas fa-ban"></i>
           <div>
             <div class="font-semibold">Bloquear usuario</div>
@@ -240,14 +255,16 @@
           </div>
         </button>
       </div>
-      <button onclick="closeOptionsMenu()" class="w-full mt-4 glass hover:glass-strong p-3 rounded-xl font-semibold transition">
+      <button onclick="closeOptionsMenu()"
+        class="w-full mt-4 glass hover:glass-strong p-3 rounded-xl font-semibold transition">
         Cancelar
       </button>
     </div>
   </div>
 
   <!-- Date Proposal Modal -->
-  <div id="dateProposalModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+  <div id="dateProposalModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
     <div class="glass-strong rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-6">
         <h3 class="text-2xl font-bold">
@@ -266,7 +283,8 @@
           <div>
             <h4 class="font-bold mb-1">Seguro Anti-Plantón Requerido</h4>
             <p class="text-sm text-slate-300 mb-3">Necesitas el seguro de €120 para proponer citas</p>
-            <a href="/webapp/seguro.html" class="inline-block bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+            <a href="/seguro.html"
+              class="inline-block bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
               Contratar Seguro
             </a>
           </div>
@@ -306,37 +324,37 @@
       <div class="mb-6">
         <label class="block text-sm font-semibold mb-2">Hora de la cita</label>
         <div class="grid grid-cols-4 gap-2">
-          <button onclick="selectTime('10:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">10:00</button>
-          <button onclick="selectTime('12:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">12:00</button>
-          <button onclick="selectTime('14:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">14:00</button>
-          <button onclick="selectTime('16:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">16:00</button>
-          <button onclick="selectTime('18:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">18:00</button>
-          <button onclick="selectTime('20:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">20:00</button>
-          <button onclick="selectTime('21:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">21:00</button>
-          <button onclick="selectTime('22:00')" class="time-slot glass hover:glass-strong p-3 rounded-lg transition">22:00</button>
+          <button onclick="selectTime('10:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">10:00</button>
+          <button onclick="selectTime('12:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">12:00</button>
+          <button onclick="selectTime('14:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">14:00</button>
+          <button onclick="selectTime('16:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">16:00</button>
+          <button onclick="selectTime('18:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">18:00</button>
+          <button onclick="selectTime('20:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">20:00</button>
+          <button onclick="selectTime('21:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">21:00</button>
+          <button onclick="selectTime('22:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">22:00</button>
         </div>
       </div>
 
       <!-- Place Input -->
       <div class="mb-6">
         <label class="block text-sm font-semibold mb-2">Lugar de la cita</label>
-        <input
-          type="text"
-          id="datePlace"
-          placeholder="Ej: Café Central, Calle Mayor 10"
-          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-        >
+        <input type="text" id="datePlace" placeholder="Ej: Café Central, Calle Mayor 10"
+          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
       </div>
 
       <!-- Message -->
       <div class="mb-6">
         <label class="block text-sm font-semibold mb-2">Mensaje (opcional)</label>
-        <textarea
-          id="dateMessage"
-          rows="3"
-          placeholder="¿Quieres añadir algo?"
-          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-        ></textarea>
+        <textarea id="dateMessage" rows="3" placeholder="¿Quieres añadir algo?"
+          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
       </div>
 
       <!-- Selected Date Summary -->
@@ -350,19 +368,16 @@
       </div>
 
       <!-- Submit Button -->
-      <button
-        id="submitDateProposal"
-        onclick="submitDateProposal()"
-        disabled
-        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition"
-      >
+      <button id="submitDateProposal" onclick="submitDateProposal()" disabled
+        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition">
         Enviar Propuesta de Cita
       </button>
     </div>
   </div>
 
   <!-- Block Confirmation Modal -->
-  <div id="blockModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="blockModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8">
       <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-ban text-4xl text-red-400"></i>
@@ -372,10 +387,12 @@
         <span id="blockUserName"></span> no podrá enviarte más mensajes ni verte en búsquedas.
       </p>
       <div class="flex gap-3">
-        <button onclick="closeBlockModal()" class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
+        <button onclick="closeBlockModal()"
+          class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
           Cancelar
         </button>
-        <button onclick="confirmBlock()" class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
+        <button onclick="confirmBlock()"
+          class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
           Bloquear
         </button>
       </div>
@@ -387,7 +404,11 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<<<<<<< HEAD
   <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -395,7 +416,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       collection,
@@ -410,10 +431,12 @@
       arrayUnion,
       where,
       getDocs,
-      setDoc
+      setDoc,
+      increment
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { showToast, calculateDistance, requireChatAccess } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
+    import { apiService } from './js/api-service.js';
 
     // Image optimization with lazy loading
     import './js/image-optimizer.js';
@@ -433,7 +456,7 @@
 
     // Redirect if missing params
     if (!conversationId || !otherUserId) {
-      window.location.href = '/webapp/conversaciones.html';
+      window.location.href = '/conversaciones.html';
     }
 
     // Auth State
@@ -476,7 +499,7 @@
           checkPaymentStatus();
         } else {
           showToast('Usuario no encontrado', 'error');
-          setTimeout(() => window.location.href = '/webapp/conversaciones.html', 2000);
+          setTimeout(() => window.location.href = '/conversaciones.html', 2000);
         }
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -678,7 +701,7 @@
     }
 
     // Send message
-    window.sendMessage = async function() {
+    window.sendMessage = async function () {
       const input = document.getElementById('messageInput');
       const text = input.value.trim();
 
@@ -688,49 +711,68 @@
       const userMustPay = currentUserData.gender === 'masculino';
       if (userMustPay && !currentUserData.hasActiveSubscription) {
         showToast('⚠️ Membresía requerida para enviar mensajes', 'error');
-        // Show modal and redirect
         if (confirm('Necesitas una membresía activa (€29.99/mes) para enviar mensajes.\n\n¿Deseas activar tu membresía ahora?')) {
-          window.location.href = '/webapp/suscripcion.html';
+          window.location.href = '/suscripcion.html';
         }
         return;
       }
 
       try {
-        // Add message
+        // Disable input while processing
+        input.disabled = true;
+
+        // 1. Moderate Message (Call Backend)
+        const token = await auth.currentUser.getIdToken();
+        apiService.setToken(token);
+
+        const moderation = await apiService.moderateMessage(text);
+
+        if (!moderation.is_safe) {
+          showToast(`🚫 Mensaje bloqueado: ${moderation.reasons[0] || 'Contenido inapropiado'}`, 'error');
+          input.disabled = false;
+          input.focus();
+          return;
+        }
+
+        // 2. Send via Firestore (Serverless Pattern)
         const messagesRef = collection(db, 'conversations', conversationId, 'messages');
         await addDoc(messagesRef, {
-          senderId: currentUser.uid,
           text: text,
+          senderId: currentUser.uid,
           timestamp: serverTimestamp(),
-          read: false
+          read: false,
+          type: 'text'
         });
 
-        // Update conversation
+        // 3. Update Conversation Metadata
         const conversationRef = doc(db, 'conversations', conversationId);
         await updateDoc(conversationRef, {
           lastMessage: text,
-          lastMessageTime: serverTimestamp(),
-          lastMessageSenderId: currentUser.uid,
-          [`participantsData.${otherUserId}.unreadCount`]: (otherUserData.unreadCount || 0) + 1
+          lastMessageTimestamp: serverTimestamp(),
+          [`participantsData.${otherUserId}.unreadCount`]: increment(1)
         });
 
         // Clear input
         input.value = '';
         input.style.height = 'auto';
+        input.disabled = false;
+        input.focus();
+
       } catch (error) {
         console.error('Error sending message:', error);
-        showToast('Error al enviar mensaje', 'error');
+        input.disabled = false;
+        showToast(`Error al enviar mensaje: ${error.message}`, 'error');
       }
     };
 
     // Auto-resize textarea
-    document.getElementById('messageInput').addEventListener('input', function() {
+    document.getElementById('messageInput').addEventListener('input', function () {
       this.style.height = 'auto';
       this.style.height = (this.scrollHeight) + 'px';
     });
 
     // Send on Enter (Shift+Enter for new line)
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+    document.getElementById('messageInput').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();
@@ -738,22 +780,22 @@
     });
 
     // Options menu
-    window.showOptionsMenu = function() {
+    window.showOptionsMenu = function () {
       document.getElementById('optionsMenu').classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeOptionsMenu = function() {
+    window.closeOptionsMenu = function () {
       document.getElementById('optionsMenu').classList.add('opacity-0', 'pointer-events-none');
     };
 
     // Report user
-    window.reportUser = function() {
+    window.reportUser = function () {
       closeOptionsMenu();
-      window.location.href = `/webapp/reportes.html?type=user&userId=${otherUserId}`;
+      window.location.href = `/reportes.html?type=user&userId=${otherUserId}`;
     };
 
     // Hide conversation
-    window.hideConversation = async function() {
+    window.hideConversation = async function () {
       try {
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
@@ -761,7 +803,7 @@
         });
 
         showToast('Conversación ocultada', 'success');
-        setTimeout(() => window.location.href = '/webapp/conversaciones.html', 1000);
+        setTimeout(() => window.location.href = '/conversaciones.html', 1000);
       } catch (error) {
         console.error('Error hiding conversation:', error);
         showToast('Error al ocultar conversación', 'error');
@@ -769,17 +811,17 @@
     };
 
     // Block user
-    window.blockUser = function() {
+    window.blockUser = function () {
       document.getElementById('blockUserName').textContent = otherUserData.alias || 'Este usuario';
       document.getElementById('blockModal').classList.remove('opacity-0', 'pointer-events-none');
       closeOptionsMenu();
     };
 
-    window.closeBlockModal = function() {
+    window.closeBlockModal = function () {
       document.getElementById('blockModal').classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.confirmBlock = async function() {
+    window.confirmBlock = async function () {
       try {
         const userRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userRef, {
@@ -789,7 +831,7 @@
 
         closeBlockModal();
         showToast('Usuario bloqueado', 'success');
-        setTimeout(() => window.location.href = '/webapp/conversaciones.html', 1000);
+        setTimeout(() => window.location.href = '/conversaciones.html', 1000);
       } catch (error) {
         console.error('Error blocking user:', error);
         showToast('Error al bloquear usuario', 'error');
@@ -797,13 +839,13 @@
     };
 
     // Video call
-    window.startVideoCall = function() {
+    window.startVideoCall = function () {
       // Check membership - CRITICAL VALIDATION
       const userMustPay = currentUserData.gender === 'masculino';
       if (userMustPay && !currentUserData.hasActiveSubscription) {
         showToast('💳 Membresía Premium requerida para video llamadas', 'error');
         if (confirm('Para realizar video llamadas necesitas una Membresía Premium (€29.99/mes).\n\n¿Deseas suscribirte ahora?')) {
-          window.location.href = '/webapp/suscripcion.html';
+          window.location.href = '/suscripcion.html';
         }
         return;
       }
@@ -815,17 +857,17 @@
       }
 
       // Redirigir a página de video chat
-      window.location.href = `/webapp/video-chat.html?conversationId=${conversationId}&remoteUserId=${otherUserId}&action=call`;
+      window.location.href = `/video-chat.html?conversationId=${conversationId}&remoteUserId=${otherUserId}&action=call`;
     };
 
     // Date proposal
-    window.openDateProposal = function() {
+    window.openDateProposal = function () {
       // Check insurance - CRITICAL VALIDATION
       const userMustPay = currentUserData.gender === 'masculino';
       if (userMustPay && !currentUserData.hasAntiGhostingInsurance) {
         showToast('🛡️ Seguro Anti-Plantón requerido para proponer citas', 'error');
         if (confirm('Para proponer y agendar citas necesitas contratar el Seguro Anti-Plantón (€120 pago único).\n\nEste seguro te protege en caso de plantones y es válido de por vida.\n\n¿Deseas contratar el seguro ahora?')) {
-          window.location.href = '/webapp/seguro.html';
+          window.location.href = '/seguro.html';
         }
         return;
       }
@@ -835,7 +877,7 @@
       renderCalendar();
     };
 
-    window.closeDateProposal = function() {
+    window.closeDateProposal = function () {
       document.getElementById('dateProposalModal').classList.add('opacity-0', 'pointer-events-none');
     };
 
@@ -846,7 +888,7 @@
 
       // Update header
       const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
       document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
 
       // Get first day of month and number of days
@@ -873,8 +915,8 @@
         const date = new Date(year, month, day);
         const isPast = date < todayMidnight;
         const isSelected = selectedDate && selectedDate.getDate() === day &&
-                          selectedDate.getMonth() === month &&
-                          selectedDate.getFullYear() === year;
+          selectedDate.getMonth() === month &&
+          selectedDate.getFullYear() === year;
 
         calendarHTML += `
           <button
@@ -890,23 +932,23 @@
       document.getElementById('calendarDays').innerHTML = calendarHTML;
     }
 
-    window.selectDate = function(year, month, day) {
+    window.selectDate = function (year, month, day) {
       selectedDate = new Date(year, month, day);
       renderCalendar();
       updateDateSummary();
     };
 
-    window.previousMonth = function() {
+    window.previousMonth = function () {
       currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
       renderCalendar();
     };
 
-    window.nextMonth = function() {
+    window.nextMonth = function () {
       currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
       renderCalendar();
     };
 
-    window.selectTime = function(time) {
+    window.selectTime = function (time) {
       selectedTime = time;
 
       // Update UI
@@ -943,14 +985,14 @@
 
     document.getElementById('datePlace').addEventListener('input', updateDateSummary);
 
-    window.submitDateProposal = async function() {
+    window.submitDateProposal = async function () {
       // Check insurance - DOUBLE VALIDATION (should not reach here without insurance)
       const userMustPay = currentUserData.gender === 'masculino';
       if (userMustPay && !currentUserData.hasAntiGhostingInsurance) {
         showToast('🛡️ Seguro Anti-Plantón requerido (€120)', 'error');
         closeDateProposal();
         if (confirm('Para proponer citas necesitas el Seguro Anti-Plantón.\n\n¿Deseas contratar el seguro ahora?')) {
-          window.location.href = '/webapp/seguro.html';
+          window.location.href = '/seguro.html';
         }
         return;
       }
@@ -995,7 +1037,7 @@
     };
 
     // Accept/Reject date
-    window.acceptDate = async function(messageId) {
+    window.acceptDate = async function (messageId) {
       try {
         const messageRef = doc(db, 'conversations', conversationId, 'messages', messageId);
         await updateDoc(messageRef, {
@@ -1008,7 +1050,7 @@
       }
     };
 
-    window.rejectDate = async function(messageId) {
+    window.rejectDate = async function (messageId) {
       try {
         const messageRef = doc(db, 'conversations', conversationId, 'messages', messageId);
         await updateDoc(messageRef, {
@@ -1022,9 +1064,14 @@
     };
 
   </script>
-  
+
   <!-- Demo Mode Banner -->
+<<<<<<< HEAD
   <script type="module" src="./js/demo-banner.js"></script>
+=======
+  <script src="./js/demo-banner.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 </body>
+
 </html>

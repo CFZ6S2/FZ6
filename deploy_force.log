@@ -1,0 +1,7 @@
+
+[1m[37m===[39m Deploying to 'tuscitasseguras-2d1a6'...[22m
+
+[36m[1mi [22m[39m deploying [1mfunctions[22m
+[32m[1m+ [22m[39m [32m[1mfunctions:[22m[39m Finished running [1mpredeploy[22m script.
+
+[1m[31mError:[39m[22m No function matches given --only filters. Aborting deployment.

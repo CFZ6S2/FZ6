@@ -1,8 +1,13 @@
 // Profile Guard - Bloquea acceso a funcionalidades hasta que el perfil esté completo
 // ============================================================================
 
+<<<<<<< HEAD
 import { auth, db } from './firebase-config.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+=======
+import { auth, db } from './firebase-config-env.js';
+import { doc, getDoc, getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 import { logger } from './logger.js';
 
 /**
@@ -17,7 +22,7 @@ export async function checkProfileComplete() {
       isComplete: false,
       missingFields: ['authentication'],
       userData: null,
-      redirectTo: '/webapp/login.html'
+      redirectTo: '/login.html'
     };
   }
 
@@ -28,7 +33,7 @@ export async function checkProfileComplete() {
       isComplete: false,
       missingFields: ['emailVerification'],
       userData: null,
-      redirectTo: '/webapp/verify-email.html'
+      redirectTo: '/verify-email.html'
     };
   }
 
@@ -42,7 +47,7 @@ export async function checkProfileComplete() {
         isComplete: false,
         missingFields: ['userDocument'],
         userData: null,
-        redirectTo: '/webapp/login.html'
+        redirectTo: '/login.html'
       };
     }
 
@@ -85,7 +90,7 @@ export async function checkProfileComplete() {
       isComplete,
       missingFields,
       userData,
-      redirectTo: isComplete ? null : '/webapp/perfil.html?complete=true'
+      redirectTo: isComplete ? null : '/perfil.html?complete=true'
     };
 
   } catch (error) {
@@ -94,7 +99,7 @@ export async function checkProfileComplete() {
       isComplete: false,
       missingFields: ['error'],
       userData: null,
-      redirectTo: '/webapp/perfil.html'
+      redirectTo: '/perfil.html'
     };
   }
 }
@@ -128,7 +133,7 @@ export async function guardPage(options = {}) {
     if (!silent) {
       logger.warn('Usuario no autenticado - redirigiendo a login');
     }
-    window.location.href = '/webapp/login.html';
+    window.location.href = '/login.html';
     return false;
   }
 
@@ -139,7 +144,7 @@ export async function guardPage(options = {}) {
       showBlockMessage('Debes verificar tu email antes de continuar', 'warning');
     }
     setTimeout(() => {
-      window.location.href = '/webapp/verify-email.html';
+      window.location.href = '/verify-email.html';
     }, 2000);
     return false;
   }
@@ -277,7 +282,7 @@ export function initProfileGuard(options = {}) {
       if (!options.silent) {
         logger.warn('Usuario no autenticado');
       }
-      window.location.href = '/webapp/login.html';
+      window.location.href = '/login.html';
     }
   });
 }

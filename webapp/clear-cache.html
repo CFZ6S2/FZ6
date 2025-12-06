@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,37 +14,44 @@
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: #333;
     }
+
     .container {
       background: white;
       padding: 40px;
       border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
+
     h1 {
       color: #667eea;
       margin-bottom: 20px;
     }
+
     .alert {
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 20px;
       font-weight: 500;
     }
+
     .alert-warning {
       background: #fff3cd;
       border: 1px solid #ffc107;
       color: #856404;
     }
+
     .alert-success {
       background: #d4edda;
       border: 1px solid #28a745;
       color: #155724;
     }
+
     .alert-info {
       background: #d1ecf1;
       border: 1px solid #17a2b8;
       color: #0c5460;
     }
+
     button {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -56,19 +64,23 @@
       margin: 10px 10px 10px 0;
       transition: transform 0.2s, box-shadow 0.2s;
     }
+
     button:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
     }
+
     button:active {
       transform: translateY(0);
     }
+
     .step {
       background: #f8f9fa;
       padding: 15px;
       border-left: 4px solid #667eea;
       margin-bottom: 15px;
     }
+
     .code {
       background: #1e1e1e;
       color: #d4d4d4;
@@ -79,10 +91,12 @@
       overflow-x: auto;
       margin: 10px 0;
     }
+
     #status {
       margin-top: 20px;
       min-height: 40px;
     }
+
     .spinner {
       border: 3px solid #f3f3f3;
       border-top: 3px solid #667eea;
@@ -93,12 +107,19 @@
       display: inline-block;
       margin-right: 10px;
     }
+
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🧹 Clear Browser Cache</h1>
@@ -278,7 +299,7 @@
 
       try {
         // Dynamically import firebase-config.js
-        const module = await import('./js/firebase-config.js');
+        const module = await import('./js/firebase-config-env.js');
 
         const results = [];
         results.push('✅ Module loaded successfully');
@@ -289,7 +310,7 @@
         results.push(`✅ app export: ${typeof module.default !== 'undefined' ? 'Found' : '❌ Missing'}`);
 
         const allFound = typeof module.auth !== 'undefined' &&
-                        typeof module.db !== 'undefined';
+          typeof module.db !== 'undefined';
 
         testResult.innerHTML = `
           <div class="alert alert-${allFound ? 'success' : 'warning'}">
@@ -315,4 +336,5 @@
     });
   </script>
 </body>
+
 </html>

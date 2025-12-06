@@ -1,0 +1,28 @@
+remote: error: GH013: Repository rule violations found for refs/heads/fix/conflict-resolution.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö Stripe Test API Secret Key ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö        
+remote:        locations:        
+remote:          - commit: 0c847002f4ee2a9652b4ab6be48299884d36cb3c        
+remote:            path: config.json:12        
+remote:          - commit: 0c847002f4ee2a9652b4ab6be48299884d36cb3c        
+remote:            path: deploy_v20.log:87        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/CFZ6S2/FZ6/security/secret-scanning/unblock-secret/36SEe2rPfxjbn5nOjrxXsDH1nAH        
+remote:             
+remote: 
+remote: 
+To https://github.com/CFZ6S2/FZ6.git
+ ! [remote rejected] fix/conflict-resolution -> fix/conflict-resolution (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/CFZ6S2/FZ6.git'
