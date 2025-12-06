@@ -219,14 +219,7 @@
     // Firebase configuration
     import './js/firebase-appcheck.js';
 
-    // BRIDGE: Ensure global shim is available in module scope
-    const verifyRecaptchaScore = window.verifyRecaptchaScore || async function (t) { return { success: true, score: 1.0 }; };
 
-    // HOTFIX: Definir verifyRecaptchaScore globalmente para evitar errores
-    window.verifyRecaptchaScore = async function (token) {
-      console.warn('👻 verifyRecaptchaScore invocado (shim local). Retornando éxito.');
-      return { success: true, score: 1.0, action: 'login' };
-    };
 
     import { auth, db } from './js/firebase-config-env.js';
     import { sanitizer } from './js/sanitizer.js';
