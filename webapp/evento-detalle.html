@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,8 +48,17 @@
     }
 
     @keyframes backgroundMove {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
     }
 
     .glass-container {
@@ -112,6 +122,7 @@
     }
   </style>
 </head>
+
 <body class="relative">
 
   <!-- Loading Overlay -->
@@ -129,7 +140,8 @@
     <nav class="glass-container fixed top-0 left-0 right-0 z-40 mx-4 mt-4">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <button onclick="history.back()" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
+          <button onclick="history.back()"
+            class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
             <i class="fas fa-arrow-left mr-2"></i>Volver
           </button>
           <button id="logoutBtn" class="text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded-lg transition">
@@ -155,7 +167,8 @@
               <i class="fas fa-heart mr-2"></i>Aplicar a este Evento
             </h2>
 
-            <div id="alreadyApplied" class="hidden bg-green-500 bg-opacity-20 border border-green-300 border-opacity-30 rounded-lg p-6 mb-6">
+            <div id="alreadyApplied"
+              class="hidden bg-green-500 bg-opacity-20 border border-green-300 border-opacity-30 rounded-lg p-6 mb-6">
               <p class="text-white text-lg font-semibold mb-2">
                 <i class="fas fa-check-circle mr-2"></i>Ya has aplicado a este evento
               </p>
@@ -166,9 +179,8 @@
               <form id="applyForm" class="space-y-4">
                 <div>
                   <label class="text-white text-sm mb-2 block">¿Por qué quieres participar en este evento?</label>
-                  <textarea id="motivation" required rows="4"
-                            class="w-full glass-input px-4 py-3"
-                            placeholder="Cuéntanos por qué te interesa este evento..."></textarea>
+                  <textarea id="motivation" required rows="4" class="w-full glass-input px-4 py-3"
+                    placeholder="Cuéntanos por qué te interesa este evento..."></textarea>
                 </div>
 
                 <div class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
@@ -178,7 +190,8 @@
                   </label>
                 </div>
 
-                <button type="submit" class="w-full gradient-button px-6 py-4 rounded-lg text-white font-semibold text-lg">
+                <button type="submit"
+                  class="w-full gradient-button px-6 py-4 rounded-lg text-white font-semibold text-lg">
                   <i class="fas fa-paper-plane mr-2"></i>Enviar Aplicación
                 </button>
               </form>
@@ -199,10 +212,12 @@
               <button id="tabPending" class="px-6 py-2 rounded-lg text-white font-semibold bg-yellow-500 transition">
                 Pendientes (<span id="pendingCount">0</span>)
               </button>
-              <button id="tabSelected" class="px-6 py-2 rounded-lg text-white font-semibold bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+              <button id="tabSelected"
+                class="px-6 py-2 rounded-lg text-white font-semibold bg-white bg-opacity-20 hover:bg-opacity-30 transition">
                 Seleccionadas (<span id="selectedCount">0</span>)
               </button>
-              <button id="tabRejected" class="px-6 py-2 rounded-lg text-white font-semibold bg-white bg-opacity-20 hover:bg-opacity-30 transition">
+              <button id="tabRejected"
+                class="px-6 py-2 rounded-lg text-white font-semibold bg-white bg-opacity-20 hover:bg-opacity-30 transition">
                 Rechazadas (<span id="rejectedCount">0</span>)
               </button>
             </div>
@@ -233,14 +248,21 @@
   </div>
 
   <!-- Error Fixes -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module" src="./js/error-fixes.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+
+
+  <script src="./js/error-fixes.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase Scripts -->
   <script type="module">
@@ -248,7 +270,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       collection,
@@ -279,13 +301,13 @@
 
     if (!eventId) {
       alert('ID de evento no especificado');
-      window.location.href = '/webapp/eventos-vip.html';
+      window.location.href = '/eventos-vip.html';
     }
 
     // Check authentication
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
         return;
       }
 
@@ -312,7 +334,7 @@
 
         if (!eventDoc.exists()) {
           showToast('Evento no encontrado', 'error');
-          setTimeout(() => window.location.href = '/webapp/eventos-vip.html', 2000);
+          setTimeout(() => window.location.href = '/eventos-vip.html', 2000);
           return;
         }
 
@@ -323,7 +345,7 @@
 
         // Determine view
         const isConcierge = currentUserData.userRole === 'concierge' &&
-                           eventData.conciergeId === currentUser.uid;
+          eventData.conciergeId === currentUser.uid;
 
         if (isConcierge) {
           // Show concierge view
@@ -335,7 +357,7 @@
           await checkIfAlreadyApplied();
         } else {
           showToast('No tienes acceso a este evento', 'error');
-          setTimeout(() => window.location.href = '/webapp/perfil.html', 2000);
+          setTimeout(() => window.location.href = '/perfil.html', 2000);
         }
 
       } catch (error) {
@@ -787,7 +809,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -819,4 +841,5 @@
   </script>
 
 </body>
+
 </html>

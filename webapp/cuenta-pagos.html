@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,8 +49,17 @@
     }
 
     @keyframes backgroundMove {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
     }
 
     /* Glassmorphism containers */
@@ -123,8 +133,15 @@
 
     /* Floating Animation */
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .float-animation {
@@ -150,6 +167,7 @@
     }
   </style>
 </head>
+
 <body class="relative">
 
   <!-- Loading Overlay -->
@@ -172,16 +190,17 @@
         </div>
 
         <div class="hidden md:flex items-center space-x-6">
-          <a href="/webapp/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
+          <a href="/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-search mr-2"></i>Buscar
           </a>
-          <a href="/webapp/conversaciones.html" class="text-white hover:text-purple-200 transition">
+          <a href="/conversaciones.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-comments mr-2"></i>Chats
           </a>
-          <a href="/webapp/perfil.html" class="text-white hover:text-purple-200 transition">
+          <a href="/perfil.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-user mr-2"></i>Perfil
           </a>
-          <a href="/webapp/cuenta-pagos.html" class="text-white hover:text-purple-200 transition border-b-2 border-white">
+          <a href="/cuenta-pagos.html"
+            class="text-white hover:text-purple-200 transition border-b-2 border-white">
             <i class="fas fa-wallet mr-2"></i>Pagos
           </a>
         </div>
@@ -223,7 +242,8 @@
         </div>
 
         <div class="mt-6 pt-6 border-t border-white border-opacity-20">
-          <a href="/webapp/suscripcion.html" class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
+          <a href="/suscripcion.html"
+            class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
             <i class="fas fa-arrow-right mr-2"></i>Gestionar Suscripción
           </a>
         </div>
@@ -246,7 +266,8 @@
         </div>
 
         <div class="mt-6 pt-6 border-t border-white border-opacity-20">
-          <a href="/webapp/seguro.html" class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
+          <a href="/seguro.html"
+            class="gradient-button inline-block px-6 py-3 rounded-lg text-white font-semibold">
             <i class="fas fa-arrow-right mr-2"></i>Gestionar Seguro
           </a>
         </div>
@@ -284,7 +305,8 @@
         <div class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
           <p class="text-white text-sm">
             <i class="fas fa-info-circle mr-2"></i>
-            Los depósitos se liberan automáticamente 24 horas después de validar la cita con PIN. Si la cita no se valida, el depósito se reembolsa en 48 horas.
+            Los depósitos se liberan automáticamente 24 horas después de validar la cita con PIN. Si la cita no se
+            valida, el depósito se reembolsa en 48 horas.
           </p>
         </div>
       </div>
@@ -306,7 +328,8 @@
         </div>
 
         <div class="mt-6 text-center">
-          <button id="loadMoreBtn" class="hidden glass-input px-6 py-2 rounded-lg text-white font-semibold hover:bg-white hover:bg-opacity-30 transition">
+          <button id="loadMoreBtn"
+            class="hidden glass-input px-6 py-2 rounded-lg text-white font-semibold hover:bg-white hover:bg-opacity-30 transition">
             Cargar Más
           </button>
         </div>
@@ -324,14 +347,21 @@
   </div>
 
   <!-- Error Fixes -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module" src="./js/error-fixes.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+
+
+  <script src="./js/error-fixes.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase Scripts -->
   <script type="module">
@@ -339,7 +369,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { loadTheme } from './js/theme.js';
@@ -356,7 +386,7 @@
         await loadTransactionHistory();
         document.getElementById('loadingOverlay').classList.add('hidden');
       } else {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       }
     });
 
@@ -610,7 +640,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -640,4 +670,5 @@
   </script>
 
 </body>
+
 </html>

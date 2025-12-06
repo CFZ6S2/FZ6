@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clear App Check Throttle</title>
   <style>
-    body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto; line-height: 1.5; }
-    .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem; }
-    .btn:hover { background: #0056b3; }
-    .success { color: green; background: #d4edda; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+    <<<<<<< HEAD
   </style>
   <script type="module">
     import { logger } from './js/logger.js';
-    import './js/firebase-appcheck.js';
+    import './js/firebase-appcheck.js'; // Imports the window.clearAppCheckThrottle function
 
     window.clearThrottle = async function () {
       if (window.clearAppCheckThrottle) {
@@ -25,10 +23,12 @@
     };
   </script>
 </head>
+
 <body>
   <h1>🧹 Clear App Check Throttle</h1>
   <p>Si ves "Requests throttled" por App Check, usa este botón para limpiar el estado local del navegador.</p>
   <button class="btn" onclick="clearThrottle()">Clear Throttle & Reload</button>
   <div id="status" class="success">✅ Throttling state cleared! Redirecting...</div>
 </body>
+
 </html>

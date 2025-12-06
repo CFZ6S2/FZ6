@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +35,8 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    #localVideo, #remoteVideo {
+    #localVideo,
+    #remoteVideo {
       background: #000;
       object-fit: cover;
     }
@@ -95,8 +97,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     .calling {
@@ -111,6 +120,7 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Contenedor Principal -->
@@ -146,7 +156,8 @@
         <video id="remoteVideo" autoplay playsinline muted></video>
 
         <!-- Mensaje de espera -->
-        <div id="waitingMessage" class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-xl calling">
+        <div id="waitingMessage"
+          class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-xl calling">
           <i class="fas fa-video text-6xl mb-4"></i>
           <p class="text-xl font-bold">Esperando respuesta...</p>
         </div>
@@ -183,7 +194,8 @@
   </div>
 
   <!-- Modal de Llamada Entrante -->
-  <div id="incomingCallModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50" style="backdrop-filter: blur(10px);">
+  <div id="incomingCallModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    style="backdrop-filter: blur(10px);">
     <div class="glass rounded-2xl p-8 max-w-md w-full mx-4 text-center">
       <div class="mb-6">
         <i class="fas fa-phone-volume text-6xl text-green-400 calling"></i>
@@ -191,10 +203,12 @@
       <h2 class="text-2xl font-bold mb-2">Llamada Entrante</h2>
       <p id="callerName" class="text-lg text-slate-300 mb-8">Usuario desconocido</p>
       <div class="flex gap-4">
-        <button id="declineCallBtn" class="flex-1 bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg font-semibold transition">
+        <button id="declineCallBtn"
+          class="flex-1 bg-red-500 hover:bg-red-600 px-6 py-3 rounded-lg font-semibold transition">
           <i class="fas fa-phone-slash mr-2"></i>Rechazar
         </button>
-        <button id="acceptCallBtn" class="flex-1 bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg font-semibold transition">
+        <button id="acceptCallBtn"
+          class="flex-1 bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg font-semibold transition">
           <i class="fas fa-phone mr-2"></i>Aceptar
         </button>
       </div>
@@ -202,15 +216,15 @@
   </div>
 
   <!-- Firebase SDK -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-    <script type="module" src="./js/sanitizer.js"></script>
+  <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module">
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import VideoChat, { listenForIncomingCall } from './js/video-chat.js';
     import { showToast } from './js/utils.js';
@@ -431,4 +445,5 @@
   </script>
 
 </body>
+
 </html>

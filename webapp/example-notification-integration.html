@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Ejemplo - Integración de Notificaciones</title>
@@ -21,13 +22,15 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen">
 
   <!-- Notification Bell Icon (with badge) -->
   <div class="fixed top-4 right-4 z-40">
     <button id="notification-bell" class="relative glass p-3 rounded-full hover:bg-white/10">
       <i class="fas fa-bell text-white text-xl"></i>
-      <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+      <span id="notification-badge"
+        class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
         0
       </span>
     </button>
@@ -45,12 +48,14 @@
         <span class="text-white">Verificando estado...</span>
       </div>
 
-      <button id="enable-notifications-btn" class="hidden bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl">
+      <button id="enable-notifications-btn"
+        class="hidden bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl">
         <i class="fas fa-bell mr-2"></i>
         Activar Notificaciones
       </button>
 
-      <button id="test-notification-btn" class="hidden bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl ml-4">
+      <button id="test-notification-btn"
+        class="hidden bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl ml-4">
         <i class="fas fa-vial mr-2"></i>
         Probar Notificación
       </button>
@@ -63,11 +68,15 @@
   </div>
 
   <!-- Firebase SDK -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
   <script type="module">
@@ -86,6 +95,7 @@
     } from './js/notifications.js';
 
     import { showToast } from './js/utils.js';
+<<<<<<< HEAD
 
     // Firebase configuration
     const firebaseConfig = {
@@ -96,6 +106,9 @@
       messagingSenderId: "180656060538",
       appId: "1:180656060538:web:3168487130aa126db663c3"
     };
+=======
+    import firebaseConfig from './js/firebase-config-env.js';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -190,4 +203,5 @@
     });
   </script>
 </body>
+
 </html>

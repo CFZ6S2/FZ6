@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación de Identidad - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon-ucFM3VZS.svg">
+  <link rel="alternate icon" href="/assets/favicon-Cun14U_G.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-Crbd7A89.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192-CsJCmVbd.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512-BuBNreg2.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32-BBREFL-q.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16-be4EoATY.png">
+  <link rel="manifest" href="/assets/site-WhAqb5Xc.webmanifest">
+  <meta name="theme-color" content="#764ba2">
+
+  <!-- Tailwind CSS -->
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .step {
+      position: relative;
+    }
+
+    .step::after {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: calc(100% - 48px);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .step:last-child::after {
+      display: none;
+    }
+
+    .step.completed .step-number {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .step.active .step-number {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+      }
+    }
+
+    .preview-image {
+      max-height: 300px;
+      -o-object-fit: contain;
+         object-fit: contain;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/verificacion_identidad-D6TNtFBc.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-env-BtJ4KElt.js">
+  <link rel="modulepreload" crossorigin href="/assets/utils-B649B8Z6.js">
+  <link rel="stylesheet" crossorigin href="/assets/output-D--XYbyl.css">
+</head>
+
+<body class="text-white">
+
+  <!-- Header -->
+  <header class="glass-strong border-b border-white/20">
+    <nav class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <button onclick="window.history.back()" class="hover:bg-white/10 p-2 rounded-lg transition">
+        <i class="fas fa-arrow-left text-xl"></i>
+      </button>
+      <h1 class="text-xl font-bold">Verificación de Identidad</h1>
+      <div class="w-10"></div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- Progress Steps -->
+    <div class="glass rounded-2xl p-6 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold">
+          <i class="fas fa-shield-halved mr-2 text-blue-400"></i>
+          Proceso de Verificación
+        </h2>
+        <span id="verificationStatus" class="glass px-4 py-2 rounded-lg text-sm font-semibold">
+          <i class="fas fa-clock mr-1"></i>Pendiente
+        </span>
+      </div>
+
+      <!-- Steps -->
+      <div class="space-y-6">
+        <!-- Step 1 -->
+        <div id="step1" class="step active">
+          <div class="flex items-start gap-4">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg">
+              1
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold mb-1">Subir Documento de Identidad</h3>
+              <p class="text-sm text-slate-300 mb-3">DNI, Pasaporte o Licencia de Conducir (ambas caras)</p>
+              <div id="step1Status" class="hidden text-sm text-green-400">
+                <i class="fas fa-check-circle mr-1"></i>Completado
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="step2" class="step">
+          <div class="flex items-start gap-4">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
+              2
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold mb-1">Subir Selfie con Documento</h3>
+              <p class="text-sm text-slate-300 mb-3">Foto clara de tu rostro sosteniendo el documento</p>
+              <div id="step2Status" class="hidden text-sm text-green-400">
+                <i class="fas fa-check-circle mr-1"></i>Completado
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="step3" class="step">
+          <div class="flex items-start gap-4">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
+              3
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold mb-1">Revisión del Equipo</h3>
+              <p class="text-sm text-slate-300 mb-3">Verificaremos tu identidad en 24-48 horas</p>
+              <div id="step3Status" class="hidden text-sm text-green-400">
+                <i class="fas fa-check-circle mr-1"></i>Verificado
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Section: Documento -->
+    <div id="documentSection" class="glass rounded-2xl p-8 mb-6">
+      <h3 class="text-2xl font-bold mb-6">
+        <i class="fas fa-id-card mr-2 text-purple-400"></i>
+        1. Documento de Identidad
+      </h3>
+
+      <!-- Instrucciones -->
+      <div class="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-6">
+        <h4 class="font-bold mb-2">
+          <i class="fas fa-info-circle mr-2"></i>Instrucciones
+        </h4>
+        <ul class="text-sm space-y-1 text-slate-200">
+          <li>✓ Foto clara y legible</li>
+          <li>✓ Toda la información visible</li>
+          <li>✓ Sin reflejos ni sombras</li>
+          <li>✓ Formato: JPG, PNG o PDF</li>
+          <li>✓ Tamaño máximo: 10 MB</li>
+        </ul>
+      </div>
+
+      <!-- Upload Areas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Front -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Cara Frontal *</label>
+          <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadFrontArea"
+            onclick="document.getElementById('frontInput').click()">
+            <div id="frontPreview" class="hidden">
+              <img id="frontImage" class="preview-image mx-auto rounded-lg mb-3">
+              <button onclick="removeFront(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-trash mr-2"></i>Eliminar
+              </button>
+            </div>
+            <div id="frontPlaceholder">
+              <i class="fas fa-cloud-arrow-up text-5xl mb-3 opacity-50"></i>
+              <p class="font-semibold mb-1">Click para subir</p>
+              <p class="text-sm text-slate-300">o arrastra aquí</p>
+            </div>
+          </div>
+          <input type="file" id="frontInput" class="hidden" accept="image/*,application/pdf"
+            onchange="handleFrontUpload(event)">
+        </div>
+
+        <!-- Back -->
+        <div>
+          <label class="block text-sm font-semibold mb-2">Cara Posterior *</label>
+          <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadBackArea"
+            onclick="document.getElementById('backInput').click()">
+            <div id="backPreview" class="hidden">
+              <img id="backImage" class="preview-image mx-auto rounded-lg mb-3">
+              <button onclick="removeBack(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-trash mr-2"></i>Eliminar
+              </button>
+            </div>
+            <div id="backPlaceholder">
+              <i class="fas fa-cloud-arrow-up text-5xl mb-3 opacity-50"></i>
+              <p class="font-semibold mb-1">Click para subir</p>
+              <p class="text-sm text-slate-300">o arrastra aquí</p>
+            </div>
+          </div>
+          <input type="file" id="backInput" class="hidden" accept="image/*,application/pdf"
+            onchange="handleBackUpload(event)">
+        </div>
+      </div>
+
+      <button id="continueToSelfieBtn" onclick="continueToSelfie()"
+        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
+        disabled>
+        Continuar al Paso 2
+        <i class="fas fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+
+    <!-- Upload Section: Selfie -->
+    <div id="selfieSection" class="glass rounded-2xl p-8 mb-6 hidden">
+      <h3 class="text-2xl font-bold mb-6">
+        <i class="fas fa-camera mr-2 text-pink-400"></i>
+        2. Selfie con Documento
+      </h3>
+
+      <!-- Instrucciones -->
+      <div class="bg-pink-500/20 border border-pink-400/30 rounded-xl p-4 mb-6">
+        <h4 class="font-bold mb-2">
+          <i class="fas fa-info-circle mr-2"></i>Instrucciones
+        </h4>
+        <ul class="text-sm space-y-1 text-slate-200">
+          <li>✓ Tu rostro debe ser claramente visible</li>
+          <li>✓ Sostén el documento junto a tu cara</li>
+          <li>✓ Buena iluminación, sin sombras</li>
+          <li>✓ Sin gafas de sol ni máscaras</li>
+          <li>✓ Expresión natural, mirando a la cámara</li>
+        </ul>
+      </div>
+
+      <!-- Camera / Upload -->
+      <div class="mb-6">
+        <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadSelfieArea"
+          onclick="document.getElementById('selfieInput').click()">
+          <div id="selfiePreview" class="hidden">
+            <img id="selfieImage" class="preview-image mx-auto rounded-lg mb-3">
+            <button onclick="removeSelfie(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
+              <i class="fas fa-trash mr-2"></i>Eliminar
+            </button>
+          </div>
+          <div id="selfiePlaceholder">
+            <i class="fas fa-camera text-5xl mb-3 opacity-50"></i>
+            <p class="font-semibold mb-1">Click para tomar foto o subir</p>
+            <p class="text-sm text-slate-300">Usa la cámara o selecciona archivo</p>
+          </div>
+        </div>
+        <input type="file" id="selfieInput" class="hidden" accept="image/*" capture="user"
+          onchange="handleSelfieUpload(event)">
+      </div>
+
+      <button id="submitVerificationBtn" onclick="submitVerification()"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
+        disabled>
+        <i class="fas fa-paper-plane mr-2"></i>
+        Enviar para Verificación
+      </button>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="glass rounded-2xl p-6">
+      <h4 class="font-bold mb-3">
+        <i class="fas fa-lock mr-2 text-green-400"></i>
+        Seguridad y Privacidad
+      </h4>
+      <ul class="text-sm space-y-2 text-slate-300">
+        <li><i class="fas fa-check text-green-400 mr-2"></i>Tus documentos están encriptados end-to-end</li>
+        <li><i class="fas fa-check text-green-400 mr-2"></i>Solo el equipo de verificación tiene acceso</li>
+        <li><i class="fas fa-check text-green-400 mr-2"></i>No compartimos tu información con terceros</li>
+        <li><i class="fas fa-check text-green-400 mr-2"></i>Los documentos se eliminan después de la verificación</li>
+        <li><i class="fas fa-check text-green-400 mr-2"></i>Cumplimos con RGPD y normativas de privacidad</li>
+      </ul>
+    </div>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <!-- Loading Modal -->
+  <div id="loadingModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    style="backdrop-filter: blur(10px);">
+    <div class="glass rounded-2xl p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
+      <p class="text-lg font-semibold">Subiendo documentos...</p>
+      <p class="text-sm text-slate-300 mt-2">Por favor espera</p>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <!-- DOMPurify for XSS Protection -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+  <script src="./js/sanitizer.js"></script>
+
+
+
+</body>
+
+</html>

@@ -1,10 +1,16 @@
 """
 Configuration management for TuCitaSegura Backend
 """
+<<<<<<< HEAD
 from typing import List, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 import json
+=======
+from typing import List
+from pydantic_settings import BaseSettings
+from pydantic import field_validator
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
 class Settings(BaseSettings):
@@ -82,7 +88,11 @@ class Settings(BaseSettings):
     # CORS - Using str to avoid pydantic-settings auto JSON-decoding
     CORS_ORIGINS: str = ""
 
+<<<<<<< HEAD
     @field_validator("SECRET_KEY", mode="after")
+=======
+    @field_validator("SECRET_KEY")
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     @classmethod
     def validate_secret_key(cls, v):
         """
@@ -132,6 +142,7 @@ class Settings(BaseSettings):
 
         return v
 
+<<<<<<< HEAD
     @field_validator("CORS_ORIGINS", mode="after")
     @classmethod
     def parse_cors_origins(cls, v) -> List[str]:
@@ -181,6 +192,22 @@ class Settings(BaseSettings):
         case_sensitive=True,
         env_ignore_empty=True
     )
+=======
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS origins from comma-separated string"""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",")]
+        elif isinstance(v, list):
+            return v
+        return v
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+        extra = 'ignore'  # Allow extra env vars like VITE_*
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
 # Global settings instance

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verifica tu Email - TuCitaSegura</title>
 
+<<<<<<< HEAD
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
@@ -15,11 +17,25 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#764ba2">
+=======
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#764ba2">
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-700 min-h-screen flex items-center justify-center">
+
+<body
+    class="bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-700 min-h-screen flex items-center justify-center">
     <div class="container mx-auto px-4">
         <div class="max-w-md mx-auto bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 text-center">
             <!-- Icono de email -->
@@ -54,12 +70,14 @@
 
             <!-- Botones de acción -->
             <div class="space-y-3">
-                <button id="resendEmailBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+                <button id="resendEmailBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                     <i class="fas fa-paper-plane mr-2"></i>
                     Reenviar email de verificación
                 </button>
-                
-                <button id="checkAgainBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+
+                <button id="checkAgainBtn"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                     <i class="fas fa-sync-alt mr-2"></i>
                     Ya verifiqué mi email
                 </button>
@@ -76,10 +94,11 @@
     </div>
 
     <!-- Firebase -->
-      <!-- DOMPurify for XSS Protection -->
+    <!-- DOMPurify for XSS Protection -->
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
       <script type="module" src="./js/sanitizer.js"></script>
 
 
@@ -90,6 +109,21 @@
     <!-- Config Firebase -->
     <script type="module" src="./js/firebase-config.js"></script>
     
+=======
+    <script src="./js/sanitizer.js"></script>
+
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Config Firebase -->
+    <script type="module">
+        import firebaseConfig from './js/firebase-config-env.js';
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     <script>
         class EmailVerification {
             constructor() {
@@ -145,7 +179,7 @@
                     });
 
                     this.showStatus('success', 'Email de verificación enviado. Por favor revisa tu bandeja de entrada.');
-                    
+
                     // Deshabilitar botón por 60 segundos
                     setTimeout(() => {
                         document.getElementById('resendEmailBtn').disabled = false;
@@ -155,7 +189,7 @@
                 } catch (error) {
                     console.error('Error reenviando email:', error);
                     this.showStatus('error', 'Error al enviar el email: ' + error.message);
-                    
+
                     document.getElementById('resendEmailBtn').disabled = false;
                     document.getElementById('resendEmailBtn').innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Reenviar email de verificación';
                 }
@@ -168,7 +202,7 @@
 
                     // Recargar información del usuario
                     await user.reload();
-                    
+
                     if (user.emailVerified) {
                         this.redirectToOriginalPage();
                     } else {
@@ -250,7 +284,7 @@
                 if (this.verificationInterval) {
                     clearInterval(this.verificationInterval);
                 }
-                
+
                 window.location.href = this.redirectUrl;
             }
 
@@ -259,7 +293,7 @@
                     if (this.verificationInterval) {
                         clearInterval(this.verificationInterval);
                     }
-                    
+
                     await firebase.auth().signOut();
                     window.location.href = '/login.html';
                 } catch (error) {
@@ -274,4 +308,9 @@
         });
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+
+</html>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

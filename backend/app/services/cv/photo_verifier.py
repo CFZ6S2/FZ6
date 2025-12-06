@@ -798,6 +798,11 @@ class PhotoVerification:
     
     def _detect_spam_in_text(self, text: str) -> bool:
         """Detectar spam en el texto"""
+        spam_keywords = ["promo", "free", "click", "visit", "http"]
+        return any(keyword in text.lower() for keyword in spam_keywords)
+
+# Instancia global del verificador de fotos
+photo_verifier = PhotoVerification()
         try:
             if not text:
                 return False

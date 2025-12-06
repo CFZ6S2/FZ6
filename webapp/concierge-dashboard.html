@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,8 +49,17 @@
     }
 
     @keyframes backgroundMove {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
     }
 
     /* Glassmorphism containers */
@@ -116,8 +126,15 @@
 
     /* Floating Animation */
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .float-animation {
@@ -144,6 +161,7 @@
     }
   </style>
 </head>
+
 <body class="relative">
 
   <!-- Loading Overlay -->
@@ -172,7 +190,7 @@
           </div>
 
           <div class="hidden md:flex items-center space-x-6">
-            <a href="/webapp/perfil.html" class="text-white hover:text-purple-200 transition">
+            <a href="/perfil.html" class="text-white hover:text-purple-200 transition">
               <i class="fas fa-user mr-2"></i>Perfil
             </a>
           </div>
@@ -234,7 +252,8 @@
 
         <!-- Create Event Button -->
         <div class="mb-6">
-          <button id="createEventBtn" class="gradient-button px-8 py-4 rounded-lg text-white font-semibold text-lg shadow-lg">
+          <button id="createEventBtn"
+            class="gradient-button px-8 py-4 rounded-lg text-white font-semibold text-lg shadow-lg">
             <i class="fas fa-plus-circle mr-2"></i>Crear Nuevo Evento VIP
           </button>
         </div>
@@ -274,7 +293,8 @@
   </div>
 
   <!-- Create Event Modal -->
-  <div id="createEventModal" class="opacity-0 pointer-events-none fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+  <div id="createEventModal"
+    class="opacity-0 pointer-events-none fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
     <div class="glass-container max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-white text-2xl font-bold">
@@ -289,17 +309,15 @@
         <!-- Title -->
         <div>
           <label class="text-white text-sm mb-2 block">Título del Evento *</label>
-          <input type="text" id="eventTitle" required maxlength="100"
-                 class="w-full glass-input px-4 py-3"
-                 placeholder="Ej: Cena VIP en Madrid">
+          <input type="text" id="eventTitle" required maxlength="100" class="w-full glass-input px-4 py-3"
+            placeholder="Ej: Cena VIP en Madrid">
         </div>
 
         <!-- Description -->
         <div>
           <label class="text-white text-sm mb-2 block">Descripción *</label>
-          <textarea id="eventDescription" required rows="4"
-                    class="w-full glass-input px-4 py-3"
-                    placeholder="Describe el evento, qué se espera, ambiente, etc."></textarea>
+          <textarea id="eventDescription" required rows="4" class="w-full glass-input px-4 py-3"
+            placeholder="Describe el evento, qué se espera, ambiente, etc."></textarea>
         </div>
 
         <!-- Event Type -->
@@ -319,13 +337,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="text-white text-sm mb-2 block">Fecha del Evento *</label>
-            <input type="date" id="eventDate" required
-                   class="w-full glass-input px-4 py-3">
+            <input type="date" id="eventDate" required class="w-full glass-input px-4 py-3">
           </div>
           <div>
             <label class="text-white text-sm mb-2 block">Hora *</label>
-            <input type="time" id="eventTime" required
-                   class="w-full glass-input px-4 py-3">
+            <input type="time" id="eventTime" required class="w-full glass-input px-4 py-3">
           </div>
         </div>
 
@@ -346,55 +362,48 @@
 
         <div>
           <label class="text-white text-sm mb-2 block">Dirección/Lugar *</label>
-          <input type="text" id="eventAddress" required
-                 class="w-full glass-input px-4 py-3"
-                 placeholder="Ej: Restaurante Botín, Calle Cuchilleros 17">
+          <input type="text" id="eventAddress" required class="w-full glass-input px-4 py-3"
+            placeholder="Ej: Restaurante Botín, Calle Cuchilleros 17">
         </div>
 
         <!-- Compensation -->
         <div>
           <label class="text-white text-sm mb-2 block">Compensación por Persona (€) *</label>
-          <input type="number" id="eventCompensation" required min="50" step="10"
-                 class="w-full glass-input px-4 py-3"
-                 placeholder="Ej: 300">
+          <input type="number" id="eventCompensation" required min="50" step="10" class="w-full glass-input px-4 py-3"
+            placeholder="Ej: 300">
         </div>
 
         <!-- Spots Available -->
         <div>
           <label class="text-white text-sm mb-2 block">Número de Plazas Disponibles *</label>
-          <input type="number" id="eventSpots" required min="1" max="50"
-                 class="w-full glass-input px-4 py-3"
-                 placeholder="Ej: 5">
+          <input type="number" id="eventSpots" required min="1" max="50" class="w-full glass-input px-4 py-3"
+            placeholder="Ej: 5">
         </div>
 
         <!-- Requirements -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="text-white text-sm mb-2 block">Edad Mínima *</label>
-            <input type="number" id="minAge" required min="18" max="100"
-                   class="w-full glass-input px-4 py-3"
-                   placeholder="Ej: 25">
+            <input type="number" id="minAge" required min="18" max="100" class="w-full glass-input px-4 py-3"
+              placeholder="Ej: 25">
           </div>
           <div>
             <label class="text-white text-sm mb-2 block">Edad Máxima *</label>
-            <input type="number" id="maxAge" required min="18" max="100"
-                   class="w-full glass-input px-4 py-3"
-                   placeholder="Ej: 35">
+            <input type="number" id="maxAge" required min="18" max="100" class="w-full glass-input px-4 py-3"
+              placeholder="Ej: 35">
           </div>
         </div>
 
         <div>
           <label class="text-white text-sm mb-2 block">Código de Vestimenta</label>
-          <input type="text" id="dresscode"
-                 class="w-full glass-input px-4 py-3"
-                 placeholder="Ej: Elegante, Casual, Formal">
+          <input type="text" id="dresscode" class="w-full glass-input px-4 py-3"
+            placeholder="Ej: Elegante, Casual, Formal">
         </div>
 
         <div>
           <label class="text-white text-sm mb-2 block">Otros Requisitos</label>
-          <textarea id="otherRequirements" rows="2"
-                    class="w-full glass-input px-4 py-3"
-                    placeholder="Idiomas, habilidades especiales, etc."></textarea>
+          <textarea id="otherRequirements" rows="2" class="w-full glass-input px-4 py-3"
+            placeholder="Idiomas, habilidades especiales, etc."></textarea>
         </div>
 
         <!-- Submit Buttons -->
@@ -402,7 +411,8 @@
           <button type="submit" class="flex-1 gradient-button px-6 py-3 rounded-lg text-white font-semibold">
             <i class="fas fa-check mr-2"></i>Publicar Evento
           </button>
-          <button type="button" id="cancelCreateBtn" class="px-6 py-3 rounded-lg text-white font-semibold bg-red-500 hover:bg-red-600 transition">
+          <button type="button" id="cancelCreateBtn"
+            class="px-6 py-3 rounded-lg text-white font-semibold bg-red-500 hover:bg-red-600 transition">
             <i class="fas fa-times mr-2"></i>Cancelar
           </button>
         </div>
@@ -419,11 +429,15 @@
   </div>
 
   <!-- Error Fixes -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
   <script type="module" src="./js/error-fixes.js"></script>
@@ -434,7 +448,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import {
       collection,
@@ -457,7 +471,7 @@
     // Check authentication
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
         return;
       }
 
@@ -473,10 +487,10 @@
 
         // Verificar que sea concierge
         if (currentUserData.userRole !== 'concierge' ||
-            currentUserData.conciergeStatus !== 'approved') {
+          currentUserData.conciergeStatus !== 'approved') {
           showToast('Acceso denegado. Solo para Concierges aprobados.', 'error');
           setTimeout(() => {
-            window.location.href = '/webapp/perfil.html';
+            window.location.href = '/perfil.html';
           }, 2000);
           return;
         }
@@ -655,7 +669,7 @@
 
         <div class="flex space-x-3">
           <button
-            onclick="window.location.href='/webapp/evento-detalle.html?eventId=${event.id}'"
+            onclick="window.location.href='/evento-detalle.html?eventId=${event.id}'"
             class="flex-1 gradient-button px-4 py-2 rounded-lg text-white font-semibold">
             <i class="fas fa-users mr-2"></i>Ver Aplicantes (${event.applicationsCount || 0})
           </button>
@@ -749,7 +763,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -782,4 +796,5 @@
   </script>
 
 </body>
+
 </html>
