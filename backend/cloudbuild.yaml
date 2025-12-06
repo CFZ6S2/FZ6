@@ -8,23 +8,22 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
   # Use a more powerful machine for faster builds
-  machineType: 'E2_HIGHCPU_8'
+  machineType: 'E2_HIGHCPU_4'
 
   # Increase disk size for Docker layers
-  diskSizeGb: 100
+  diskSizeGb: 50
 
   # Log streaming for real-time monitoring
   logStreamingOption: 'STREAM_ON'
 
-  # Set timeout to 20 minutes (1200 seconds)
-  timeout: '1200s'
+timeout: '1200s'
 
 # Substitution variables for flexibility
 substitutions:
-  _SERVICE_NAME: 'tuscitasseguras-api'
+  _SERVICE_NAME: 'tucitasegura-backend'
   _REGION: 'us-central1'
-  _PORT: '8000'
-  _DOCKERFILE: 'Dockerfile.cloudrun'
+  _PORT: '8080'
+  _DOCKERFILE: 'Dockerfile'
 
 steps:
   # Step 0: Log build information
@@ -42,7 +41,7 @@ steps:
         echo "Service Name: ${_SERVICE_NAME}"
         echo "Region: ${_REGION}"
         echo "Dockerfile: ${_DOCKERFILE}"
-        echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "Timestamp: $$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "========================================="
 
         # Verify Dockerfile exists
@@ -71,7 +70,7 @@ steps:
       - '--build-arg'
       - 'BUILD_ID=$BUILD_ID'
       - '--build-arg'
-      - 'BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)'
+      - 'BUILD_TIMESTAMP=$$(date -u +%Y-%m-%dT%H:%M:%SZ)'
       - '.'
     timeout: '600s'
 
@@ -154,21 +153,21 @@ steps:
         echo "========================================="
 
         # Get service URL
-        SERVICE_URL=$(gcloud run services describe ${_SERVICE_NAME} \
+        SERVICE_URL=$$(gcloud run services describe ${_SERVICE_NAME} \
           --region=${_REGION} \
           --format='value(status.url)' 2>/dev/null || echo "URL not available")
 
-        echo "Service URL: $SERVICE_URL"
+        echo "Service URL: $$SERVICE_URL"
         echo "========================================="
 
         # Test health endpoint
-        if [ "$SERVICE_URL" != "URL not available" ]; then
+        if [ "$$SERVICE_URL" != "URL not available" ]; then
           echo "Testing health endpoint..."
-          curl -f "$SERVICE_URL/health" || echo "Health check failed (may be normal if service is starting)"
+          curl -f "$$SERVICE_URL/health" || echo "Health check failed (may be normal if service is starting)"
         fi
 
         echo "========================================="
-        echo "Cloud Build completed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "Cloud Build completed at $$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "========================================="
 
 # Images to be pushed to Container Registry

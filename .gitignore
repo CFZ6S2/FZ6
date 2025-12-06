@@ -80,4 +80,13 @@ backup_*/
 .trae/
 # Build outputs
 dist/
-webapp/dist/
+
+# Security
+config.json
+backend/crash_logs.json
+backend/error_output.txt
+
+# Logs
+*.log
+**/*.log
+
