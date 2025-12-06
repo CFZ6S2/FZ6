@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
                     main: path.resolve(__dirname, 'index.html'),
                     login: path.resolve(__dirname, 'login.html'),
                     admin_login: path.resolve(__dirname, 'admin-login.html'),
-                    admin: path.resolve(__dirname, 'admin.html'),
+
                     ayuda: path.resolve(__dirname, 'ayuda.html'),
                     buscar_usuarios: path.resolve(__dirname, 'buscar-usuarios.html'),
                     chat: path.resolve(__dirname, 'chat.html'),
