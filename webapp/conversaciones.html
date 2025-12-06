@@ -209,11 +209,7 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<<<<<<< HEAD
   <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
@@ -508,52 +504,8 @@
                 </div>
               ` : ''}
             </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-<<<<<<< HEAD
-    // Open chat - WITH PROFILE AND MEMBERSHIP VALIDATION
-    window.openChat = function(conversationId, otherUserId) {
-      // ✅ Validar perfil completo + membresía (hombres)
-      const validation = canAccessChat(currentUserData);
-
-      if (!validation.canAccess) {
-        if (validation.reason === 'incomplete_profile') {
-          // Perfil incompleto
-          showToast('⚠️ Debes completar tu perfil para chatear', 'warning');
-          const chatUrl = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
-          setTimeout(() => {
-            window.location.href = `/webapp/perfil.html?incomplete=true&reason=chat&returnUrl=${encodeURIComponent(chatUrl)}`;
-          }, 1500);
-        } else if (validation.reason === 'no_membership') {
-          // Sin membresía (solo hombres)
-          showToast('⚠️ Membresía requerida para chatear', 'error');
-          if (confirm('Necesitas una membresía activa (€29.99/mes) para acceder al chat.\n\n¿Deseas activar tu membresía ahora?')) {
-            const chatUrl = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
-            window.location.href = `/webapp/suscripcion.html?reason=chat&returnUrl=${encodeURIComponent(chatUrl)}`;
-          }
-=======
-    // Open chat - WITH MEMBERSHIP VALIDATION
-    window.openChat = function (conversationId, otherUserId) {
-      // Check membership requirement before opening chat
-      const userMustPay = currentUserData.gender === 'masculino';
-      if (userMustPay && !currentUserData.hasActiveSubscription) {
-        showToast('⚠️ Membresía requerida para chatear', 'error');
-        if (confirm('Necesitas una membresía activa (€29.99/mes) para acceder al chat.\n\n¿Deseas activar tu membresía ahora?')) {
-          window.location.href = '/suscripcion.html';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
-        }
-        return;
-      }
-
-<<<<<<< HEAD
       // ✅ Validación pasada, abrir chat
-      window.location.href = `/webapp/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
-=======
-      window.location.href = `/chat.html?conversationId=${conversationId}&userId=${otherUserId}`;
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+      window.location.href = `/ webapp / chat.html ? conversationId = ${ conversationId }& userId=${ otherUserId } `;
     };
 
     // Show context menu
@@ -595,7 +547,7 @@
     // Report user
     window.reportUser = function () {
       if (selectedOtherUserId) {
-        window.location.href = `/reportes.html?type=user&userId=${selectedOtherUserId}`;
+        window.location.href = `/ reportes.html ? type = user & userId=${ selectedOtherUserId }`;
       }
     };
 
