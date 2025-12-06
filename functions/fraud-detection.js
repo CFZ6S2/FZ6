@@ -11,11 +11,7 @@
  * - Integration con Firestore para almacenar resultados
  */
 
-<<<<<<< HEAD
 const functions = require('firebase-functions/v1');
-=======
-const functions = require('firebase-functions/v1');
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
 const admin = require('firebase-admin');
 const { createLogger } = require('./utils/structured-logger');
 

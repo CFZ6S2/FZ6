@@ -9,25 +9,11 @@ export class APIService {
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
     this.isLocal = isLocal;
     const override = (typeof window !== 'undefined' && window.API_BASE_URL) ? String(window.API_BASE_URL) : '';
-<<<<<<< HEAD
     const useSameOrigin = !override; // usar origen siempre que no haya override
     this.useSameOrigin = useSameOrigin;
     this.baseURL = override ? override : (isLocal ? 'http://localhost:8080' : '');
     this.fallbackBaseURL = ''; // sin fallback externo
     
-=======
-
-    // FORCE CLOUD RUN URL IN PRODUCTION (Bypass Hosting Rewrites)
-    const CLOUD_RUN_URL = 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
-    this.baseURL = override ? override : (isLocal ? 'http://localhost:8001' : CLOUD_RUN_URL);
-
-    // If we have a baseURL (which we always do now), disable same-origin
-    // This allows api-service to bypass faulty local rewrites
-    const useSameOrigin = false;
-    this.useSameOrigin = useSameOrigin;
-    this.fallbackBaseURL = CLOUD_RUN_URL;
-
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     this.token = null;
     this.headers = {
       'Content-Type': 'application/json',

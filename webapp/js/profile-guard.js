@@ -1,13 +1,8 @@
 // Profile Guard - Bloquea acceso a funcionalidades hasta que el perfil esté completo
 // ============================================================================
 
-<<<<<<< HEAD
 import { auth, db } from './firebase-config.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-=======
-import { auth, db } from './firebase-config-env.js';
-import { doc, getDoc, getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 import { logger } from './logger.js';
 
 /**

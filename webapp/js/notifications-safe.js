@@ -66,11 +66,7 @@ export async function initializeNotifications() {
  */
 async function registerServiceWorker() {
   try {
-<<<<<<< HEAD
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-=======
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     console.log('✅ Service Worker registered for notifications:', registration.scope);
     return registration;
   } catch (error) {

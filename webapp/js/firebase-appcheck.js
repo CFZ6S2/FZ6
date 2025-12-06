@@ -12,7 +12,6 @@ const __hideRecaptchaBadge = (() => { try { const s = document.createElement('st
 
 // IMPORTANTE: Esta es tu reCAPTCHA ENTERPRISE site key (verificar en GCP)
 // Debe coincidir con la configurada en Firebase/GCP y la documentación interna.
-<<<<<<< HEAD
 const RECAPTCHA_ENTERPRISE_SITE_KEY = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
 
 // Detectar entorno
@@ -30,12 +29,6 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-=======
-const RECAPTCHA_ENTERPRISE_SITE_KEY = (import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
-
-// Dominios configurados en reCAPTCHA Enterprise
-const ALLOWED_DOMAINS = [
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   'tucitasegura-129cc.web.app',
   'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
