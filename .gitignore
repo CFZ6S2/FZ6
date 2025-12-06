@@ -22,6 +22,7 @@ backend/.env.railway
 
 # API keys and configuration files with secrets
 webapp/js/google-maps-config.js
+webapp/public/config.json
 **/api-config.js
 **/*-config.js
 config.json
@@ -90,3 +91,6 @@ Dockerfile.railway
 # Build outputs
 dist/
 webapp/dist/
+
+# Nested repositories
+FZ6/
