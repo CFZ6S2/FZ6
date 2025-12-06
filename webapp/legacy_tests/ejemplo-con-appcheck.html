@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#764ba2">
 </head>
+
 <body>
   <h1>Ejemplo de inclusión de App Check</h1>
 
@@ -23,13 +25,17 @@
   <!-- ORDEN CORRECTO DE IMPORTACIÓN -->
   <!-- ============================================ -->
 
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
 
+<<<<<<< HEAD:webapp/ejemplo-con-appcheck.html
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/ejemplo-con-appcheck.html
 
 
 
@@ -40,7 +46,7 @@
     import './js/firebase-appcheck.js';
 
     // 2️⃣ SEGUNDO: Importar Firebase services (estos YA tienen App Check activo)
-    import { auth, db, storage } from './js/firebase-config.js';
+    import { auth, db, storage } from './js/firebase-config-env.js';
 
     // 3️⃣ TERCERO: Tu código de app
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -89,4 +95,5 @@
   -->
 
 </body>
+
 </html>

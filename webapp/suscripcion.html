@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,14 +24,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- PayPal SDK -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
-  <script src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&vault=true&intent=subscription"></script>
+  <script
+    src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&vault=true&intent=subscription"></script>
 
   <style>
     body {
@@ -55,8 +61,15 @@
     }
 
     @keyframes shimmer {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     .fade-in {
@@ -68,6 +81,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -75,42 +89,53 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-xl font-semibold">Cargando...</p>
     </div>
   </div>
 
   <!-- Success Modal -->
-  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="successModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
-      <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-check text-4xl text-white"></i>
       </div>
       <h3 class="text-3xl font-bold mb-4">¡Membresía Activada!</h3>
-      <p class="text-slate-200 mb-6">Tu membresía premium ha sido activada exitosamente. Ahora puedes disfrutar de todas las funciones de TuCitaSegura.</p>
-      <button onclick="redirectToSearch()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+      <p class="text-slate-200 mb-6">Tu membresía premium ha sido activada exitosamente. Ahora puedes disfrutar de todas
+        las funciones de TuCitaSegura.</p>
+      <button onclick="redirectToSearch()"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
         Comenzar a Buscar
       </button>
     </div>
   </div>
 
   <!-- Error Modal -->
-  <div id="errorModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="errorModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
-      <div class="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-exclamation-circle text-4xl text-white"></i>
       </div>
       <h3 class="text-3xl font-bold mb-4">Error en el Pago</h3>
-      <p id="errorMessage" class="text-slate-200 mb-6">Hubo un problema al procesar tu pago. Por favor, intenta nuevamente.</p>
-      <button onclick="closeErrorModal()" class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+      <p id="errorMessage" class="text-slate-200 mb-6">Hubo un problema al procesar tu pago. Por favor, intenta
+        nuevamente.</p>
+      <button onclick="closeErrorModal()"
+        class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
         Intentar Nuevamente
       </button>
-      <button onclick="redirectToSearch()" class="w-full mt-3 glass hover:glass-strong text-white font-semibold py-3 px-6 rounded-xl transition">
+      <button onclick="redirectToSearch()"
+        class="w-full mt-3 glass hover:glass-strong text-white font-semibold py-3 px-6 rounded-xl transition">
         Volver a Buscar
       </button>
     </div>
@@ -121,7 +146,8 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-      <a href="/webapp/buscar-usuarios.html" class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
+      <a href="/buscar-usuarios.html"
+        class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
         <i class="fas fa-arrow-left"></i>
         <span>Volver a búsqueda</span>
       </a>
@@ -135,7 +161,8 @@
     <!-- Pricing Card -->
     <div class="glass-strong rounded-2xl p-8 mb-8 fade-in">
       <div class="text-center mb-8">
-        <div class="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
+        <div
+          class="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
           MEJOR VALOR
         </div>
         <div class="text-6xl font-bold mb-2">
@@ -224,27 +251,32 @@
       <div class="space-y-4">
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Puedo cancelar en cualquier momento?</summary>
-          <p class="mt-3 text-slate-300">Sí, puedes cancelar tu suscripción en cualquier momento desde tu cuenta de PayPal. No hay cargos por cancelación y seguirás teniendo acceso hasta el final del período que pagaste.</p>
+          <p class="mt-3 text-slate-300">Sí, puedes cancelar tu suscripción en cualquier momento desde tu cuenta de
+            PayPal. No hay cargos por cancelación y seguirás teniendo acceso hasta el final del período que pagaste.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Qué pasa si cancelo mi membresía?</summary>
-          <p class="mt-3 text-slate-300">Si cancelas, perderás acceso a las funciones premium (enviar solicitudes y chat) pero mantendrás tu perfil y podrás reactivar tu membresía cuando quieras.</p>
+          <p class="mt-3 text-slate-300">Si cancelas, perderás acceso a las funciones premium (enviar solicitudes y
+            chat) pero mantendrás tu perfil y podrás reactivar tu membresía cuando quieras.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Necesito también el seguro anti-plantón?</summary>
-          <p class="mt-3 text-slate-300">La membresía te permite chatear y enviar solicitudes. Para agendar citas presenciales necesitarás también contratar el seguro anti-plantón de 120€ (pago único).</p>
+          <p class="mt-3 text-slate-300">La membresía te permite chatear y enviar solicitudes. Para agendar citas
+            presenciales necesitarás también contratar el seguro anti-plantón de 120€ (pago único).</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Es seguro el pago?</summary>
-          <p class="mt-3 text-slate-300">Absolutamente. Todos los pagos son procesados por PayPal, uno de los sistemas de pago más seguros del mundo. No almacenamos tu información de pago.</p>
+          <p class="mt-3 text-slate-300">Absolutamente. Todos los pagos son procesados por PayPal, uno de los sistemas
+            de pago más seguros del mundo. No almacenamos tu información de pago.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Qué métodos de pago aceptan?</summary>
-          <p class="mt-3 text-slate-300">Aceptamos tarjetas de crédito, débito y cuenta PayPal a través de PayPal Checkout.</p>
+          <p class="mt-3 text-slate-300">Aceptamos tarjetas de crédito, débito y cuenta PayPal a través de PayPal
+            Checkout.</p>
         </details>
       </div>
     </div>
@@ -260,7 +292,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { showToast } from './js/utils.js';
@@ -294,14 +326,14 @@
           height: 50
         },
 
-        createSubscription: function(data, actions) {
+        createSubscription: function (data, actions) {
           return actions.subscription.create({
             'plan_id': 'P-43X73253LN792734JNEMEYLA',
             'custom_id': currentUser.uid // Vincula la suscripción al usuario
           });
         },
 
-        onApprove: async function(data, actions) {
+        onApprove: async function (data, actions) {
           console.log('Subscription approved:', data);
 
           // Mostrar overlay de carga
@@ -338,13 +370,13 @@
           }
         },
 
-        onError: function(err) {
+        onError: function (err) {
           console.error('PayPal error:', err);
           document.getElementById('loadingOverlay').classList.add('hidden');
           showError('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
         },
 
-        onCancel: function(data) {
+        onCancel: function (data) {
           console.log('Subscription cancelled:', data);
           document.getElementById('loadingOverlay').classList.add('hidden');
           showError('Cancelaste el proceso de pago. Tu membresía no fue activada.');
@@ -360,16 +392,17 @@
     }
 
     // Close error modal
-    window.closeErrorModal = function() {
+    window.closeErrorModal = function () {
       document.getElementById('errorModal').classList.add('opacity-0', 'pointer-events-none');
     };
 
     // Redirect to search page
-    window.redirectToSearch = function() {
-      window.location.href = '/webapp/buscar-usuarios.html';
+    window.redirectToSearch = function () {
+      window.location.href = '/buscar-usuarios.html';
     };
 
   </script>
 
 </body>
+
 </html>

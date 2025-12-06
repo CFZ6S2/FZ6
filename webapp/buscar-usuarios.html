@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,10 +18,30 @@
   <meta name="theme-color" content="#764ba2">
   <link rel="stylesheet" href="./css/output.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< HEAD
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <!-- Google Maps API will be loaded dynamically in module script -->
+=======
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <!-- Google Maps API - Loaded dynamically from config -->
+  <script type="module">
+    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config-env.js';
+
+    // Dynamically load Google Maps API with the configured key
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  </script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
@@ -71,19 +92,52 @@
     }
 
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .user-card:nth-child(1) { animation-delay: 0.05s; }
-    .user-card:nth-child(2) { animation-delay: 0.1s; }
-    .user-card:nth-child(3) { animation-delay: 0.15s; }
-    .user-card:nth-child(4) { animation-delay: 0.2s; }
-    .user-card:nth-child(5) { animation-delay: 0.25s; }
-    .user-card:nth-child(6) { animation-delay: 0.3s; }
-    .user-card:nth-child(7) { animation-delay: 0.35s; }
-    .user-card:nth-child(8) { animation-delay: 0.4s; }
-    .user-card:nth-child(9) { animation-delay: 0.45s; }
+    .user-card:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .user-card:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .user-card:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .user-card:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+
+    .user-card:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .user-card:nth-child(6) {
+      animation-delay: 0.3s;
+    }
+
+    .user-card:nth-child(7) {
+      animation-delay: 0.35s;
+    }
+
+    .user-card:nth-child(8) {
+      animation-delay: 0.4s;
+    }
+
+    .user-card:nth-child(9) {
+      animation-delay: 0.45s;
+    }
 
     button {
       transition: all 0.3s ease;
@@ -105,11 +159,13 @@
       cursor: not-allowed;
     }
 
-    input, select {
+    input,
+    select {
       transition: all 0.2s ease;
     }
 
-    input:focus, select:focus {
+    input:focus,
+    select:focus {
       outline: none;
       border-color: #0ea5e9;
       box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
@@ -162,24 +218,38 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     .skeleton {
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
       background-size: 200% 100%;
       animation: shimmer 2s infinite;
     }
 
     @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
 
     .modal-backdrop {
@@ -188,8 +258,13 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .modal-content {
@@ -197,8 +272,15 @@
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(50px) scale(0.9); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     /* Google Maps Styles */
@@ -257,6 +339,7 @@
     }
   </script>
 </head>
+
 <body class="text-white min-h-screen">
 
   <!-- Header -->
@@ -267,21 +350,26 @@
         <span class="font-bold text-xl">TuCitaSegura</span>
       </a>
       <div class="flex items-center gap-4">
-        <a href="/webapp/conversaciones.html" class="hover:text-blue-400 transition flex items-center gap-2 relative">
+        <a href="/conversaciones.html" class="hover:text-blue-400 transition flex items-center gap-2 relative">
           <i class="fas fa-comments"></i>
           <span class="hidden md:inline">Mensajes</span>
-          <span id="unreadBadge" class="invisible absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">0</span>
+          <span id="unreadBadge"
+            class="invisible absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">0</span>
         </a>
-        <a href="/webapp/citas.html" class="hover:text-blue-400 transition flex items-center gap-2">
+        <a href="/citas.html" class="hover:text-blue-400 transition flex items-center gap-2">
           <i class="fas fa-calendar-check"></i>
           <span class="hidden md:inline">Mis Citas</span>
         </a>
-        <a href="/webapp/eventos-vip.html" id="vipEventsBtn" class="opacity-0 pointer-events-none hover:text-pink-400 transition flex items-center gap-2 relative">
+        <a href="/eventos-vip.html" id="vipEventsBtn"
+          class="opacity-0 pointer-events-none hover:text-pink-400 transition flex items-center gap-2 relative">
           <i class="fas fa-gem text-pink-400"></i>
-          <span class="hidden md:inline font-semibold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Eventos VIP</span>
-          <span class="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">💎</span>
+          <span
+            class="hidden md:inline font-semibold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Eventos
+            VIP</span>
+          <span
+            class="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">💎</span>
         </a>
-        <a href="/webapp/perfil.html" class="hover:text-blue-400 transition flex items-center gap-2">
+        <a href="/perfil.html" class="hover:text-blue-400 transition flex items-center gap-2">
           <i class="fas fa-user-circle"></i>
           <span class="hidden md:inline">Mi Perfil</span>
         </a>
@@ -336,6 +424,7 @@
               <i class="fas fa-sliders mr-2"></i>Filtros
             </button>
             <select id="sortBy" class="glass px-4 py-2 rounded-lg border-0 cursor-pointer hover:bg-white/10 transition">
+              <option value="compatibility">✨ Compatibilidad</option>
               <option value="distance">Más cercanos</option>
               <option value="newest">Más recientes</option>
               <option value="age-asc">Edad: menor a mayor</option>
@@ -390,7 +479,8 @@
             <label class="block mb-2 text-sm font-semibold">
               <i class="fas fa-route mr-2"></i>Radio de búsqueda
             </label>
-            <select id="filterDistance" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer">
+            <select id="filterDistance"
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer">
               <option value="">Cualquier distancia</option>
               <option value="5">5 km o menos</option>
               <option value="10">10 km o menos</option>
@@ -406,8 +496,7 @@
               <i class="fas fa-birthday-cake mr-2"></i>Edad mínima
             </label>
             <input type="number" id="filterAgeMin" min="18" max="100"
-              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3"
-              placeholder="18">
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3" placeholder="18">
           </div>
 
           <div>
@@ -415,8 +504,7 @@
               <i class="fas fa-birthday-cake mr-2"></i>Edad máxima
             </label>
             <input type="number" id="filterAgeMax" min="18" max="100"
-              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3"
-              placeholder="100">
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3" placeholder="100">
           </div>
 
           <!-- Reputation Filter -->
@@ -424,7 +512,8 @@
             <label class="block mb-2 text-sm font-semibold">
               <i class="fas fa-star mr-2"></i>Reputación mínima
             </label>
-            <select id="filterReputation" class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer">
+            <select id="filterReputation"
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer">
               <option value="">Todas</option>
               <option value="BRONCE">Bronce o superior</option>
               <option value="PLATA">Plata o superior</option>
@@ -436,7 +525,8 @@
           <!-- Verified Only -->
           <div class="flex items-center">
             <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" id="filterVerified" class="w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-2 focus:ring-blue-500">
+              <input type="checkbox" id="filterVerified"
+                class="w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-2 focus:ring-blue-500">
               <span class="text-sm font-semibold">
                 <i class="fas fa-certificate text-blue-400 mr-2"></i>Solo verificados
               </span>
@@ -446,7 +536,8 @@
           <!-- Online Status -->
           <div class="flex items-center">
             <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" id="filterOnline" class="w-5 h-5 rounded border-slate-600 text-green-500 focus:ring-2 focus:ring-green-500">
+              <input type="checkbox" id="filterOnline"
+                class="w-5 h-5 rounded border-slate-600 text-green-500 focus:ring-2 focus:ring-green-500">
               <span class="text-sm font-semibold">
                 <i class="fas fa-circle text-green-400 mr-2"></i>Solo en línea
               </span>
@@ -455,7 +546,8 @@
 
           <!-- Use My Location -->
           <div class="flex items-center">
-            <button id="useMyLocation" class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-semibold text-sm">
+            <button id="useMyLocation"
+              class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-semibold text-sm">
               <i class="fas fa-crosshairs"></i>
               Usar mi ubicación
             </button>
@@ -469,7 +561,8 @@
           </p>
 
           <div class="flex gap-3">
-            <button id="applyFilters" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-3 rounded-lg font-semibold flex-1 md:flex-none">
+            <button id="applyFilters"
+              class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-3 rounded-lg font-semibold flex-1 md:flex-none">
               <i class="fas fa-check mr-2"></i>Aplicar Filtros
             </button>
             <button id="clearFilters" class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold">
@@ -532,10 +625,12 @@
   </main>
 
   <!-- Payment Required Modal -->
-  <div id="paymentModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-[60] p-4">
+  <div id="paymentModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-[60] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full modal-content">
       <div class="p-8 text-center">
-        <div class="w-20 h-20 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div
+          class="w-20 h-20 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
           <i class="fas fa-lock text-4xl text-white"></i>
         </div>
 
@@ -547,7 +642,8 @@
         </div>
 
         <div class="flex gap-3">
-          <button id="goToPaymentBtn" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-6 py-4 rounded-lg font-semibold text-lg">
+          <button id="goToPaymentBtn"
+            class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-6 py-4 rounded-lg font-semibold text-lg">
             <i class="fas fa-credit-card mr-2"></i><span id="paymentBtnText">Contratar Ahora</span>
           </button>
           <button id="closePaymentModal" class="bg-slate-700 hover:bg-slate-600 px-6 py-4 rounded-lg font-semibold">
@@ -559,7 +655,8 @@
   </div>
 
   <!-- User Details Modal -->
-  <div id="userModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/70 modal-backdrop flex items-center justify-center z-50 p-4">
+  <div id="userModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/70 modal-backdrop flex items-center justify-center z-50 p-4">
     <div class="glass-strong rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content">
 
       <!-- Modal Header -->
@@ -574,8 +671,10 @@
       <div class="p-6">
         <!-- User Avatar and Basic Info -->
         <div class="flex items-start gap-6 mb-6">
-          <div id="modalAvatar" class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-4xl font-bold flex-shrink-0 relative">
-            <span id="modalOnlineIndicator" class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-slate-800 rounded-full hidden"></span>
+          <div id="modalAvatar"
+            class="w-24 h-24 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-4xl font-bold flex-shrink-0 relative">
+            <span id="modalOnlineIndicator"
+              class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-slate-800 rounded-full hidden"></span>
           </div>
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
@@ -645,7 +744,8 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-3">
-          <button id="sendMatchBtn" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-4 rounded-lg font-semibold text-lg">
+          <button id="sendMatchBtn"
+            class="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-4 rounded-lg font-semibold text-lg">
             <i class="fas fa-heart mr-2"></i>Enviar Solicitud de Cita
           </button>
           <button id="skipUserBtn" class="bg-slate-700 hover:bg-slate-600 px-6 py-4 rounded-lg font-semibold">
@@ -657,17 +757,29 @@
   </div>
 
   <!-- Error Fixes -->
+<<<<<<< HEAD
   <script type="module" src="./js/error-fixes.js"></script>
   
   <!-- Demo Mode Banner -->
   <script type="module" src="./js/demo-banner.js"></script>
   
+=======
+  <script src="./js/error-fixes.js"></script>
+
+  <!-- DOMPurify for XSS Protection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="./js/sanitizer.js"></script>
+
+  <!-- Demo Mode Banner -->
+  <script src="./js/demo-banner.js"></script>
+
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   <!-- Demo Mode Utilities -->
   <script type="module">
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
-    
+
     // Override auth checks for demo mode
-    window.checkDemoAuth = function() {
+    window.checkDemoAuth = function () {
       if (isDemoMode()) {
         const demoUser = getDemoUser();
         if (demoUser) {
@@ -682,15 +794,16 @@
       }
       return null;
     };
-    
+
     // Override email verification check for demo
-    window.checkDemoEmailVerified = function() {
+    window.checkDemoEmailVerified = function () {
       if (isDemoMode()) {
         return true; // Demo users are always "verified"
       }
       return null;
     };
   </script>
+
 
   <script type="module">
     async function loadGoogleMaps() {
@@ -719,28 +832,49 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, storage, app, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
+      getFirestore,
       collection,
       query,
       where,
       getDocs,
-      doc,
       getDoc,
-      addDoc,
-      serverTimestamp,
+      doc,
       orderBy,
-      limit
+      limit,
+      startAfter
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<<<<<<< HEAD
     import { showToast, calculateAge, getReputationBadge, calculateDistance, canAccessChat } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading
     import './js/image-optimizer.js';
 
+=======
+    import { getDownloadURL, ref } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { showToast } from './js/utils.js';
+    import { isDemoMode, getDemoUser } from './js/demo-mode.js';
+    import { GOOGLE_MAPS_API_KEY, MAP_CONFIG } from './js/google-maps-config-env.js';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     // ⚠️ PROFILE GUARD: Bloquea acceso sin perfil completo
     import { guardPage } from './js/profile-guard.js';
+
+    // Initialize Firestore locally to ensure valid instance
+    // Firestore imported from config
+
+    // Define SUPER_USERS constant to fix ReferenceError
+    const SUPER_USERS = ['cesar@tucitasegura.com', 'admin@tucitasegura.com'];
+
+    // Setup global error handling
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.error('Global Error:', message, error);
+      // Suppress specific map errors or benign warnings
+      if (message && message.includes('Google Maps')) return true;
+      return false;
+    };
 
     // Verificar perfil completo ANTES de cargar la página
     await guardPage({
@@ -806,27 +940,27 @@
           {
             "featureType": "all",
             "elementType": "geometry",
-            "stylers": [{"color": "#242f3e"}]
+            "stylers": [{ "color": "#242f3e" }]
           },
           {
             "featureType": "all",
             "elementType": "labels.text.stroke",
-            "stylers": [{"lightness": -80}]
+            "stylers": [{ "lightness": -80 }]
           },
           {
             "featureType": "administrative",
             "elementType": "labels.text.fill",
-            "stylers": [{"color": "#746855"}]
+            "stylers": [{ "color": "#746855" }]
           },
           {
             "featureType": "poi",
             "elementType": "labels.text.fill",
-            "stylers": [{"color": "#d59563"}]
+            "stylers": [{ "color": "#d59563" }]
           },
           {
             "featureType": "water",
             "elementType": "geometry",
-            "stylers": [{"color": "#17263c"}]
+            "stylers": [{ "color": "#17263c" }]
           }
         ]
       };
@@ -870,13 +1004,13 @@
             title: user.alias || 'Usuario',
             icon: {
               url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-                  <circle cx="20" cy="20" r="18" fill="#0ea5e9" stroke="#fff" stroke-width="3"/>
-                  <text x="20" y="26" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">
-                    ${(user.alias || 'U').charAt(0).toUpperCase()}
-                  </text>
-                </svg>
-              `),
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="18" fill="#0ea5e9" stroke="#fff" stroke-width="3" />
+    <text x="20" y="26" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">
+      ${(user.alias || 'U').charAt(0).toUpperCase()}
+    </text>
+  </svg>
+  `),
               scaledSize: new google.maps.Size(40, 40),
               anchor: new google.maps.Point(20, 20)
             }
@@ -888,21 +1022,21 @@
 
           const infoWindow = new google.maps.InfoWindow({
             content: `
-              <div class="map-info-window">
-                <h3 style="font-weight: bold; margin-bottom: 8px;">${user.alias || 'Usuario'}</h3>
-                <p style="font-size: 0.875rem; margin-bottom: 4px;">
-                  <i class="fas fa-birthday-cake"></i> ${user.age} años
-                </p>
-                ${distance ? `<p style="font-size: 0.875rem; margin-bottom: 8px; color: #86efac;">
-                  <i class="fas fa-route"></i> ${distance.toFixed(1)} km
-                </p>` : ''}
-                <p style="font-size: 0.875rem; margin-bottom: 8px;">${reputation.icon} ${reputation.label}</p>
-                <button onclick="window.openUserModalFromMap('${user.id}')"
-                  style="background: linear-gradient(to right, #ec4899, #a855f7); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; width: 100%;">
-                  Ver Perfil
-                </button>
-              </div>
-            `
+  <div class="map-info-window">
+    <h3 style="font-weight: bold; margin-bottom: 8px;">${user.alias || 'Usuario'}</h3>
+    <p style="font-size: 0.875rem; margin-bottom: 4px;">
+      <i class="fas fa-birthday-cake"></i> ${user.age} años
+    </p>
+    ${distance ? `<p style="font-size: 0.875rem; margin-bottom: 8px; color: #86efac;">
+      <i class="fas fa-route"></i> ${distance.toFixed(1)} km
+    </p>` : ''}
+    <p style="font-size: 0.875rem; margin-bottom: 8px;">${reputation.icon} ${reputation.label}</p>
+    <button onclick="window.openUserModalFromMap('${user.id}')"
+      style="background: linear-gradient(to right, #ec4899, #a855f7); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; width: 100%;">
+      Ver Perfil
+    </button>
+  </div>
+  `
           });
 
           marker.addListener('click', () => {
@@ -922,7 +1056,7 @@
     }
 
     // Make openUserModalFromMap available globally
-    window.openUserModalFromMap = function(userId) {
+    window.openUserModalFromMap = function (userId) {
       const user = allUsers.find(u => u.id === userId);
       if (user) {
         openUserModal(user);
@@ -952,11 +1086,11 @@
                 map: map,
                 icon: {
                   url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-                      <circle cx="20" cy="20" r="18" fill="#22c55e" stroke="#fff" stroke-width="3"/>
-                      <circle cx="20" cy="20" r="8" fill="#fff"/>
-                    </svg>
-                  `),
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="18" fill="#22c55e" stroke="#fff" stroke-width="3" />
+    <circle cx="20" cy="20" r="8" fill="#fff" />
+  </svg>
+  `),
                   scaledSize: new google.maps.Size(40, 40)
                 },
                 title: 'Tu ubicación'
@@ -987,7 +1121,7 @@
       if (demoAuth) {
         console.log('🎯 Demo mode active - bypassing Firebase auth');
         currentUser = { uid: demoAuth.uid, email: demoAuth.email, emailVerified: true };
-        
+
         // Create mock user data for demo
         currentUserData = {
           id: demoAuth.uid,
@@ -1000,7 +1134,7 @@
           hasAntiGhostingInsurance: false,
           location: { lat: 40.4168, lng: -3.7038 }
         };
-        
+
         await loadUserMatches();
         initMap();
         await loadUsers();
@@ -1008,27 +1142,37 @@
         updatePaymentStatusBanner();
         return;
       }
-      
-      const SUPER_USERS = ['gonzalo.hrrj@gmail.com','lacasitadebarajas@gmail.com'];
+
+      const SUPER_USERS = ['gonzalo.hrrj@gmail.com', 'lacasitadebarajas@gmail.com'];
       const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       if (!user) {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
         return;
       }
 
       if (!user.emailVerified) {
         showToast('Verifica tu email primero', 'warning');
         if (!isDev && !SUPER_USERS.includes(user.email)) {
-          window.location.href = '/webapp/perfil.html';
+          window.location.href = '/perfil.html';
           return;
         }
       }
 
       currentUser = user;
+
+      // Initialize API Service with token
+      const token = await user.getIdToken();
+      apiService.setToken(token);
+
       await loadCurrentUserData();
-      await loadUserMatches();
+
+      // Load everything else
+      await Promise.all([
+        loadUserMatches(),
+        loadUsers() // Now includes fetching scores
+      ]);
+
       initMap();
-      await loadUsers();
       loadSavedFilters();
     });
 
@@ -1138,66 +1282,66 @@
         goToPaymentBtn.onclick = () => window.location.href = '/webapp/perfil.html?incomplete=true&reason=chat';
       } else if (reason === 'membership') {
         paymentDetails.innerHTML = `
-          <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-white/10">
-              <span class="text-slate-400">Plan Mensual</span>
-              <span class="text-2xl font-bold text-green-400">€29.99/mes</span>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="flex items-start gap-2">
-                <i class="fas fa-check text-green-400 mt-1"></i>
-                <span>Envía solicitudes de cita ilimitadas</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-check text-green-400 mt-1"></i>
-                <span>Chat con todos tus matches</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-check text-green-400 mt-1"></i>
-                <span>Filtros avanzados de búsqueda</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-check text-green-400 mt-1"></i>
-                <span>Soporte prioritario</span>
-              </div>
-            </div>
-          </div>
-        `;
+  <div class="space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-white/10">
+      <span class="text-slate-400">Plan Mensual</span>
+      <span class="text-2xl font-bold text-green-400">€29.99/mes</span>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex items-start gap-2">
+        <i class="fas fa-check text-green-400 mt-1"></i>
+        <span>Envía solicitudes de cita ilimitadas</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-check text-green-400 mt-1"></i>
+        <span>Chat con todos tus matches</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-check text-green-400 mt-1"></i>
+        <span>Filtros avanzados de búsqueda</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-check text-green-400 mt-1"></i>
+        <span>Soporte prioritario</span>
+      </div>
+    </div>
+  </div>
+  `;
         paymentBtnText.textContent = 'Contratar Membresía';
-        goToPaymentBtn.onclick = () => window.location.href = '/webapp/suscripcion.html';
+        goToPaymentBtn.onclick = () => window.location.href = '/suscripcion.html';
       } else if (reason === 'insurance') {
         paymentDetails.innerHTML = `
-          <div class="space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-white/10">
-              <span class="text-slate-400">Pago Único</span>
-              <span class="text-2xl font-bold text-blue-400">€120</span>
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="flex items-start gap-2">
-                <i class="fas fa-shield-check text-blue-400 mt-1"></i>
-                <span><strong>Protección anti-plantón:</strong> Si tu cita no se presenta, recuperas tu dinero</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-shield-check text-blue-400 mt-1"></i>
-                <span><strong>Verificación de identidad:</strong> Todas las citas están verificadas</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-shield-check text-blue-400 mt-1"></i>
-                <span><strong>Seguridad garantizada:</strong> Sistema de reputación y valoraciones</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <i class="fas fa-shield-check text-blue-400 mt-1"></i>
-                <span><strong>Reembolso automático:</strong> Si hay un plantón comprobado</span>
-              </div>
-            </div>
-            <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-xs">
-              <i class="fas fa-info-circle text-yellow-400 mr-2"></i>
-              Este seguro es obligatorio para agendar citas y garantiza la seriedad de ambas partes.
-            </div>
-          </div>
-        `;
+  <div class="space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-white/10">
+      <span class="text-slate-400">Pago Único</span>
+      <span class="text-2xl font-bold text-blue-400">€120</span>
+    </div>
+    <div class="space-y-2 text-sm">
+      <div class="flex items-start gap-2">
+        <i class="fas fa-shield-check text-blue-400 mt-1"></i>
+        <span><strong>Protección anti-plantón:</strong> Si tu cita no se presenta, recuperas tu dinero</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-shield-check text-blue-400 mt-1"></i>
+        <span><strong>Verificación de identidad:</strong> Todas las citas están verificadas</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-shield-check text-blue-400 mt-1"></i>
+        <span><strong>Seguridad garantizada:</strong> Sistema de reputación y valoraciones</span>
+      </div>
+      <div class="flex items-start gap-2">
+        <i class="fas fa-shield-check text-blue-400 mt-1"></i>
+        <span><strong>Reembolso automático:</strong> Si hay un plantón comprobado</span>
+      </div>
+    </div>
+    <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-xs">
+      <i class="fas fa-info-circle text-yellow-400 mr-2"></i>
+      Este seguro es obligatorio para agendar citas y garantiza la seriedad de ambas partes.
+    </div>
+  </div>
+  `;
         paymentBtnText.textContent = 'Contratar Seguro';
-        goToPaymentBtn.onclick = () => window.location.href = '/webapp/seguro.html';
+        goToPaymentBtn.onclick = () => window.location.href = '/seguro.html';
       }
 
       paymentModal.classList.remove('opacity-0', 'pointer-events-none');
@@ -1222,24 +1366,24 @@
         // Todo pago OK - mostrar badge de estado premium
         paymentStatusBanner.className = 'glass-strong rounded-2xl p-4 mb-6 border-2 border-green-500/50';
         paymentStatusBanner.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <i class="fas fa-check-circle text-green-400 text-2xl"></i>
-              <div>
-                <h4 class="font-bold text-green-400">Cuenta Premium Activa</h4>
-                <p class="text-sm text-slate-300">Membresía y seguro anti-plantón activos</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="badge bg-green-500/20 border border-green-500/50 text-green-400">
-                <i class="fas fa-crown mr-1"></i>Premium
-              </span>
-              <span class="badge bg-blue-500/20 border border-blue-500/50 text-blue-400">
-                <i class="fas fa-shield-check mr-1"></i>Asegurado
-              </span>
-            </div>
-          </div>
-        `;
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-check-circle text-green-400 text-2xl"></i>
+      <div>
+        <h4 class="font-bold text-green-400">Cuenta Premium Activa</h4>
+        <p class="text-sm text-slate-300">Membresía y seguro anti-plantón activos</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="badge bg-green-500/20 border border-green-500/50 text-green-400">
+        <i class="fas fa-crown mr-1"></i>Premium
+      </span>
+      <span class="badge bg-blue-500/20 border border-blue-500/50 text-blue-400">
+        <i class="fas fa-shield-check mr-1"></i>Asegurado
+      </span>
+    </div>
+  </div>
+  `;
         paymentStatusBanner.classList.remove('hidden');
       } else {
         // Falta algún pago - mostrar advertencia
@@ -1250,19 +1394,20 @@
         if (!hasInsurance) missingItems.push('Seguro anti-plantón (€120)');
 
         paymentStatusBanner.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <i class="fas fa-exclamation-triangle text-yellow-400 text-2xl"></i>
-              <div>
-                <h4 class="font-bold text-yellow-400">Pagos Pendientes</h4>
-                <p class="text-sm text-slate-300">Falta: ${missingItems.join(' y ')}</p>
-              </div>
-            </div>
-            <button onclick="document.getElementById('paymentModal').classList.remove('opacity-0','pointer-events-none')" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-semibold text-black">
-              <i class="fas fa-credit-card mr-2"></i>Completar Pagos
-            </button>
-          </div>
-        `;
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-exclamation-triangle text-yellow-400 text-2xl"></i>
+      <div>
+        <h4 class="font-bold text-yellow-400">Pagos Pendientes</h4>
+        <p class="text-sm text-slate-300">Falta: ${missingItems.join(' y ')}</p>
+      </div>
+    </div>
+    <button onclick="document.getElementById('paymentModal').classList.remove('opacity-0','pointer-events-none')"
+      class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg font-semibold text-black">
+      <i class="fas fa-credit-card mr-2"></i>Completar Pagos
+    </button>
+  </div>
+  `;
         paymentStatusBanner.classList.remove('hidden');
       }
     }
@@ -1313,17 +1458,49 @@
       showLoading();
 
       try {
+<<<<<<< HEAD
         if (!currentUserData || !currentUserData.gender) {
           console.error('Error loading users: perfil no disponible');
           hideLoading();
           showToast('Tu perfil no está disponible. Revisa permisos o completa tu perfil.', 'warning');
           return;
         }
+=======
+        // 1. Fetch users from Firestore (Base data)
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         const usersRef = collection(db, 'users');
         const oppositeGender = currentUserData.gender === 'masculino' ? 'femenino' : 'masculino';
         const q = query(usersRef, where('gender', '==', oppositeGender));
 
         const querySnapshot = await getDocs(q);
+
+        // 2. Fetch Recommendation Scores from Backend API
+        let recommendationScores = {};
+        try {
+          // We ask for recommendations to get the scores
+          const response = await apiService.getRecommendations({ limit: 50 });
+
+          // Debug response
+          console.log('🔮 Smart Recommendations:', response);
+
+          // Handle structured response
+          const recList = response.recommendations || (Array.isArray(response) ? response : []);
+
+          if (Array.isArray(recList)) {
+            recList.forEach(rec => {
+              const uid = rec.user_id || rec.id;
+              if (uid) {
+                // Use compatibility_score (backend) or match_score (legacy)
+                recommendationScores[uid] = rec.compatibility_score || rec.match_score || rec.score || 0;
+              }
+            });
+            console.log('✅ Matches loaded:', Object.keys(recommendationScores).length);
+          }
+        } catch (apiError) {
+          console.warn('Could not fetch recommendations:', apiError);
+          // Non-critical, continue without scores
+        }
+
         allUsers = [];
 
         querySnapshot.forEach((doc) => {
@@ -1331,8 +1508,7 @@
             const data = doc.data();
             const age = data.birthDate ? calculateAge(data.birthDate) : null;
 
-            // Add mock location if not present (for demo purposes)
-            // Use deterministic values based on user ID to prevent hydration mismatch
+            // Add mock location if not present (logic preserved)
             if (!data.location) {
               const userId = doc.id;
               const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -1345,7 +1521,15 @@
               };
             }
 
-            allUsers.push({ id: doc.id, ...data, age });
+            // Attach Match Score
+            const matchScore = recommendationScores[doc.id] || 0; // Default 0 if not found
+
+            allUsers.push({
+              id: doc.id,
+              ...data,
+              age,
+              matchScore: matchScore
+            });
           }
         });
 
@@ -1370,8 +1554,8 @@
         }
 
         // Age filters
-        if (filters.ageMin && (!user.age || user.age < filters.ageMin)) return false;
-        if (filters.ageMax && (!user.age || user.age > filters.ageMax)) return false;
+        if (filters.ageMin && (!user.age || user.age < filters.ageMin)) return false; if (filters.ageMax && (!user.age ||
+          user.age > filters.ageMax)) return false;
 
         // Distance filter
         if (filters.distance && userLocation && user.location) {
@@ -1413,7 +1597,9 @@
 
       // Apply sorting
       const sort = filters.sortBy;
-      if (sort === 'distance' && userLocation) {
+      if (sort === 'compatibility') {
+        filteredUsers.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      } else if (sort === 'distance' && userLocation) {
         filteredUsers.sort((a, b) => (a.distance || 999999) - (b.distance || 999999));
       } else if (sort === 'age-asc') {
         filteredUsers.sort((a, b) => (a.age || 999) - (b.age || 999));
@@ -1470,12 +1656,25 @@
       if (filters.online) chips.push({ text: 'En línea', icon: 'circle' });
 
       if (chips.length > 0) {
+<<<<<<< HEAD
         filterChips.innerHTML = chips.map(chip => `
           <span class="filter-chip">
             <i class="fas fa-${chip.icon}"></i>
             ${chip.text}
           </span>
         `).join('');
+=======
+        filterChips.innerHTML = chips.map(chip => {
+          const safeIcon = sanitizer.text(chip.icon || '');
+          const safeText = sanitizer.text(chip.text || '');
+          return `
+      <span class="filter-chip">
+        <i class="fas fa-${safeIcon}"></i>
+        ${safeText}
+      </span>
+      `;
+        }).join('');
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         activeFilters.classList.remove('hidden');
       } else {
         activeFilters.classList.add('hidden');
@@ -1506,64 +1705,75 @@
         userGrid.insertAdjacentHTML('beforeend', card);
       });
 
-      if (endIdx < filteredUsers.length) {
-        loadMoreContainer.classList.remove('hidden');
-      } else {
+      if (endIdx < filteredUsers.length) { loadMoreContainer.classList.remove('hidden'); } else {
         loadMoreContainer.classList.add('hidden');
-      }
-
-      attachCardListeners();
-    }
-
-    function createUserCard(user) {
-      const reputation = getReputationBadge(user.reputation || 'BRONCE');
-      const avatarLetter = (user.alias || user.email || 'U').charAt(0).toUpperCase();
-      const hasMatched = userMatches.includes(user.id);
-      const isOnline = user.isOnline || false;
-      const distance = user.distance ? `<span class="distance-badge"><i class="fas fa-route"></i>${user.distance.toFixed(1)} km</span>` : '';
+      } attachCardListeners();
+    } function createUserCard(user) {
+      const
+        reputation = getReputationBadge(user.reputation || 'BRONCE'); const avatarLetter = (user.alias || user.email || 'U'
+        ).charAt(0).toUpperCase(); const hasMatched = userMatches.includes(user.id); const isOnline = user.isOnline ||
+          false; const distance = user.distance ? `<span class="distance-badge"><i
+          class="fas fa-route"></i>${user.distance.toFixed(1)} km</span>` : '';
 
       return `
         <div class="user-card glass rounded-2xl p-6 cursor-pointer" data-user-id="${user.id}">
           <div class="flex items-start gap-4 mb-4">
             <div class="relative">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-3xl font-bold flex-shrink-0">
+              <div
+                class="w-20 h-20 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-3xl font-bold flex-shrink-0">
                 ${avatarLetter}
               </div>
               ${isOnline ? '<span class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-4 border-slate-800 rounded-full"></span>' : ''}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <h3 class="text-xl font-bold truncate">${user.alias || 'Usuario'}</h3>
-                ${user.emailVerified ? '<i class="fas fa-certificate text-blue-400 text-sm" title="Verificado"></i>' : ''}
-              </div>
-              <div class="flex flex-wrap gap-2 mb-2">
-                <span class="badge bg-slate-700/50 text-xs">
-                  <i class="fas fa-birthday-cake"></i>
-                  ${user.age} años
-                </span>
-                ${distance}
-              </div>
-              <span class="${reputation.color} badge text-xs">
-                ${reputation.icon} ${reputation.label}
-              </span>
-            </div>
+            </div >
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="text-xl font-bold truncate">${user.alias || 'Usuario'}</h3>
+            ${user.emailVerified ? '<i class="fas fa-certificate text-blue-400 text-sm" title="Verificado"></i>' :
+          ''}
           </div>
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="badge bg-slate-700/50 text-xs">
+              <i class="fas fa-birthday-cake"></i>
+              ${user.age} años
+            </span>
+            ${distance}
+          </div>
+
+              <!-- Match Score Badge -->
+          ${user.matchScore > 0 ? `
+              <div class="mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-pink-500 to-purple-500"
+                      style="width: ${user.matchScore * 100}%"></div>
+                  </div>
+                  <span class="text-xs font-bold text-pink-400">${Math.round(user.matchScore * 100)}%</span>
+                </div>
+              </div>
+              ` : ''}
+
+          <span class="${reputation.color} badge text-xs">
+            ${reputation.icon} ${reputation.label}
+          </span>
+        </div>
+          </div >
 
           <p class="text-sm text-slate-300 mb-4 line-clamp-2 min-h-[40px]">
             ${user.bio || 'Sin descripción disponible'}
           </p>
 
           <div class="flex gap-2">
-            <button class="view-profile-btn flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-2.5 rounded-lg font-semibold transition text-sm">
+            <button
+              class="view-profile-btn flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-4 py-2.5 rounded-lg font-semibold transition text-sm">
               <i class="fas fa-eye mr-2"></i>Ver Perfil
             </button>
             ${hasMatched ?
-              '<span class="px-4 py-2.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-semibold border border-yellow-500/30"><i class="fas fa-check mr-2"></i>Solicitado</span>'
-              :
-              '<button class="quick-match-btn quick-action-btn bg-pink-500 hover:bg-pink-600 text-white"><i class="fas fa-heart"></i></button>'
-            }
-          </div>
-        </div>
+          '<span class="px-4 py-2.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-semibold border border-yellow-500/30"><i class="fas fa-check mr-2"></i>Solicitado</span>'
+          :
+          '<button class="quick-match-btn quick-action-btn bg-pink-500 hover:bg-pink-600 text-white"><i class="fas fa-heart"></i></button>'
+        }
+          </div >
+        </div >
       `;
     }
 
@@ -1599,7 +1809,7 @@
       document.getElementById('modalAvatar').innerHTML = `
         ${avatarLetter}
         ${user.isOnline ? '<span id="modalOnlineIndicator" class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-slate-800 rounded-full"></span>' : ''}
-      `;
+        `;
 
       document.getElementById('modalName').textContent = user.alias || 'Usuario';
       document.getElementById('modalVerifiedBadge').classList.toggle('hidden', !user.emailVerified);
@@ -1616,12 +1826,19 @@
 
       // Reputation
       const repBadge = document.getElementById('modalReputation');
+<<<<<<< HEAD
       repBadge.className = `badge ${reputation.color}`;
       repBadge.innerHTML = `${reputation.icon} ${reputation.label}`;
 
       // Last seen
       const lastSeen = user.isOnline ? 'En línea ahora' : 'Última vez hace 2 horas';
       document.getElementById('modalLastSeen').textContent = lastSeen;
+=======
+      repBadge.className = `badge ${reputation.color} `;
+      const safeIcon = sanitizer.text(reputation.icon || '');
+      const safeLabel = sanitizer.text(reputation.label || '');
+      repBadge.innerHTML = `${safeIcon} ${safeLabel} `;
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
       // Bio
       document.getElementById('modalBio').textContent = user.bio || 'Este usuario no ha agregado una descripción todavía.';
@@ -1633,8 +1850,8 @@
       const responseRate = ((userIdHash * 13) % 30) + 65;
 
       document.getElementById('modalCitasCompletadas').textContent = completedDates;
-      document.getElementById('modalCompatibilidad').textContent = `${compatibility}%`;
-      document.getElementById('modalRespuesta').textContent = `${responseRate}%`;
+      document.getElementById('modalCompatibilidad').textContent = `${compatibility}% `;
+      document.getElementById('modalRespuesta').textContent = `${responseRate}% `;
 
       // Map in modal
       if (user.location) {
@@ -1651,13 +1868,13 @@
             map: modalMap,
             icon: {
               url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-                  <circle cx="20" cy="20" r="18" fill="#0ea5e9" stroke="#fff" stroke-width="3"/>
-                  <text x="20" y="26" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">
-                    ${avatarLetter}
-                  </text>
-                </svg>
-              `),
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+          <circle cx="20" cy="20" r="18" fill="#0ea5e9" stroke="#fff" stroke-width="3" />
+          <text x="20" y="26" font-size="16" font-weight="bold" text-anchor="middle" fill="#fff">
+            ${avatarLetter}
+          </text>
+        </svg>
+        `),
               scaledSize: new google.maps.Size(40, 40)
             }
           });
@@ -1671,9 +1888,7 @@
       const interestCount = (userIdHash % 3) + 2; // 2-4 interests
       const startIndex = userIdHash % interests.length;
       const userInterests = [];
-      for (let i = 0; i < interestCount; i++) {
-        userInterests.push(interests[(startIndex + i) % interests.length]);
-      }
+      for (let i = 0; i < interestCount; i++) { userInterests.push(interests[(startIndex + i) % interests.length]); }
       if (userInterests.length > 0) {
         document.getElementById('modalInterestsSection').classList.remove('hidden');
         document.getElementById('modalInterests').innerHTML = userInterests.map(interest =>
@@ -1774,7 +1989,7 @@
         userMatches.push(user.id);
         showToast('¡Solicitud enviada!', 'success');
 
-        const card = document.querySelector(`[data-user-id="${user.id}"]`);
+        const card = document.querySelector(`[data - user - id="${user.id}"]`);
         if (card) {
           card.outerHTML = createUserCard(user);
           attachCardListeners();
@@ -1937,7 +2152,7 @@
         showToast('¡Solicitud enviada!', 'success');
         userModal.classList.add('hidden');
 
-        const card = document.querySelector(`[data-user-id="${selectedUser.id}"]`);
+        const card = document.querySelector(`[data - user - id= "${selectedUser.id}"]`);
         if (card) {
           card.outerHTML = createUserCard(selectedUser);
           attachCardListeners();
@@ -1954,7 +2169,7 @@
     logoutBtn.addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
       }
@@ -1978,4 +2193,5 @@
     });
   </script>
 </body>
+
 </html>

@@ -5,7 +5,7 @@
 
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { auth, db, VAPID_PUBLIC_KEY } from './firebase-config.js';
+import { auth, db, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
 let messaging = null;
@@ -53,7 +53,11 @@ export async function initializeNotifications() {
  */
 async function registerServiceWorker() {
   try {
+<<<<<<< HEAD
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+=======
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     console.log('Service Worker registered:', registration);
     return registration;
   } catch (error) {
@@ -245,7 +249,7 @@ function getNotificationActions(data) {
     case 'match':
       actions = `
         <div class="mt-3 flex gap-2">
-          <button onclick="window.location.href='/webapp/perfil-usuario.html?uid=${data.senderId}'"
+          <button onclick="window.location.href='/perfil-usuario.html?uid=${data.senderId}'"
                   class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
             Ver perfil
           </button>
@@ -255,7 +259,7 @@ function getNotificationActions(data) {
     case 'message':
       actions = `
         <div class="mt-3 flex gap-2">
-          <button onclick="window.location.href='/webapp/chat.html?conversationId=${data.conversationId}'"
+          <button onclick="window.location.href='/chat.html?conversationId=${data.conversationId}'"
                   class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm">
             Responder
           </button>
@@ -265,7 +269,7 @@ function getNotificationActions(data) {
     case 'appointment':
       actions = `
         <div class="mt-3 flex gap-2">
-          <button onclick="window.location.href='/webapp/cita-detalle.html?appointmentId=${data.appointmentId}'"
+          <button onclick="window.location.href='/cita-detalle.html?appointmentId=${data.appointmentId}'"
                   class="flex-1 bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm">
             Ver cita
           </button>
@@ -275,7 +279,7 @@ function getNotificationActions(data) {
     case 'vip_event':
       actions = `
         <div class="mt-3 flex gap-2">
-          <button onclick="window.location.href='/webapp/eventos-vip.html'"
+          <button onclick="window.location.href='/eventos-vip.html'"
                   class="flex-1 bg-gold-500 hover:bg-gold-600 text-white px-3 py-2 rounded-lg text-sm">
             Ver evento
           </button>

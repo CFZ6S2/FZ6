@@ -13,7 +13,7 @@
 // - Reconexión automática
 // ============================================================================
 
-import { db } from './firebase-config.js';
+import { db } from './firebase-config-env.js';
 import {
   collection,
   doc,

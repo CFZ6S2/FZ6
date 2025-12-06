@@ -4,7 +4,7 @@
  */
 
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-import { app, VAPID_PUBLIC_KEY } from "./firebase-config.js";
+import { app, VAPID_PUBLIC_KEY } from "./firebase-config-env.js";
 import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { createLogger } from "./logger.js";
 

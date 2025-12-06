@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,26 +35,26 @@
     }
 
     .glass {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .glass-strong {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .btn-primary {
       background: linear-gradient(135deg, #667eea, #764ba2);
-      box-shadow: 0 8px 24px rgba(102,126,234,0.3);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
       transition: all 0.3s ease;
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(102,126,234,0.4);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
     }
 
     .btn-danger {
@@ -63,10 +64,11 @@
 
     .btn-danger:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(239,68,68,0.4);
+      box-shadow: 0 12px 32px rgba(239, 68, 68, 0.4);
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Header -->
@@ -74,7 +76,7 @@
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <a href="/webapp/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+          <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
           <a href="/" class="flex items-center gap-3">
@@ -84,7 +86,8 @@
         </div>
         <div class="flex items-center gap-4">
           <div id="userInfo" class="flex items-center gap-3">
-            <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+            <div id="userAvatar"
+              class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
               <i class="fas fa-user"></i>
             </div>
             <span id="userAlias" class="font-semibold hidden md:block">Usuario</span>
@@ -108,7 +111,8 @@
     <div id="content" class="hidden">
       <div class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-black">Centro de Seguridad</h1>
-        <p class="text-slate-200 mt-2 text-lg">Tu tranquilidad es nuestra prioridad. Aquí tienes las herramientas para gestionar tu seguridad.</p>
+        <p class="text-slate-200 mt-2 text-lg">Tu tranquilidad es nuestra prioridad. Aquí tienes las herramientas para
+          gestionar tu seguridad.</p>
       </div>
 
       <!-- Herramientas de Seguridad -->
@@ -119,37 +123,46 @@
         </h2>
         <div class="space-y-6">
           <!-- Botón de Pánico (SOS) - Solo visible para mujeres -->
-          <div id="sos-section" class="hidden bg-red-900/50 border-2 border-red-500/50 rounded-lg p-6 flex-col sm:flex-row items-center gap-6">
+          <div id="sos-section"
+            class="hidden bg-red-900/50 border-2 border-red-500/50 rounded-lg p-6 flex-col sm:flex-row items-center gap-6">
             <div class="text-6xl text-red-400 flex-shrink-0 animate-pulse">
               <i class="fa-solid fa-bell"></i>
             </div>
             <div class="flex-1 text-center sm:text-left">
               <h3 class="text-xl font-bold text-red-200">Botón de Pánico SOS</h3>
-              <p class="text-red-200 mt-1">Úsalo solo en una emergencia real. Al activarlo, alertaremos a nuestro equipo de seguridad, que se pondrá en contacto contigo. Si no respondes, nos pondremos en contacto con las autoridades.</p>
+              <p class="text-red-200 mt-1">Úsalo solo en una emergencia real. Al activarlo, alertaremos a nuestro equipo
+                de seguridad, que se pondrá en contacto contigo. Si no respondes, nos pondremos en contacto con las
+                autoridades.</p>
             </div>
-            <button id="sos-button" class="btn-danger font-bold px-6 py-4 rounded-full flex-shrink-0 text-lg shadow-lg animate-pulse">
+            <button id="sos-button"
+              class="btn-danger font-bold px-6 py-4 rounded-full flex-shrink-0 text-lg shadow-lg animate-pulse">
               <i class="fa-solid fa-bell mr-2"></i>ACTIVAR SOS
             </button>
           </div>
 
           <!-- Reportar un Problema -->
-          <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
+          <div
+            class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
             <div class="text-4xl text-yellow-400 flex-shrink-0"><i class="fa-solid fa-flag"></i></div>
             <div class="flex-1 text-center sm:text-left">
               <h3 class="text-xl font-bold">Reportar un Problema</h3>
-              <p class="text-yellow-200 mt-1">Si una cita no ha ido bien o has tenido un problema con un usuario, infórmanos.</p>
+              <p class="text-yellow-200 mt-1">Si una cita no ha ido bien o has tenido un problema con un usuario,
+                infórmanos.</p>
             </div>
-            <a href="/webapp/reportes.html" class="bg-yellow-600 font-bold px-6 py-3 rounded-full flex-shrink-0 hover:bg-yellow-500 transition-colors">
+            <a href="/reportes.html"
+              class="bg-yellow-600 font-bold px-6 py-3 rounded-full flex-shrink-0 hover:bg-yellow-500 transition-colors">
               <i class="fa-solid fa-flag mr-2"></i>Crear Reporte
             </a>
           </div>
 
           <!-- Gestionar Bloqueos -->
-          <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
+          <div
+            class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 flex flex-col sm:flex-row items-center gap-6">
             <div class="text-4xl text-blue-300 flex-shrink-0"><i class="fa-solid fa-user-slash"></i></div>
             <div class="flex-1 text-center sm:text-left">
               <h3 class="text-xl font-bold">Gestionar Usuarios Bloqueados</h3>
-              <p class="text-blue-200 mt-1">Aquí puedes ver la lista de usuarios que has bloqueado y desbloquearlos si lo consideras oportuno.</p>
+              <p class="text-blue-200 mt-1">Aquí puedes ver la lista de usuarios que has bloqueado y desbloquearlos si
+                lo consideras oportuno.</p>
             </div>
             <button id="manageBlocksBtn" class="glass font-bold px-6 py-3 rounded-full flex-shrink-0 hover:bg-white/20">
               <i class="fa-solid fa-list-check mr-2"></i>Ver Lista
@@ -199,14 +212,17 @@
   </main>
 
   <!-- Modal de Confirmación SOS -->
-  <div id="sos-modal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+  <div id="sos-modal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
     <div class="glass-strong rounded-2xl p-8 max-w-lg w-full m-4 text-center border-2 border-red-500">
       <i class="fa-solid fa-triangle-exclamation text-6xl text-red-400 mb-4"></i>
       <h2 class="text-3xl font-bold text-red-300">¿Estás en una emergencia?</h2>
       <p class="text-red-200 mt-4">Estás a punto de activar el protocolo SOS.</p>
       <div class="text-left bg-black/20 p-4 rounded-lg mt-6 space-y-2">
-        <p><strong class="text-white">Paso 1:</strong> Nuestro equipo de seguridad recibirá una alerta inmediata y te llamará al número de teléfono asociado a tu cuenta.</p>
-        <p><strong class="text-white">Paso 2:</strong> Si no respondes a la llamada, contactaremos a las autoridades locales con tu última ubicación conocida.</p>
+        <p><strong class="text-white">Paso 1:</strong> Nuestro equipo de seguridad recibirá una alerta inmediata y te
+          llamará al número de teléfono asociado a tu cuenta.</p>
+        <p><strong class="text-white">Paso 2:</strong> Si no respondes a la llamada, contactaremos a las autoridades
+          locales con tu última ubicación conocida.</p>
       </div>
       <p class="text-amber-400 font-semibold mt-6">Usa esta función con responsabilidad.</p>
       <div class="flex gap-4 mt-8">
@@ -217,20 +233,26 @@
   </div>
 
   <!-- Pantalla de Alerta Activada -->
-  <div id="sos-activated-screen" class="opacity-0 pointer-events-none fixed inset-0 bg-red-900/90 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+  <div id="sos-activated-screen"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-red-900/90 backdrop-blur-sm flex items-center justify-center z-40 p-4">
     <div class="text-center">
       <i class="fa-solid fa-siren-on text-8xl text-red-300 animate-pulse"></i>
       <h2 class="text-4xl font-bold text-white mt-6">SOS ACTIVADO</h2>
-      <p class="text-red-200 text-lg mt-4 max-w-2xl">Hemos alertado a nuestro equipo de seguridad. Te llamaremos en breve. Si no contestas, avisaremos a las autoridades. Mantén la calma y busca un lugar seguro.</p>
+      <p class="text-red-200 text-lg mt-4 max-w-2xl">Hemos alertado a nuestro equipo de seguridad. Te llamaremos en
+        breve. Si no contestas, avisaremos a las autoridades. Mantén la calma y busca un lugar seguro.</p>
     </div>
   </div>
 
   <!-- Error Fixes -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
   <script type="module" src="./js/error-fixes.js"></script>
@@ -240,7 +262,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { showToast } from './js/utils.js';
@@ -252,7 +274,7 @@
     // Check authentication
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
         return;
       }
 
@@ -307,7 +329,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -362,4 +384,5 @@
     });
   </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,38 +24,46 @@
       padding: 20px;
       background: #f5f5f5;
     }
+
     .container {
       background: white;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
+
     h1 {
       color: #333;
       border-bottom: 3px solid #007bff;
       padding-bottom: 10px;
     }
+
     .status-box {
       margin: 20px 0;
       padding: 15px;
       border-radius: 5px;
       border-left: 5px solid #ccc;
     }
+
     .status-box.pending {
       background: #fff3cd;
       border-left-color: #ffc107;
     }
+
     .status-box.success {
       background: #d4edda;
       border-left-color: #28a745;
     }
+
     .status-box.error {
       background: #f8d7da;
       border-left-color: #dc3545;
     }
+
     .status-box h3 {
       margin-top: 0;
     }
+
     .code-block {
       background: #f4f4f4;
       padding: 15px;
@@ -64,6 +73,7 @@
       overflow-x: auto;
       margin: 10px 0;
     }
+
     button {
       background: #007bff;
       color: white;
@@ -74,26 +84,32 @@
       font-size: 16px;
       margin: 5px;
     }
+
     button:hover {
       background: #0056b3;
     }
+
     button:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
+
     .test-result {
       margin: 10px 0;
       padding: 10px;
       border-radius: 3px;
     }
+
     .test-passed {
       background: #d4edda;
       color: #155724;
     }
+
     .test-failed {
       background: #f8d7da;
       color: #721c24;
     }
+
     pre {
       background: #282c34;
       color: #abb2bf;
@@ -101,12 +117,14 @@
       border-radius: 5px;
       overflow-x: auto;
     }
+
     .icon {
       font-size: 24px;
       margin-right: 10px;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🧪 Verificación de Firebase App Check</h1>
@@ -122,7 +140,8 @@
       <div class="code-block" id="debugTokenDisplay"></div>
       <p><strong>⚠️ IMPORTANTE:</strong> Copia este token y regístralo en Firebase Console:</p>
       <ol>
-        <li>Ve a <a href="https://console.firebase.google.com/project/tucitasegura-129cc/appcheck" target="_blank">Firebase Console → App Check</a></li>
+        <li>Ve a <a href="https://console.firebase.google.com/project/tucitasegura-129cc/appcheck"
+            target="_blank">Firebase Console → App Check</a></li>
         <li>Haz clic en "Apps" → "Manage debug tokens"</li>
         <li>Haz clic en "+ Add debug token"</li>
         <li>Pega el token de arriba</li>
@@ -151,7 +170,11 @@
     <div class="status-box">
       <h3>ℹ️ Información del Proyecto</h3>
       <div class="code-block">
+<<<<<<< HEAD:webapp/verify-appcheck.html
         <strong>Project ID:</strong> tucitasegura-129cc<br>
+=======
+        <strong>Project ID:</strong> tuscitasseguras-2d1a6<br>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html
         <strong>Web App ID:</strong> 1:180656060538:web:3168487130aa126db663c3<br>
         <strong>reCAPTCHA Site Key:</strong> <span id="siteKeyDisplay"></span><br>
         <strong>Hostname:</strong> <span id="hostname"></span><br>
@@ -160,11 +183,18 @@
     </div>
   </div>
 
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-    <script type="module" src="./js/sanitizer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<<<<<<< HEAD:webapp/verify-appcheck.html
+  <script type="module" src="./js/sanitizer.js"></script>
+=======
+
+
+  <script src="./js/sanitizer.js"></script>
+  <script>document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');</script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html
 
 
 
@@ -205,13 +235,13 @@
     // Mostrar info del proyecto
     document.getElementById('hostname').textContent = location.hostname;
     const isDev = location.hostname === "localhost" ||
-                  location.hostname === "127.0.0.1" ||
-                  location.hostname.includes("192.168.");
+      location.hostname === "127.0.0.1" ||
+      location.hostname.includes("192.168.");
     document.getElementById('mode').textContent = isDev ? 'DESARROLLO (debug tokens)' : 'PRODUCCIÓN (reCAPTCHA v3)';
 
     // Importar y verificar App Check
     import './js/firebase-appcheck.js';
-    import { auth, db, storage } from './js/firebase-config.js';
+    import { auth, db, storage } from './js/firebase-config-env.js';
     import { getDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { ref, getDownloadURL, uploadString } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
@@ -278,7 +308,7 @@
     }, 3000);
 
     // Funciones de prueba
-    window.testGetToken = async function() {
+    window.testGetToken = async function () {
       addTestResult('Obteniendo App Check Token...');
       try {
         const tokenResult = await window.getAppCheckToken();
@@ -292,7 +322,7 @@
       }
     };
 
-    window.testFirestoreRead = async function() {
+    window.testFirestoreRead = async function () {
       addTestResult('Probando Firestore Read...');
       try {
         const testDoc = await getDoc(doc(db, 'config', 'test'));
@@ -309,7 +339,7 @@
       }
     };
 
-    window.testFirestoreWrite = async function() {
+    window.testFirestoreWrite = async function () {
       addTestResult('Probando Firestore Write...');
       try {
         await setDoc(doc(db, 'test', 'appcheck_test'), {
@@ -328,7 +358,7 @@
       }
     };
 
-    window.testStorageRead = async function() {
+    window.testStorageRead = async function () {
       addTestResult('Probando Storage Read...');
       try {
         const testRef = ref(storage, 'test/dummy.txt');
@@ -347,7 +377,7 @@
       }
     };
 
-    window.runAllTests = async function() {
+    window.runAllTests = async function () {
       document.getElementById('testResults').innerHTML = '<h2>Resultados de Pruebas</h2>';
       await testGetToken();
       await new Promise(r => setTimeout(r, 1000));
@@ -377,5 +407,11 @@
 
   </script>
 </body>
+
 </html>
-    document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
+<<<<<<< HEAD:webapp/verify-appcheck.html
+<script>
+  document.getElementById('siteKeyDisplay').textContent = (window.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT');
+</script>
+=======
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run):webapp/legacy_tests/verify-appcheck.html

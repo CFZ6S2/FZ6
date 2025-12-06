@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Membresía - TuCitaSegura</title>
 
+<<<<<<< HEAD
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
@@ -15,13 +17,27 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#764ba2">
+=======
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#764ba2">
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     <link rel="stylesheet" href="./css/output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="text-white bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1
+                class="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Membresía Premium
             </h1>
             <p class="text-xl text-slate-300">Desbloquea todas las funciones de TuCitaSegura</p>
@@ -35,9 +51,10 @@
                         MEMBRESÍA ÚNICA
                     </span>
                 </div>
-                
+
                 <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div
+                        class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-crown text-3xl text-white"></i>
                     </div>
                     <h3 class="text-2xl font-bold mb-4">Membresía Premium</h3>
@@ -45,7 +62,7 @@
                     <div class="text-lg text-slate-300 mb-2">+ IVA por mes</div>
                     <div class="text-sm text-purple-300">Acceso completo a todas las funciones</div>
                 </div>
-                
+
                 <ul class="space-y-4 mb-8">
                     <li class="flex items-center gap-3">
                         <i class="fas fa-check text-green-400"></i>
@@ -80,8 +97,9 @@
                         <span>Soporte prioritario</span>
                     </li>
                 </ul>
-                
-                <button onclick="subscribe('premium')" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 py-4 rounded-xl font-bold text-lg transition transform hover:scale-105">
+
+                <button onclick="subscribe('premium')"
+                    class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 py-4 rounded-xl font-bold text-lg transition transform hover:scale-105">
                     Suscribirse Ahora
                 </button>
             </div>
@@ -90,18 +108,18 @@
         <!-- FAQ Section -->
         <div class="max-w-4xl mx-auto mt-12">
             <h2 class="text-2xl font-bold text-center mb-8">Preguntas Frecuentes</h2>
-            
+
             <div class="space-y-4">
                 <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
                     <h4 class="font-semibold mb-2">¿Puedo cancelar mi suscripción?</h4>
                     <p class="text-slate-300 text-sm">Sí, puedes cancelar en cualquier momento desde tu perfil.</p>
                 </div>
-                
+
                 <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
                     <h4 class="font-semibold mb-2">¿Hay prueba gratuita?</h4>
                     <p class="text-slate-300 text-sm">Ofrecemos 7 días de prueba gratuita para el plan Premium.</p>
                 </div>
-                
+
                 <div class="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
                     <h4 class="font-semibold mb-2">¿Es seguro el pago?</h4>
                     <p class="text-slate-300 text-sm">Usamos Stripe y PayPal para procesar pagos de forma segura.</p>
@@ -110,23 +128,27 @@
         </div>
     </div>
 
-      <!-- DOMPurify for XSS Protection -->
+    <!-- DOMPurify for XSS Protection -->
 
 
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
 
+<<<<<<< HEAD
       <script type="module" src="./js/sanitizer.js"></script>
+=======
+    <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
 
     <script type="module">
-        import { auth, db } from './js/firebase-config.js';
+        import { auth, db } from './js/firebase-config-env.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        
+
         let currentUser = null;
-        
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -135,18 +157,18 @@
                 window.location.href = '/login.html';
             }
         });
-        
-        window.subscribe = async function(plan) {
+
+        window.subscribe = async function (plan) {
             if (!currentUser) {
                 alert('Debes iniciar sesión');
                 return;
             }
-            
+
             const planPrices = {
                 premium: 3000  // €30.00 in cents
             };
-            
-            if (confirm(`¿Confirmar suscripción al plan ${plan.toUpperCase()} por €${(planPrices[plan]/100).toFixed(2)}?`)) {
+
+            if (confirm(`¿Confirmar suscripción al plan ${plan.toUpperCase()} por €${(planPrices[plan] / 100).toFixed(2)}?`)) {
                 try {
                     // Create subscription using Firebase Cloud Function
                     const createSubscription = firebase.functions().httpsCallable('createStripeSubscription');
@@ -154,10 +176,10 @@
                         plan: plan,
                         price: planPrices[plan]
                     });
-                    
+
                     if (result.data.success) {
                         alert('¡Suscripción creada exitosamente!');
-                        window.location.href = '/webapp/perfil.html';
+                        window.location.href = '/perfil.html';
                     } else {
                         throw new Error(result.data.error || 'Error al crear suscripción');
                     }
@@ -169,4 +191,9 @@
         };
     </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+
+</html>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

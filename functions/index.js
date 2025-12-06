@@ -1,8 +1,25 @@
+<<<<<<< HEAD
 // functions/index.js (Node 18)
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 const stripeSecret = (functions.config().stripe?.secret_key) || process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret ? require('stripe')(stripeSecret) : null;
+=======
+// functions/index.js (Node 18) - Force redeploy
+const functions = require('firebase-functions/v1');
+const admin = require('firebase-admin');
+let stripe;
+try {
+  const stripeKey = process.env.STRIPE_SECRET_KEY || (functions.config().stripe && functions.config().stripe.secret_key);
+  if (stripeKey) {
+    stripe = require('stripe')(stripeKey);
+  } else {
+    console.warn('Stripe key not found in env or config');
+  }
+} catch (e) {
+  console.warn('Stripe initialization failed', e);
+}
+>>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
 const axios = require('axios');
 const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
 const { verifyAppCheckHTTP } = require('./middleware/app-check');
@@ -28,7 +45,22 @@ logger.info('Cloud Functions initialized', {
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
+<<<<<<< HEAD
+<<<<<<< HEAD
   const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://fz6-production-ea5d.up.railway.app';
+=======
+  let base = process.env.API_BASE_URL || 'https://t2c06-production.up.railway.app';
+=======
+  let base = process.env.API_BASE_URL || 'https://api.tucitasegura.com';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+  try {
+    if (functions.config().api && functions.config().api.base_url) {
+      base = functions.config().api.base_url;
+    }
+  } catch (e) {
+    logger.warn('Failed to read functions.config', { error: e.message });
+  }
+>>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
   const url = base + req.originalUrl;
 
   logger.debug('API proxy request', {
@@ -239,7 +271,7 @@ exports.onUserDocCreate = functions.firestore
     const uid = ctx.params.userId;
     const data = snap.data() || {};
     const name = (data.name || data.alias || '').toString().slice(0, 100);
-    const gender = ['masculino','femenino'].includes(data.gender) ? data.gender : null;
+    const gender = ['masculino', 'femenino'].includes(data.gender) ? data.gender : null;
     const userRole = data.userRole || 'regular';
 
     logger.info('Setting claims for new user', { uid, role: userRole, gender });
@@ -288,7 +320,7 @@ exports.onUserDocUpdate = functions.firestore
     }
 
     const newRole = after.userRole || 'regular';
-    const newGender = ['masculino','femenino'].includes(after.gender) ? after.gender : null;
+    const newGender = ['masculino', 'femenino'].includes(after.gender) ? after.gender : null;
 
     logger.info('Updating claims for user', { uid, role: newRole, gender: newGender });
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,14 +24,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- PayPal SDK with AUTHORIZE intent (not capture) -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
-  <script src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&currency=EUR&intent=authorize"></script>
+  <script
+    src="https://www.paypal.com/sdk/js?client-id=AQouhwoeHU6p26B7mxYl5rYyl2Hj6xl2kfo11pQbLq6oUFDv12JQkZ5Kg-HN_kzU0wzvX6CbgNbPcNYI&currency=EUR&intent=authorize"></script>
 
   <style>
     body {
@@ -55,8 +61,15 @@
     }
 
     @keyframes shimmer {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
     }
 
     .fade-in {
@@ -68,6 +81,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -75,12 +89,14 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-xl font-semibold">Cargando...</p>
     </div>
   </div>
@@ -88,12 +104,15 @@
   <!-- Success Modal -->
   <div id="successModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
-      <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-shield-check text-4xl text-white"></i>
       </div>
       <h3 class="text-3xl font-bold mb-4">¡Retención Activada!</h3>
-      <p class="text-slate-200 mb-6">Se han retenido €120 en tu tarjeta. Esta cantidad NO se cobrará a menos que plantes a alguien. Ahora puedes agendar citas con total confianza.</p>
-      <button onclick="redirectToSearch()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+      <p class="text-slate-200 mb-6">Se han retenido €120 en tu tarjeta. Esta cantidad NO se cobrará a menos que plantes
+        a alguien. Ahora puedes agendar citas con total confianza.</p>
+      <button onclick="redirectToSearch()"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
         Comenzar a Buscar
       </button>
     </div>
@@ -102,15 +121,19 @@
   <!-- Error Modal -->
   <div id="errorModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass-strong rounded-2xl max-w-md w-full p-8 text-center fade-in">
-      <div class="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div
+        class="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-exclamation-circle text-4xl text-white"></i>
       </div>
       <h3 class="text-3xl font-bold mb-4">Error en la Retención</h3>
-      <p id="errorMessage" class="text-slate-200 mb-6">Hubo un problema al procesar la retención. Por favor, intenta nuevamente.</p>
-      <button onclick="closeErrorModal()" class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
+      <p id="errorMessage" class="text-slate-200 mb-6">Hubo un problema al procesar la retención. Por favor, intenta
+        nuevamente.</p>
+      <button onclick="closeErrorModal()"
+        class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition transform hover:scale-105">
         Intentar Nuevamente
       </button>
-      <button onclick="redirectToSearch()" class="w-full mt-3 glass hover:glass-strong text-white font-semibold py-3 px-6 rounded-xl transition">
+      <button onclick="redirectToSearch()"
+        class="w-full mt-3 glass hover:glass-strong text-white font-semibold py-3 px-6 rounded-xl transition">
         Volver a Buscar
       </button>
     </div>
@@ -121,7 +144,8 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-      <a href="/webapp/buscar-usuarios.html" class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
+      <a href="/buscar-usuarios.html"
+        class="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
         <i class="fas fa-arrow-left"></i>
         <span>Volver a búsqueda</span>
       </a>
@@ -135,7 +159,8 @@
     <!-- Pricing Card -->
     <div class="glass-strong rounded-2xl p-8 mb-8 fade-in">
       <div class="text-center mb-8">
-        <div class="inline-block bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
+        <div
+          class="inline-block bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold mb-4">
           RETENCIÓN €120
         </div>
         <div class="text-6xl font-bold mb-2">
@@ -162,7 +187,8 @@
           </div>
           <div>
             <h4 class="font-bold text-lg">Retención de Garantía</h4>
-            <p class="text-slate-300">€120 retenidos en tu tarjeta, solo se cobran si plantas a alguien. Si eres responsable, nunca pagas</p>
+            <p class="text-slate-300">€120 retenidos en tu tarjeta, solo se cobran si plantas a alguien. Si eres
+              responsable, nunca pagas</p>
           </div>
         </div>
 
@@ -228,7 +254,8 @@
           </li>
           <li class="flex gap-3">
             <span class="font-bold text-white">4.</span>
-            <span>Si tu cita no llega, se cobra su retención de €120 y su reputación baja. Si ambos llegan, ambas retenciones permanecen activas para futuras citas</span>
+            <span>Si tu cita no llega, se cobra su retención de €120 y su reputación baja. Si ambos llegan, ambas
+              retenciones permanecen activas para futuras citas</span>
           </li>
         </ol>
       </div>
@@ -251,8 +278,10 @@
         </div>
         <div>
           <h4 class="font-bold text-xl mb-2 text-yellow-400">Requisito Importante</h4>
-          <p class="text-slate-200">Para agendar citas necesitas tanto la <strong>membresía premium</strong> (€29.99/mes) como el <strong>seguro anti-plantón</strong> (retención de €120).</p>
-          <p class="text-slate-300 mt-2">Si aún no tienes la membresía premium, puedes contratarla <a href="/webapp/suscripcion.html" class="text-yellow-400 hover:text-yellow-300 underline">aquí</a>.</p>
+          <p class="text-slate-200">Para agendar citas necesitas tanto la <strong>membresía premium</strong>
+            (€29.99/mes) como el <strong>seguro anti-plantón</strong> (retención de €120).</p>
+          <p class="text-slate-300 mt-2">Si aún no tienes la membresía premium, puedes contratarla <a
+              href="/suscripcion.html" class="text-yellow-400 hover:text-yellow-300 underline">aquí</a>.</p>
         </div>
       </div>
     </div>
@@ -264,32 +293,41 @@
       <div class="space-y-4">
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Por qué 120€?</summary>
-          <p class="mt-3 text-slate-300">Los €120 son una RETENCIÓN (no un pago). Se retienen en tu tarjeta pero NO se cobran a menos que plantes a alguien. Si tus citas son exitosas, la retención permanece activa pero nunca se captura. Esto garantiza el compromiso serio de ambas partes.</p>
+          <p class="mt-3 text-slate-300">Los €120 son una RETENCIÓN (no un pago). Se retienen en tu tarjeta pero NO se
+            cobran a menos que plantes a alguien. Si tus citas son exitosas, la retención permanece activa pero nunca se
+            captura. Esto garantiza el compromiso serio de ambas partes.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Qué pasa si me plantan?</summary>
-          <p class="mt-3 text-slate-300">Si tu cita no se presenta y no verifica su asistencia, se capturan los €120 retenidos de su tarjeta como compensación, su reputación bajará significativamente, y tú mantienes tu retención intacta (no se te cobra).</p>
+          <p class="mt-3 text-slate-300">Si tu cita no se presenta y no verifica su asistencia, se capturan los €120
+            retenidos de su tarjeta como compensación, su reputación bajará significativamente, y tú mantienes tu
+            retención intacta (no se te cobra).</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿La retención caduca?</summary>
-          <p class="mt-3 text-slate-300">No, la retención permanece activa para siempre. Mientras no plantes a nadie, NUNCA se te cobrará. Solo se procesará el cargo si plantas a alguien.</p>
+          <p class="mt-3 text-slate-300">No, la retención permanece activa para siempre. Mientras no plantes a nadie,
+            NUNCA se te cobrará. Solo se procesará el cargo si plantas a alguien.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Puedo cancelar la retención?</summary>
-          <p class="mt-3 text-slate-300">Una vez activada la retención, permanece en tu cuenta para garantizar el compromiso. Mientras no plantes a nadie, no se te cobrará nada. La retención solo se libera si decides cancelar tu cuenta permanentemente.</p>
+          <p class="mt-3 text-slate-300">Una vez activada la retención, permanece en tu cuenta para garantizar el
+            compromiso. Mientras no plantes a nadie, no se te cobrará nada. La retención solo se libera si decides
+            cancelar tu cuenta permanentemente.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿Es seguro el pago?</summary>
-          <p class="mt-3 text-slate-300">Absolutamente. Todos los pagos son procesados por PayPal, uno de los sistemas de pago más seguros del mundo. No almacenamos tu información de pago.</p>
+          <p class="mt-3 text-slate-300">Absolutamente. Todos los pagos son procesados por PayPal, uno de los sistemas
+            de pago más seguros del mundo. No almacenamos tu información de pago.</p>
         </details>
 
         <details class="glass rounded-xl p-4 cursor-pointer">
           <summary class="font-bold text-lg">¿También necesito la membresía?</summary>
-          <p class="mt-3 text-slate-300">Sí, para agendar citas necesitas tanto la membresía premium (€29.99/mes) para enviar solicitudes y chatear, como el seguro anti-plantón (€120) para confirmar las citas.</p>
+          <p class="mt-3 text-slate-300">Sí, para agendar citas necesitas tanto la membresía premium (€29.99/mes) para
+            enviar solicitudes y chatear, como el seguro anti-plantón (€120) para confirmar las citas.</p>
         </details>
       </div>
     </div>
@@ -297,7 +335,11 @@
   </div>
 
   <!-- Error Fixes -->
+<<<<<<< HEAD
   <script type="module" src="./js/error-fixes.js"></script>
+=======
+  <script src="./js/error-fixes.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -305,7 +347,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { showToast } from './js/utils.js';
@@ -336,7 +378,7 @@
           height: 50
         },
 
-        createOrder: function(data, actions) {
+        createOrder: function (data, actions) {
           return actions.order.create({
             purchase_units: [{
               description: 'Seguro Anti-Plantón TuCitaSegura',
@@ -349,7 +391,7 @@
           });
         },
 
-        onApprove: async function(data, actions) {
+        onApprove: async function (data, actions) {
           // Mostrar overlay de carga
           document.getElementById('loadingOverlay').classList.remove('hidden');
 
@@ -392,13 +434,13 @@
           }
         },
 
-        onError: function(err) {
+        onError: function (err) {
           console.error('PayPal error:', err);
           document.getElementById('loadingOverlay').classList.add('hidden');
           showError('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
         },
 
-        onCancel: function(data) {
+        onCancel: function (data) {
           console.log('Payment cancelled:', data);
           document.getElementById('loadingOverlay').classList.add('hidden');
           showError('Cancelaste el proceso de pago. Tu seguro no fue activado.');
@@ -414,16 +456,17 @@
     }
 
     // Close error modal
-    window.closeErrorModal = function() {
+    window.closeErrorModal = function () {
       document.getElementById('errorModal').classList.add('hidden');
     };
 
     // Redirect to search page
-    window.redirectToSearch = function() {
-      window.location.href = '/webapp/buscar-usuarios.html';
+    window.redirectToSearch = function () {
+      window.location.href = '/buscar-usuarios.html';
     };
 
   </script>
 
 </body>
+
 </html>

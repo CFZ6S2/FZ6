@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon-ucFM3VZS.svg">
+  <link rel="alternate icon" href="/assets/favicon-Cun14U_G.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-Crbd7A89.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192-CsJCmVbd.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512-BuBNreg2.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32-BBREFL-q.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16-be4EoATY.png">
+  <link rel="manifest" href="/assets/site-WhAqb5Xc.webmanifest">
+  <meta name="theme-color" content="#764ba2">
+
+  <!-- Tailwind CSS -->
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .messages-container {
+      height: calc(100vh - 220px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .messages-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    .message-sent {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin-left: auto;
+    }
+
+    .message-received {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .typing-indicator span {
+      animation: blink 1.4s infinite both;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+
+      0%,
+      80%,
+      100% {
+        opacity: 0;
+      }
+
+      40% {
+        opacity: 1;
+      }
+    }
+
+    /* Calendar styles */
+    .calendar-day {
+      transition: all 0.2s;
+    }
+
+    .calendar-day:hover:not(.disabled) {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .calendar-day.selected {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/chat-DXwDA420.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-config-env-BtJ4KElt.js">
+  <link rel="modulepreload" crossorigin href="/assets/logger-CnI7WBtq.js">
+  <link rel="modulepreload" crossorigin href="/assets/firebase-appcheck-B5Dlx5A0.js">
+  <link rel="modulepreload" crossorigin href="/assets/error-fixes-B-QQl9aC.js">
+  <link rel="modulepreload" crossorigin href="/assets/utils-B649B8Z6.js">
+  <link rel="modulepreload" crossorigin href="/assets/theme-BOByySXs.js">
+  <link rel="modulepreload" crossorigin href="/assets/api-service-BrFQUPuu.js">
+  <link rel="modulepreload" crossorigin href="/assets/image-optimizer-CfUQm69F.js">
+  <link rel="stylesheet" crossorigin href="/assets/output-D--XYbyl.css">
+</head>
+
+<body class="text-white">
+
+  <!-- Header -->
+  <nav class="glass-strong border-b border-white/20">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <!-- User Info -->
+        <div class="flex items-center gap-3">
+          <a href="/conversaciones.html" class="text-white/80 hover:text-white transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <div class="relative">
+            <div id="otherUserAvatar"
+              class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold text-lg">
+              U
+            </div>
+            <div id="onlineIndicator"
+              class="hidden absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full">
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="otherUserName" class="text-lg font-bold">Usuario</h1>
+              <i id="verifiedBadge" class="hidden fas fa-circle-check text-blue-400 text-sm"></i>
+            </div>
+            <div class="flex items-center gap-2 text-sm">
+              <span id="distanceBadge" class="text-slate-300">
+                <i class="fas fa-location-dot"></i> <span id="distanceValue">-</span> km
+              </span>
+              <span id="reputationBadge" class="hidden px-2 py-0.5 text-xs rounded-full font-bold"></span>
+              <span id="availabilityBadge" class="hidden w-2 h-2 rounded-full" title="Disponibilidad"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button id="videoCallBtn" onclick="startVideoCall()"
+            class="glass hover:glass-strong p-3 rounded-xl transition bg-gradient-to-r from-blue-500/20 to-purple-500/20"
+            title="Iniciar video llamada">
+            <i class="fas fa-video text-lg"></i>
+          </button>
+          <button onclick="openDateProposal()" class="glass hover:glass-strong p-3 rounded-xl transition"
+            title="Proponer cita">
+            <i class="fas fa-calendar-plus text-lg"></i>
+          </button>
+          <button onclick="showOptionsMenu()" class="glass hover:glass-strong p-3 rounded-xl transition">
+            <i class="fas fa-ellipsis-vertical text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Messages Container -->
+  <div class="container mx-auto px-4">
+    <div id="messagesContainer" class="messages-container py-4 space-y-3">
+      <!-- Loading State -->
+      <div id="loadingMessages" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent"></div>
+      </div>
+
+      <!-- Messages will be dynamically loaded here -->
+    </div>
+
+    <!-- Typing Indicator -->
+    <div id="typingIndicator" class="hidden py-2">
+      <div class="flex items-center gap-2 text-slate-300 text-sm">
+        <div class="typing-indicator flex gap-1">
+          <span class="w-2 h-2 bg-white rounded-full"></span>
+          <span class="w-2 h-2 bg-white rounded-full"></span>
+          <span class="w-2 h-2 bg-white rounded-full"></span>
+        </div>
+        <span>escribiendo...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Input -->
+  <div class="fixed bottom-0 left-0 right-0 glass-strong border-t border-white/20 p-4">
+    <div class="container mx-auto">
+      <!-- Payment Warning -->
+      <div id="paymentWarningChat" class="hidden mb-3 glass rounded-xl p-3 border border-yellow-500/50">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-lock text-yellow-400"></i>
+          <p class="text-sm flex-1">Necesitas una membresía activa para enviar mensajes</p>
+          <a href="/suscripcion.html"
+            class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+            Activar
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-end gap-3">
+        <div class="flex-1">
+          <textarea id="messageInput" rows="1" placeholder="Escribe un mensaje..."
+            class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+            maxlength="1000"></textarea>
+        </div>
+        <button id="sendButton" onclick="sendMessage()"
+          class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed p-4 rounded-xl transition">
+          <i class="fas fa-paper-plane text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Options Menu -->
+  <div id="optionsMenu"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-end justify-center z-50 p-4"
+    onclick="closeOptionsMenu()">
+    <div class="glass-strong rounded-2xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+      <h3 class="text-xl font-bold mb-4">Opciones</h3>
+      <div class="space-y-2">
+        <button onclick="hideConversation()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition">
+          <i class="fas fa-eye-slash text-yellow-400"></i>
+          <div>
+            <div class="font-semibold">Ocultar conversación</div>
+            <div class="text-sm text-slate-300">No aparecerá en tu lista</div>
+          </div>
+        </button>
+        <button onclick="reportUser()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-orange-400">
+          <i class="fas fa-flag"></i>
+          <div>
+            <div class="font-semibold">Reportar usuario</div>
+            <div class="text-sm text-slate-300">Notificar comportamiento inapropiado</div>
+          </div>
+        </button>
+        <button onclick="blockUser()"
+          class="w-full glass hover:glass-strong p-4 rounded-xl text-left flex items-center gap-3 transition text-red-400">
+          <i class="fas fa-ban"></i>
+          <div>
+            <div class="font-semibold">Bloquear usuario</div>
+            <div class="text-sm text-slate-300">No podrá contactarte</div>
+          </div>
+        </button>
+      </div>
+      <button onclick="closeOptionsMenu()"
+        class="w-full mt-4 glass hover:glass-strong p-3 rounded-xl font-semibold transition">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- Date Proposal Modal -->
+  <div id="dateProposalModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="glass-strong rounded-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-2xl font-bold">
+          <i class="fas fa-calendar-heart text-pink-400 mr-2"></i>
+          Proponer Cita
+        </h3>
+        <button onclick="closeDateProposal()" class="text-white/80 hover:text-white text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Insurance Check -->
+      <div id="insuranceWarning" class="hidden mb-6 glass rounded-xl p-4 border-2 border-yellow-500/50">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-shield-exclamation text-yellow-400 text-xl"></i>
+          <div>
+            <h4 class="font-bold mb-1">Seguro Anti-Plantón Requerido</h4>
+            <p class="text-sm text-slate-300 mb-3">Necesitas el seguro de €120 para proponer citas</p>
+            <a href="/seguro.html"
+              class="inline-block bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+              Contratar Seguro
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div id="calendarContainer" class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <button onclick="previousMonth()" class="glass hover:glass-strong p-2 rounded-lg transition">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <h4 id="calendarMonth" class="text-xl font-bold">Enero 2024</h4>
+          <button onclick="nextMonth()" class="glass hover:glass-strong p-2 rounded-lg transition">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Days of week -->
+        <div class="grid grid-cols-7 gap-2 mb-2">
+          <div class="text-center text-sm text-slate-400 font-semibold">L</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">M</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">X</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">J</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">V</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">S</div>
+          <div class="text-center text-sm text-slate-400 font-semibold">D</div>
+        </div>
+
+        <!-- Calendar days -->
+        <div id="calendarDays" class="grid grid-cols-7 gap-2">
+          <!-- Days will be dynamically generated -->
+        </div>
+      </div>
+
+      <!-- Time Selection -->
+      <div class="mb-6">
+        <label class="block text-sm font-semibold mb-2">Hora de la cita</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="selectTime('10:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">10:00</button>
+          <button onclick="selectTime('12:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">12:00</button>
+          <button onclick="selectTime('14:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">14:00</button>
+          <button onclick="selectTime('16:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">16:00</button>
+          <button onclick="selectTime('18:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">18:00</button>
+          <button onclick="selectTime('20:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">20:00</button>
+          <button onclick="selectTime('21:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">21:00</button>
+          <button onclick="selectTime('22:00')"
+            class="time-slot glass hover:glass-strong p-3 rounded-lg transition">22:00</button>
+        </div>
+      </div>
+
+      <!-- Place Input -->
+      <div class="mb-6">
+        <label class="block text-sm font-semibold mb-2">Lugar de la cita</label>
+        <input type="text" id="datePlace" placeholder="Ej: Café Central, Calle Mayor 10"
+          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+
+      <!-- Message -->
+      <div class="mb-6">
+        <label class="block text-sm font-semibold mb-2">Mensaje (opcional)</label>
+        <textarea id="dateMessage" rows="3" placeholder="¿Quieres añadir algo?"
+          class="w-full px-4 py-3 rounded-xl glass text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"></textarea>
+      </div>
+
+      <!-- Selected Date Summary -->
+      <div id="dateSummary" class="hidden mb-6 glass rounded-xl p-4">
+        <h4 class="font-bold mb-2">Resumen de la cita:</h4>
+        <div class="space-y-1 text-sm text-slate-300">
+          <p><i class="fas fa-calendar text-purple-400 w-5"></i> <span id="summaryDate"></span></p>
+          <p><i class="fas fa-clock text-purple-400 w-5"></i> <span id="summaryTime"></span></p>
+          <p><i class="fas fa-map-marker-alt text-purple-400 w-5"></i> <span id="summaryPlace"></span></p>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button id="submitDateProposal" onclick="submitDateProposal()" disabled
+        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition">
+        Enviar Propuesta de Cita
+      </button>
+    </div>
+  </div>
+
+  <!-- Block Confirmation Modal -->
+  <div id="blockModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full p-8">
+      <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-ban text-4xl text-red-400"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-4 text-center">¿Bloquear Usuario?</h3>
+      <p class="text-slate-300 mb-6 text-center">
+        <span id="blockUserName"></span> no podrá enviarte más mensajes ni verte en búsquedas.
+      </p>
+      <div class="flex gap-3">
+        <button onclick="closeBlockModal()"
+          class="flex-1 glass hover:glass-strong font-semibold py-3 px-6 rounded-xl transition">
+          Cancelar
+        </button>
+        <button onclick="confirmBlock()"
+          class="flex-1 bg-red-500 hover:bg-red-600 font-bold py-3 px-6 rounded-xl transition">
+          Bloquear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Fixes -->
+
+  <!-- DOMPurify for XSS Protection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="./js/sanitizer.js"></script>
+
+  <!-- Firebase SDK -->
+
+  <!-- Demo Mode Banner -->
+  <script src="./js/demo-banner.js"></script>
+
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +15,15 @@
 
   <style>
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .fade-in {
@@ -42,6 +50,7 @@
     }
   </style>
 </head>
+
 <body class="min-h-screen gradient-bg text-white">
 
   <!-- Header -->
@@ -57,10 +66,7 @@
         </div>
         <div class="flex items-center space-x-4">
           <span id="adminName" class="text-sm text-gray-300"></span>
-          <button
-            onclick="logout()"
-            class="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors"
-          >
+          <button onclick="logout()" class="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors">
             <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
           </button>
         </div>
@@ -133,26 +139,18 @@
       <div class="glass-card rounded-2xl p-6 mb-8 fade-in">
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Buscar por email, nombre, alias..."
-              class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
+            <input type="text" id="searchInput" placeholder="Buscar por email, nombre, alias..."
+              class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
           </div>
-          <select
-            id="roleFilter"
-            class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
+          <select id="roleFilter"
+            class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
             <option value="">Todos los roles</option>
             <option value="admin">Administradores</option>
             <option value="concierge">Concierge</option>
             <option value="regular">Regulares</option>
           </select>
-          <select
-            id="genderFilter"
-            class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
+          <select id="genderFilter"
+            class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
             <option value="">Todos los géneros</option>
             <option value="masculino">Masculino</option>
             <option value="femenino">Femenino</option>
@@ -193,20 +191,14 @@
             Mostrando <span id="showingCount">0</span> de <span id="totalCount">0</span> usuarios
           </p>
           <div class="flex space-x-2">
-            <button
-              id="prevBtn"
-              onclick="previousPage()"
+            <button id="prevBtn" onclick="previousPage()"
               class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
-            >
+              disabled>
               <i class="fas fa-chevron-left"></i>
             </button>
-            <button
-              id="nextBtn"
-              onclick="nextPage()"
+            <button id="nextBtn" onclick="nextPage()"
               class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
-            >
+              disabled>
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -216,14 +208,13 @@
   </main>
 
   <!-- User Detail Modal -->
-  <div id="userModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+  <div id="userModal"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
     <div class="glass-card rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold">Detalles del Usuario</h2>
-        <button
-          onclick="closeUserModal()"
-          class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
-        >
+        <button onclick="closeUserModal()"
+          class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -235,10 +226,8 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+<<<<<<< HEAD
     const firebaseConfig = {
       apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
       authDomain: "tucitasegura-129cc.firebaseapp.com",
@@ -252,6 +241,11 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+=======
+    import { auth, db } from './js/firebase-config-env.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { collection, getDocs, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
     let allUsers = [];
     let filteredUsers = [];
@@ -261,7 +255,7 @@
     // Check authentication
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = '/webapp/admin-login.html';
+        window.location.href = '/admin-login.html';
         return;
       }
 
@@ -277,7 +271,7 @@
         console.error('❌ Access denied: role =', idTokenResult.claims.role);
         alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role || 'undefined'));
         await signOut(auth);
-        window.location.href = '/webapp/admin-login.html';
+        window.location.href = '/admin-login.html';
         return;
       }
 
@@ -389,9 +383,9 @@
           </td>
           <td class="px-6 py-4">
             ${user.hasActiveSubscription ?
-              '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i class="fas fa-crown mr-1"></i>Premium</span>' :
-              '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">Free</span>'
-            }
+          '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i class="fas fa-crown mr-1"></i>Premium</span>' :
+          '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">Free</span>'
+        }
           </td>
           <td class="px-6 py-4">
             <div class="flex gap-2">
@@ -559,7 +553,7 @@
     window.logout = async () => {
       if (confirm('¿Seguro que quieres cerrar sesión?')) {
         await signOut(auth);
-        window.location.href = '/webapp/admin-login.html';
+        window.location.href = '/admin-login.html';
       }
     };
 
@@ -583,4 +577,5 @@
     document.getElementById('genderFilter').addEventListener('change', applyFilters);
   </script>
 </body>
+
 </html>

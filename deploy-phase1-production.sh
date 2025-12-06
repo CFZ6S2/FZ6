@@ -331,20 +331,6 @@ echo "  1. ✅ Verificar timeout en apiProxy (Test #1)"
 echo "  2. ✅ Verificar caché de tokens PayPal (Test #2)"
 echo "  3. ✅ Verificar idempotencia en Stripe webhooks (Test #3)"
 echo "  4. ✅ Verificar idempotencia en PayPal webhooks (Test #4)"
-echo "  5. ✅ Verificar Firestore Rules sin bypass (Test #5)"
-echo ""
-print_info "Cada test incluye comandos exactos y resultados esperados"
-echo ""
-
-# =============================================================================
-# RESUMEN FINAL
-# =============================================================================
-
-print_header "RESUMEN DE DEPLOYMENT"
-
-echo "✅ Cloud Functions: Desplegadas"
-echo "✅ Firestore Rules: Desplegadas"
-echo "✅ Backups: Guardados en $BACKUP_DIR"
 echo ""
 echo "Proyecto: $PROJECT_ID"
 echo "Fecha: $(date '+%Y-%m-%d %H:%M:%S')"

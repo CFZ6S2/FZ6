@@ -1,0 +1,56 @@
+import { defineConfig } from 'vite';
+import path from 'path';
+
+export default defineConfig(({ mode }) => {
+    return {
+        root: '.', // si tus archivos están en la raíz de webapp
+        build: {
+            outDir: 'dist',
+            target: 'esnext', // Enable top-level await support
+            rollupOptions: {
+                input: {
+                    main: path.resolve(__dirname, 'index.html'),
+                    login: path.resolve(__dirname, 'login.html'),
+                    admin_login: path.resolve(__dirname, 'admin-login.html'),
+                    admin: path.resolve(__dirname, 'admin.html'),
+                    ayuda: path.resolve(__dirname, 'ayuda.html'),
+                    buscar_usuarios: path.resolve(__dirname, 'buscar-usuarios.html'),
+                    chat: path.resolve(__dirname, 'chat.html'),
+                    cita_detalle: path.resolve(__dirname, 'cita-detalle.html'),
+                    concierge_dashboard: path.resolve(__dirname, 'concierge-dashboard.html'),
+                    conversaciones: path.resolve(__dirname, 'conversaciones.html'),
+                    cuenta_pagos: path.resolve(__dirname, 'cuenta-pagos.html'),
+                    evento_detalle: path.resolve(__dirname, 'evento-detalle.html'),
+                    eventos_vip: path.resolve(__dirname, 'eventos-vip.html'),
+                    login: path.resolve(__dirname, 'login.html'),
+                    logros: path.resolve(__dirname, 'logros.html'),
+                    membresia: path.resolve(__dirname, 'membresia.html'),
+                    perfil: path.resolve(__dirname, 'perfil.html'),
+                    referidos: path.resolve(__dirname, 'referidos.html'),
+                    register: path.resolve(__dirname, 'register.html'),
+                    reportes: path.resolve(__dirname, 'reportes.html'),
+                    seguridad: path.resolve(__dirname, 'seguridad.html'),
+                    seguro: path.resolve(__dirname, 'seguro.html'),
+                    suscripcion: path.resolve(__dirname, 'suscripcion.html'),
+                    verificacion_identidad: path.resolve(__dirname, 'verificacion-identidad.html'),
+                    verify_email: path.resolve(__dirname, 'verify-email.html'),
+                    video_chat: path.resolve(__dirname, 'video-chat.html'),
+                    example_notification: path.resolve(__dirname, 'example-notification-integration.html')
+                }
+            }
+        },
+        server: {
+            port: 3000,
+            proxy: {
+                // Redirige llamadas /api/* a backend local
+                '/api': {
+                    target: 'http://127.0.0.1:8001',
+                    changeOrigin: true,
+                    secure: false,
+                    // Rewrite path if needed (optional)
+                    // rewrite: (path) => path.replace(/^\/api/, '') 
+                }
+            }
+        }
+    };
+});
