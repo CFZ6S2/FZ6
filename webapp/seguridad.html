@@ -248,11 +248,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-<<<<<<< HEAD
-    <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+  <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module" src="./js/error-fixes.js"></script>
@@ -263,8 +259,8 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
     import { showToast } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
 

@@ -1,23 +1,15 @@
 // functions/recaptcha-enterprise.js - Lazy init
 // Verificación de tokens de reCAPTCHA Enterprise
 
-<<<<<<< HEAD
 const functions = require('firebase-functions/v1');
-=======
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
 const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
 const { createLogger } = require('./utils/structured-logger');
 
 const logger = createLogger('recaptcha-enterprise');
 
-<<<<<<< HEAD
-// Cliente de reCAPTCHA Enterprise (lazy)
-let recaptchaClient = null;
-=======
 // Cliente de reCAPTCHA Enterprise (lazy init)
 let recaptchaClient = null;
 
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
 function getRecaptchaClient() {
   if (!recaptchaClient) {
     recaptchaClient = new RecaptchaEnterpriseServiceClient();
@@ -26,19 +18,9 @@ function getRecaptchaClient() {
 }
 
 // Configuración del proyecto
-<<<<<<< HEAD
-<<<<<<< HEAD
-const PROJECT_ID = (functions.config()?.recaptcha?.project_id) || process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc';
-const SITE_KEY = (functions.config()?.recaptcha?.site_key) || process.env.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT';
+const PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID || (functions.config().recaptcha && functions.config().recaptcha.project_id) || 'tucitasegura-129cc';
+const SITE_KEY = process.env.RECAPTCHA_SITE_KEY || (functions.config().recaptcha && functions.config().recaptcha.site_key) || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT';
 
-=======
-const PROJECT_ID = 'tuscitasseguras-2d1a6';
-const SITE_KEY = '6LcIeB4sAAAAAHQj41rZM-xD_3kw7Yuwq-8cIrLK';
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
-=======
-const PROJECT_ID = (process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc');
-const SITE_KEY = (process.env.RECAPTCHA_SITE_KEY || '6LdlmB8sAAAAAMHn-yHoJIAwg2iVQMIXCKtDq7eb');
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 /**
  * Verificar token de reCAPTCHA Enterprise
  * @param {string} token - Token de reCAPTCHA del cliente

@@ -8,17 +8,14 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
   <link rel="alternate icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<<<<<<< HEAD
   <link rel="manifest" href="/site.webmanifest">
-=======
-  <link rel="manifest" href="/site.webmanifest">
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
@@ -404,11 +401,7 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<<<<<<< HEAD
   <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -417,7 +410,7 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { onAuthStateChanged } from "firebase/auth";
     import {
       collection,
       query,
@@ -433,7 +426,7 @@
       getDocs,
       setDoc,
       increment
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    } from "firebase/firestore";
     import { showToast, calculateDistance, requireChatAccess } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
     import { apiService } from './js/api-service.js';
@@ -1066,11 +1059,7 @@
   </script>
 
   <!-- Demo Mode Banner -->
-<<<<<<< HEAD
   <script type="module" src="./js/demo-banner.js"></script>
-=======
-  <script src="./js/demo-banner.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 </body>
 

@@ -219,14 +219,7 @@
     // Firebase configuration
     import './js/firebase-appcheck.js';
 
-    // BRIDGE: Ensure global shim is available in module scope
-    const verifyRecaptchaScore = window.verifyRecaptchaScore || async function (t) { return { success: true, score: 1.0 }; };
 
-    // HOTFIX: Definir verifyRecaptchaScore globalmente para evitar errores
-    window.verifyRecaptchaScore = async function (token) {
-      console.warn('👻 verifyRecaptchaScore invocado (shim local). Retornando éxito.');
-      return { success: true, score: 1.0, action: 'login' };
-    };
 
     import { auth, db } from './js/firebase-config-env.js';
     import { sanitizer } from './js/sanitizer.js';
@@ -242,13 +235,10 @@
       setPersistence,
       browserSessionPersistence,
       browserLocalPersistence
-<<<<<<< HEAD
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    } from 'firebase/auth';
+    import { doc, getDoc } from 'firebase/firestore';
     import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
-=======
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
     // Check if already logged in
     auth.onAuthStateChanged((user) => {
@@ -531,4 +521,3 @@
 </body>
 
 </html>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)

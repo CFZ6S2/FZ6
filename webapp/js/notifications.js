@@ -1,10 +1,6 @@
-// ===========================================================================
-// Firebase Cloud Messaging - Notifications Client
-// ===========================================================================
-// Manages push notifications for TuCitaSegura
 
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { auth, db, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
@@ -53,16 +49,9 @@ export async function initializeNotifications() {
  */
 async function registerServiceWorker() {
   try {
-<<<<<<< HEAD
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-=======
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
-    console.log('Service Worker registered:', registration);
-    return registration;
   } catch (error) {
     console.error('Service Worker registration failed:', error);
-    throw error;
   }
 }
 
@@ -213,10 +202,18 @@ function showInAppNotification(notification, data) {
   document.body.appendChild(notificationEl);
 
   // Auto-remove after 8 seconds
-  setTimeout(() => {
-    notificationEl.classList.add('animate-fadeOut');
-    setTimeout(() => notificationEl.remove(), 300);
+  // Auto-remove after 8 seconds with cleanup tracking
+  const timeoutId = setTimeout(() => {
+    if (document.body.contains(notificationEl)) {
+      notificationEl.classList.add('animate-fadeOut');
+      setTimeout(() => {
+        if (document.body.contains(notificationEl)) notificationEl.remove();
+      }, 300);
+    }
   }, 8000);
+
+  // Store timeout on element for potential manual cleanup
+  notificationEl.dataset.timeoutId = timeoutId;
 
   // Play notification sound
   playNotificationSound();

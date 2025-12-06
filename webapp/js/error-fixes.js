@@ -137,7 +137,7 @@ window.initRecaptchaSafely = function(auth, containerId) {
             }
 
             // Import RecaptchaVerifier
-            import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js')
+            import('firebase/auth')
                 .then(({ RecaptchaVerifier }) => {
                     const verifier = new RecaptchaVerifier(auth, containerId, {
                         'size': 'invisible',

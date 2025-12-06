@@ -12,11 +12,7 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
-<<<<<<< HEAD
   <script type="module" src="./js/sanitizer.js"></script>
-=======
-  <script type="module" src="/js/sanitizer.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -322,28 +318,8 @@
       signInWithEmailAndPassword,
       sendPasswordResetEmail,
       setPersistence,
-<<<<<<< HEAD
-      browserSessionPersistence,
-      sendPasswordResetEmail
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
-      authDomain: "tucitasegura-129cc.firebaseapp.com",
-      databaseURL: "https://tucitasegura-129cc-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "tucitasegura-129cc",
-      storageBucket: "tucitasegura-129cc.firebasestorage.app",
-      messagingSenderId: "180656060538",
-      appId: "1:180656060538:web:3168487130aa126db663c3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-=======
       browserSessionPersistence
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
+    } from 'firebase/auth';
 
     // NOTE: App Check is DISABLED for admin login to avoid auth issues
     // You MUST disable App Check enforcement in Firebase Console for this to work:
@@ -410,7 +386,7 @@
       try {
         const { verifyRecaptchaScore } = await import('./js/recaptcha-enterprise.js');
         const recaptcha = await verifyRecaptchaScore('password_reset_admin');
-        if(!recaptcha.success || (recaptcha.score??0) < 0.5){
+        if (!recaptcha.success || (recaptcha.score ?? 0) < 0.5) {
           resetMessage.innerHTML = `
             <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
               <div class="flex items-center text-red-300">

@@ -288,17 +288,8 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-<<<<<<< HEAD
-    <script type="module" src="./js/sanitizer.js"></script>
-
-
+  <script type="module" src="./js/sanitizer.js"></script>
   <script type="module" src="./js/error-fixes.js"></script>
-=======
-  <script src="./js/sanitizer.js"></script>
-
-
-  <script src="./js/error-fixes.js"></script>
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <script type="module">
     // Import App Check FIRST (must be before firebase-config.js)
@@ -306,7 +297,7 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { onAuthStateChanged, signOut } from 'firebase/auth';
     import {
       collection,
       query,
@@ -316,7 +307,7 @@
       doc,
       getDoc,
       Timestamp
-    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    } from 'firebase/firestore';
     import { loadTheme } from './js/theme.js';
 
     // Image optimization with lazy loading

@@ -300,7 +300,7 @@ export function loadThemeEarly() {
  * @param {string} themeName - Theme name to save
  */
 export async function saveThemeToFirestore(db, userId, themeName) {
-  const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+  const { doc, updateDoc } = await import('firebase/firestore');
 
   try {
     await updateDoc(doc(db, 'users', userId), {
