@@ -2,14 +2,6 @@
 // Verificación de tokens de reCAPTCHA Enterprise
 
 const functions = require('firebase-functions/v1');
-const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
-const { createLogger } = require('./utils/structured-logger');
-
-const logger = createLogger('recaptcha-enterprise');
-
-// Cliente de reCAPTCHA Enterprise (lazy init)
-let recaptchaClient = null;
-
 function getRecaptchaClient() {
   if (!recaptchaClient) {
     recaptchaClient = new RecaptchaEnterpriseServiceClient();
@@ -18,8 +10,8 @@ function getRecaptchaClient() {
 }
 
 // Configuración del proyecto
-const PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID || (functions.config().recaptcha && functions.config().recaptcha.project_id) || 'tucitasegura-129cc';
-const SITE_KEY = process.env.RECAPTCHA_SITE_KEY || (functions.config().recaptcha && functions.config().recaptcha.site_key) || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT';
+const PROJECT_ID = (functions.config()?.recaptcha?.project_id) || process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc';
+const SITE_KEY = (functions.config()?.recaptcha?.site_key) || process.env.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT';
 
 /**
  * Verificar token de reCAPTCHA Enterprise
