@@ -223,110 +223,123 @@
       </div>
     </div>
 
+  </div>
+
+  <script type="module">
+    import './js/firebase-appcheck.js';
+    import { auth, db } from './js/firebase-config-env.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { collection, getDocs, doc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    let allUsers = [];
+    let filteredUsers = [];
+    let currentPage = 0;
+    const usersPerPage = 10;
+
     // Check authentication
     onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-    window.location.href = '/admin-login.html';
-    return;
-    }
+      if (!user) {
+        window.location.href = '/admin-login.html';
+        return;
+      }
 
-    // FORCE token refresh to get latest custom claims
-    console.log('🔄 Forcing token refresh to get latest custom claims...');
-    const idTokenResult = await user.getIdTokenResult(true); // true = force refresh
+      // FORCE token refresh to get latest custom claims
+      console.log('🔄 Forcing token refresh to get latest custom claims...');
+      const idTokenResult = await user.getIdTokenResult(true); // true = force refresh
 
-    console.log('📋 Custom claims:', idTokenResult.claims);
-    console.log('👤 Role:', idTokenResult.claims.role);
+      console.log('📋 Custom claims:', idTokenResult.claims);
+      console.log('👤 Role:', idTokenResult.claims.role);
 
-    // Verify admin role
-    if (idTokenResult.claims.role !== 'admin') {
-    console.error('❌ Access denied: role =', idTokenResult.claims.role);
-    alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role ||
-    'undefined'));
-    await signOut(auth);
-    window.location.href = '/admin-login.html';
-    return;
-    }
+      // Verify admin role
+      if (idTokenResult.claims.role !== 'admin') {
+        console.error('❌ Access denied: role =', idTokenResult.claims.role);
+        alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role ||
+          'undefined'));
+        await signOut(auth);
+        window.location.href = '/admin-login.html';
+        return;
+      }
 
-    console.log('✅ Admin access granted');
-    document.getElementById('adminName').textContent = user.email;
-    loadData();
+      console.log('✅ Admin access granted');
+      document.getElementById('adminName').textContent = user.email;
+      loadData();
     });
 
     async function loadData() {
-    try {
-    // Get all users
-    const usersSnapshot = await getDocs(collection(db, 'users'));
-    allUsers = [];
+      try {
+        // Get all users
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        allUsers = [];
 
-    usersSnapshot.forEach((doc) => {
-    const data = doc.data();
-    allUsers.push({
-    id: doc.id,
-    ...data,
-    balance: data.balance || 0
-    });
-    });
+        usersSnapshot.forEach((doc) => {
+          const data = doc.data();
+          allUsers.push({
+            id: doc.id,
+            ...data,
+            balance: data.balance || 0
+          });
+        });
 
-    // Calculate stats
-    const totalUsers = allUsers.length;
-    const totalMoney = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
+        // Calculate stats
+        const totalUsers = allUsers.length;
+        const totalMoney = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const activeUsers = allUsers.filter(user => {
-    if (!user.lastActivity) return false;
-    const lastActivity = user.lastActivity.toDate ? user.lastActivity.toDate() : new Date(user.lastActivity);
-    return lastActivity >= today;
-    }).length;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const activeUsers = allUsers.filter(user => {
+          if (!user.lastActivity) return false;
+          const lastActivity = user.lastActivity.toDate ? user.lastActivity.toDate() : new Date(user.lastActivity);
+          return lastActivity >= today;
+        }).length;
 
-    const premiumUsers = allUsers.filter(user => user.hasActiveSubscription).length;
+        const premiumUsers = allUsers.filter(user => user.hasActiveSubscription).length;
 
-    // Update stats
-    document.getElementById('totalUsers').textContent = totalUsers;
-    document.getElementById('totalMoney').textContent = totalMoney.toFixed(2) + '€';
-    document.getElementById('activeUsers').textContent = activeUsers;
-    document.getElementById('premiumUsers').textContent = premiumUsers;
+        // Update stats
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalMoney').textContent = totalMoney.toFixed(2) + '€';
+        document.getElementById('activeUsers').textContent = activeUsers;
+        document.getElementById('premiumUsers').textContent = premiumUsers;
 
-    // Apply filters and render
-    applyFilters();
+        // Apply filters and render
+        applyFilters();
 
-    document.getElementById('loadingState').classList.add('hidden');
-    document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
 
-    } catch (error) {
-    console.error('Error loading data:', error);
-    alert('Error al cargar los datos: ' + error.message);
-    }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        alert('Error al cargar los datos: ' + error.message);
+      }
     }
 
     function applyFilters() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const roleFilter = document.getElementById('roleFilter').value;
-    const genderFilter = document.getElementById('genderFilter').value;
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const roleFilter = document.getElementById('roleFilter').value;
+      const genderFilter = document.getElementById('genderFilter').value;
 
-    filteredUsers = allUsers.filter(user => {
-    const matchesSearch = !searchTerm ||
-    (user.email || '').toLowerCase().includes(searchTerm) ||
-    (user.alias || '').toLowerCase().includes(searchTerm) ||
-    (user.displayName || '').toLowerCase().includes(searchTerm);
+      filteredUsers = allUsers.filter(user => {
+        const matchesSearch = !searchTerm ||
+          (user.email || '').toLowerCase().includes(searchTerm) ||
+          (user.alias || '').toLowerCase().includes(searchTerm) ||
+          (user.displayName || '').toLowerCase().includes(searchTerm);
 
-    const matchesRole = !roleFilter || user.userRole === roleFilter;
-    const matchesGender = !genderFilter || user.gender === genderFilter;
+        const matchesRole = !roleFilter || user.userRole === roleFilter;
+        const matchesGender = !genderFilter || user.gender === genderFilter;
 
-    return matchesSearch && matchesRole && matchesGender;
-    });
+        return matchesSearch && matchesRole && matchesGender;
+      });
 
-    currentPage = 0;
-    renderUsers();
+      currentPage = 0;
+      renderUsers();
     }
 
     function renderUsers() {
-    const tbody = document.getElementById('usersTableBody');
-    const start = currentPage * usersPerPage;
-    const end = start + usersPerPage;
-    const pageUsers = filteredUsers.slice(start, end);
+      const tbody = document.getElementById('usersTableBody');
+      const start = currentPage * usersPerPage;
+      const end = start + usersPerPage;
+      const pageUsers = filteredUsers.slice(start, end);
 
-    tbody.innerHTML = pageUsers.map(user => `
+      tbody.innerHTML = pageUsers.map(user => `
     <tr class="hover:bg-white/5 transition-colors">
       <td class="px-6 py-4">
         <div class="flex items-center space-x-3">
@@ -356,11 +369,11 @@
       </td>
       <td class="px-6 py-4">
         ${user.hasActiveSubscription ?
-        '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i
-            class="fas fa-crown mr-1"></i>Premium</span>' :
+          '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i
+            class= "fas fa-crown mr-1" ></i > Premium</span > ' :
         '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">Free</span>'
         }
-      </td>
+      </td >
       <td class="px-6 py-4">
         <div class="flex gap-2">
           <button onclick="viewUser('${user.id}')"
@@ -373,8 +386,8 @@
           </button>
         </div>
       </td>
-    </tr>
-    `).join('');
+    </tr >
+      `).join('');
 
     // Update pagination
     document.getElementById('showingCount').textContent = Math.min(end, filteredUsers.length);
@@ -409,7 +422,7 @@
 
     const modalContent = document.getElementById('userModalContent');
     modalContent.innerHTML = `
-    <div class="space-y-6">
+      < div class="space-y-6" >
       <!-- Avatar and Basic Info -->
       <div class="text-center pb-6 border-b border-white/10">
         <div
@@ -420,7 +433,7 @@
         <p class="text-gray-400">${user.email || 'Sin email'}</p>
       </div>
 
-      <!-- Details Grid -->
+      <!--Details Grid-- >
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-white/5 rounded-lg p-4">
           <p class="text-xs text-gray-400 mb-1">Rol</p>
@@ -449,28 +462,30 @@
         </div>
       </div>
 
-      <!-- Full Details -->
+      <!--Full Details-- >
       <div class="bg-white/5 rounded-lg p-4">
         <p class="text-xs text-gray-400 mb-2">UID</p>
         <code class="text-xs bg-black/30 px-2 py-1 rounded">${user.uid}</code>
       </div>
 
-      ${user.bio ? `
+      ${
+      user.bio ? `
       <div class="bg-white/5 rounded-lg p-4">
         <p class="text-xs text-gray-400 mb-2">Biografía</p>
         <p class="text-sm">${user.bio}</p>
       </div>
-      ` : ''}
+      ` : ''
+    }
 
-      <!-- Actions -->
+      < !--Actions -->
       <div class="pt-4 border-t border-white/10 flex space-x-3">
         <button onclick="closeUserModal()"
           class="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
           Cerrar
         </button>
       </div>
-    </div>
-    `;
+    </div >
+      `;
 
     document.getElementById('userModal').classList.remove('hidden');
     };
@@ -494,8 +509,8 @@
 
     // Confirm deletion
     const confirmed = confirm(
-    `⚠️ ¿Estás seguro de que quieres borrar este usuario?\n\n` +
-    `Email: ${userEmail}\n\n` +
+    `⚠️ ¿Estás seguro de que quieres borrar este usuario ?\n\n` +
+    `Email: ${ userEmail } \n\n` +
     `Esta acción NO se puede deshacer.`
     );
 
