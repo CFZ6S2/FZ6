@@ -52,7 +52,9 @@ class CSRFProtection(BaseHTTPMiddleware):
         '/docs',                          # API docs
         '/openapi.json',                  # OpenAPI schema
         '/security-info',                 # Security info endpoint
-        '/debug'                          # Debug endpoint
+        '/debug',                         # Debug endpoint
+        '/api/v1/debug/login',            # Debug login (dev only)
+        '/api/v1/debug/',                 # All debug endpoints (dev only)
     }
 
     # Paths that require CSRF protection (critical endpoints)

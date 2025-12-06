@@ -319,6 +319,19 @@ export async function saveThemeToFirestore(db, userId, themeName) {
 }
 
 // Auto-load theme on page load (from localStorage for instant feedback)
+// Loading utility
+export const loader = {
+  show: () => {
+    const overlay = document.querySelector('.loading-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+    else console.warn('Loader overlay not found');
+  },
+  hide: () => {
+    const overlay = document.querySelector('.loading-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+};
+
 if (typeof window !== 'undefined') {
   loadThemeEarly();
 }

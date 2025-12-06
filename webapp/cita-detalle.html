@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,8 +49,17 @@
     }
 
     @keyframes backgroundMove {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
     }
 
     /* Glassmorphism containers */
@@ -143,8 +153,15 @@
 
     /* Floating Animation */
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .float-animation {
@@ -178,6 +195,7 @@
     }
   </style>
 </head>
+
 <body class="relative">
 
   <!-- Loading Overlay -->
@@ -200,13 +218,13 @@
         </div>
 
         <div class="hidden md:flex items-center space-x-6">
-          <a href="/webapp/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
+          <a href="/buscar-usuarios.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-search mr-2"></i>Buscar
           </a>
-          <a href="/webapp/conversaciones.html" class="text-white hover:text-purple-200 transition">
+          <a href="/conversaciones.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-comments mr-2"></i>Chats
           </a>
-          <a href="/webapp/perfil.html" class="text-white hover:text-purple-200 transition">
+          <a href="/perfil.html" class="text-white hover:text-purple-200 transition">
             <i class="fas fa-user mr-2"></i>Perfil
           </a>
         </div>
@@ -254,7 +272,8 @@
 
         <div id="map" class="mb-4"></div>
 
-        <div id="locationStatus" class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
+        <div id="locationStatus"
+          class="bg-blue-500 bg-opacity-20 border border-blue-300 border-opacity-30 rounded-lg p-4">
           <p class="text-white text-sm">
             <i class="fas fa-info-circle mr-2"></i>
             Debes estar dentro de un radio de 250 metros del lugar de la cita para validarla.
@@ -327,7 +346,8 @@
   </main>
 
   <!-- Success Modal -->
-  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div id="successModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="glass-container max-w-md w-full p-8 text-center">
       <div class="inline-block bg-green-500 bg-opacity-30 p-4 rounded-full mb-4">
         <i class="fas fa-check-circle text-green-300 text-5xl"></i>
@@ -350,7 +370,10 @@
     </div>
   </div>
 
+<<<<<<< HEAD
 <!-- RESUELTO: Eliminados marcadores de conflicto -->
+=======
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
   <!--
     ⚠️ CRITICAL: Google Maps API Configuration Required
 
@@ -366,11 +389,15 @@
 
     Status: 🔴 NOT CONFIGURED - Map will NOT work without valid API key
   -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
   <!-- Google Maps API - Loaded dynamically from config -->
@@ -381,7 +408,7 @@
     }
   </script>
   <script type="module">
-    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config.js';
+    import { GOOGLE_MAPS_API_KEY } from './js/google-maps-config-env.js';
 
     // Dynamically load Google Maps API with the configured key
     const script = document.createElement('script');
@@ -397,7 +424,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { loadTheme } from './js/theme.js';
@@ -416,7 +443,7 @@
     dateId = urlParams.get('id');
 
     if (!dateId) {
-      window.location.href = '/webapp/conversaciones.html';
+      window.location.href = '/conversaciones.html';
     }
 
     // Check authentication
@@ -429,7 +456,7 @@
         setupPinInputs();
         document.getElementById('loadingOverlay').classList.add('hidden');
       } else {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       }
     });
 
@@ -484,7 +511,7 @@
         if (!dateData) {
           showToast('Cita no encontrada', 'error');
           setTimeout(() => {
-            window.location.href = '/webapp/conversaciones.html';
+            window.location.href = '/conversaciones.html';
           }, 2000);
           return;
         }
@@ -655,8 +682,8 @@
       const Δλ = (lon2 - lon1) * Math.PI / 180;
 
       const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
       return R * c; // Distance in meters
@@ -806,14 +833,14 @@
 
     // Close success modal
     document.getElementById('closeSuccessModal').addEventListener('click', () => {
-      window.location.href = '/webapp/conversaciones.html';
+      window.location.href = '/conversaciones.html';
     });
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -843,4 +870,5 @@
   </script>
 
 </body>
+
 </html>

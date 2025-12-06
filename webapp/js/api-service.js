@@ -9,11 +9,25 @@ export class APIService {
     const isLocal = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
     this.isLocal = isLocal;
     const override = (typeof window !== 'undefined' && window.API_BASE_URL) ? String(window.API_BASE_URL) : '';
+<<<<<<< HEAD
     const useSameOrigin = !override; // usar origen siempre que no haya override
     this.useSameOrigin = useSameOrigin;
     this.baseURL = override ? override : (isLocal ? 'http://localhost:8080' : '');
     this.fallbackBaseURL = ''; // sin fallback externo
     
+=======
+
+    // FORCE CLOUD RUN URL IN PRODUCTION (Bypass Hosting Rewrites)
+    const CLOUD_RUN_URL = 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
+    this.baseURL = override ? override : (isLocal ? 'http://localhost:8001' : CLOUD_RUN_URL);
+
+    // If we have a baseURL (which we always do now), disable same-origin
+    // This allows api-service to bypass faulty local rewrites
+    const useSameOrigin = false;
+    this.useSameOrigin = useSameOrigin;
+    this.fallbackBaseURL = CLOUD_RUN_URL;
+
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
     this.token = null;
     this.headers = {
       'Content-Type': 'application/json',
@@ -79,7 +93,7 @@ export class APIService {
           try {
             const text = await response.text();
             if (text) detail = text;
-          } catch {}
+          } catch { }
         }
         if (String(detail).toLowerCase().includes('app check') || String(detail).toLowerCase().includes('x-firebase-appcheck')) {
           console.warn('App Check enforcement detected on backend:', detail);
@@ -95,13 +109,37 @@ export class APIService {
     } catch (error) {
       const ep = endpoint || '';
       const isNoise = ep === '/health' || ep.includes('/auth/status');
-      
+
       // Manejar específicamente errores de CORS y conexión
       if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+<<<<<<< HEAD
+=======
+        if (this.useSameOrigin && this.fallbackBaseURL) {
+          try {
+            const fallbackUrl = `${this.fallbackBaseURL}${endpoint}`;
+            const resp = await fetch(fallbackUrl, { ...config });
+            if (!resp.ok) {
+              let detail = `HTTP ${resp.status}`;
+              try {
+                const json = await resp.json();
+                detail = json.detail || detail;
+              } catch { }
+              throw new Error(detail);
+            }
+            try {
+              return await resp.json();
+            } catch {
+              return {};
+            }
+          } catch (fallbackErr) {
+            console.warn(`Fallback request failed: ${ep}`, String(fallbackErr.message || fallbackErr));
+          }
+        }
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
         console.warn(`CORS/Network error - backend not reachable: ${ep}`, error.message);
         throw new Error('Backend connection failed - CORS or network issue');
       }
-      
+
       if (isNoise) {
         console.warn(`API warning: ${ep}`, error.message || error);
       } else {
@@ -186,6 +224,60 @@ export class APIService {
   }
 
   /**
+   * Upload profile photo
+   * @param {File} file - Image file
+   * @param {string} photoType - Type of photo (avatar, gallery_1, etc.)
+   * @returns {Promise<Object>} Upload result
+   */
+  async uploadProfilePhoto(file, photoType = 'avatar') {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Construct query parameters
+    const params = new URLSearchParams({ photo_type: photoType });
+    const endpoint = `/api/upload/profile?${params.toString()}`;
+
+    if (!this.baseURL && !this.useSameOrigin) {
+      throw new Error('Backend disabled');
+    }
+
+    const url = this.useSameOrigin ? endpoint : `${this.baseURL}${endpoint}`;
+
+    // Headers (excluding Content-Type to let browser set boundary)
+    const headers = { ...this.headers };
+    delete headers['Content-Type'];
+
+    // Add App Check token if available
+    if (typeof window.getAppCheckToken === 'function') {
+      try {
+        const appCheckResult = await window.getAppCheckToken();
+        if (appCheckResult && appCheckResult.token) {
+          headers['X-Firebase-AppCheck'] = appCheckResult.token;
+        }
+      } catch (e) {
+        console.warn('Failed to get App Check token for upload:', e);
+      }
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Update user profile
    * @param {Object} profileData - Profile data
    * @returns {Promise<Object>} Updated profile
@@ -232,6 +324,22 @@ export class APIService {
   }
 
   // ============================================================================
+  // MODERATION ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Moderate message content
+   * @param {string} text - Text to moderate
+   * @returns {Promise<Object>} Moderation result { is_safe, reasons, ... }
+   */
+  async moderateMessage(text) {
+    return this.post('/api/v1/moderation/message', {
+      text: text,
+      context: 'chat'
+    });
+  }
+
+  // ============================================================================
   // RECOMMENDATIONS ENDPOINTS
   // ============================================================================
 
@@ -241,11 +349,17 @@ export class APIService {
    * @returns {Promise<Array>} User recommendations
    */
   async getRecommendations(filters = {}) {
-    return this.post('/api/v1/recommendations', {
+    const params = {
       user_id: this.getCurrentUserId(),
-      limit: 20,
-      filters: filters
-    });
+      limit: 50,
+      min_score: 0.1
+    };
+
+    if (filters.min_age) params.min_age = filters.min_age;
+    if (filters.max_age) params.max_age = filters.max_age;
+    if (filters.distance) params.max_distance = filters.distance;
+
+    return this.get('/api/v1/recommendations', params);
   }
 
   /**
@@ -299,7 +413,7 @@ export class APIService {
    */
   getCurrentUserId() {
     if (!this.token) return null;
-    
+
     try {
       // Decode JWT token to get user ID
       const payload = JSON.parse(atob(this.token.split('.')[1]));
@@ -349,9 +463,9 @@ export const apiService = new APIService();
  */
 export function handleAPIError(error, onError = null) {
   console.error('API Error:', error);
-  
+
   let message = 'Error de conexión con el servidor';
-  
+
   if (error.message.includes('Failed to fetch')) {
     message = 'No se pudo conectar con el servidor. Por favor, verifica tu conexión.';
   } else if (error.message.includes('401')) {

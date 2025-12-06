@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "C:\Users\cesar\Documents\GitHub\FZ6\FZ6\backend\app\core\config.py", line 156, in <module>
+    settings = Settings()
+               ^^^^^^^^^^
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic_settings\main.py", line 84, in __init__
+    super().__init__(
+  File "C:\Users\cesar\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings
+SECRET_KEY
+  Value error, SECRET_KEY contains forbidden value 'secret'. Generate a secure key with: python -c "import secrets; print(secrets.token_urlsafe(32))" [type=value_error, input_value='dev-secret-key-for-local...hange-in-prod-abc123xyz', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.5/v/value_error

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,8 +46,17 @@
     }
 
     @keyframes backgroundMove {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.1); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
     }
 
     /* Glassmorphism containers */
@@ -98,8 +108,15 @@
 
     /* Floating Animation */
     @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .float-animation {
@@ -125,6 +142,7 @@
     }
   </style>
 </head>
+
 <body class="relative">
 
   <!-- Loading Overlay -->
@@ -218,6 +236,46 @@
           <p id="totalRevenue" class="text-white text-3xl font-bold mb-1">0 €</p>
           <p class="text-white text-opacity-70 text-sm">Ingresos</p>
         </div>
+
+        <!-- Pending Verifications -->
+        <div class="stat-card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="bg-purple-500 bg-opacity-30 p-3 rounded-xl">
+              <i class="fas fa-id-card text-purple-300 text-2xl"></i>
+            </div>
+            <span class="text-white text-opacity-50 text-sm">Identidad</span>
+          </div>
+          <p id="pendingVerificationsCount" class="text-white text-3xl font-bold mb-1">0</p>
+          <p class="text-white text-opacity-70 text-sm">Pendientes de Revisión</p>
+        </div>
+      </div>
+
+      <!-- Pending Verifications Section -->
+      <div class="glass-container p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold flex items-center">
+            <i class="fas fa-user-check mr-3 text-purple-300"></i>
+            Verificaciones de Identidad Pendientes
+          </h2>
+          <button id="refreshVerifications"
+            class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+
+        <div id="verificationsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Verification items will be loaded here -->
+        </div>
+
+        <div id="noVerifications" class="hidden text-center py-8">
+          <i class="fas fa-check-double text-white text-opacity-50 text-5xl mb-4"></i>
+          <p class="text-white text-opacity-70">No hay verificaciones pendientes</p>
+        </div>
+
+        <div id="loadingVerifications" class="text-center py-8">
+          <i class="fas fa-spinner fa-spin text-white text-4xl"></i>
+          <p class="text-white text-opacity-70 mt-3">Cargando verificaciones...</p>
+        </div>
       </div>
 
       <!-- Charts Section -->
@@ -304,14 +362,16 @@
             Alertas de Fraude
           </h2>
           <div class="flex items-center space-x-2">
-            <select id="fraudFilter" class="bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <select id="fraudFilter"
+              class="bg-white bg-opacity-20 text-white border border-white border-opacity-30 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
               <option value="all">Todas las alertas</option>
               <option value="high">Riesgo Alto</option>
               <option value="medium">Riesgo Medio</option>
               <option value="low">Riesgo Bajo</option>
               <option value="unread">No leídas</option>
             </select>
-            <button id="refreshFraudAlerts" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition">
+            <button id="refreshFraudAlerts"
+              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition">
               <i class="fas fa-sync-alt"></i>
             </button>
           </div>
@@ -401,8 +461,112 @@
     </div>
   </div>
 
+  <!-- Verification Modal -->
+  <div id="verificationModal"
+    class="fixed inset-0 bg-black bg-opacity-90 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div class="glass-container w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6 relative">
+      <button onclick="closeVerificationModal()"
+        class="absolute top-4 right-4 text-white hover:text-red-400 text-2xl transition">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- User Info -->
+        <div class="lg:col-span-1">
+          <h3 class="text-white text-xl font-bold mb-4">Datos del Usuario</h3>
+          <div class="bg-white bg-opacity-10 rounded-xl p-6 space-y-4">
+            <div class="text-center mb-6">
+              <div id="modalUserAvatar"
+                class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 mx-auto flex items-center justify-center text-3xl font-bold text-white mb-3">
+                U
+              </div>
+              <h4 id="modalUserName" class="text-white font-bold text-lg">Usuario</h4>
+              <p id="modalUserEmail" class="text-white text-opacity-60 text-sm">email@example.com</p>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <p class="text-white text-opacity-50 text-xs uppercase">Fecha de Nacimiento</p>
+                <p id="modalUserBirth" class="text-white font-semibold">DD/MM/YYYY</p>
+              </div>
+              <div>
+                <p class="text-white text-opacity-50 text-xs uppercase">Género</p>
+                <p id="modalUserGender" class="text-white font-semibold">Género</p>
+              </div>
+              <div>
+                <p class="text-white text-opacity-50 text-xs uppercase">Registro</p>
+                <p id="modalUserJoined" class="text-white font-semibold">Fecha</p>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-white border-opacity-10 space-y-3">
+              <button id="btnApprove" onclick="approveVerification()"
+                class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold transition flex items-center justify-center">
+                <i class="fas fa-check-circle mr-2"></i> Aprobar Verificación
+              </button>
+              <button id="btnReject" onclick="rejectVerification()"
+                class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold transition flex items-center justify-center">
+                <i class="fas fa-times-circle mr-2"></i> Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="lg:col-span-2 space-y-6">
+          <h3 class="text-white text-xl font-bold mb-4">Documentos Presentados</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Front -->
+            <div class="space-y-2">
+              <p class="text-white text-sm font-semibold">Documento (Frente)</p>
+              <div
+                class="aspect-video bg-black rounded-lg overflow-hidden border border-white border-opacity-20 relative group">
+                <img id="docFront" src="" alt="Frente" class="w-full h-full object-contain">
+                <a id="linkFront" href="#" target="_blank"
+                  class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                  <i class="fas fa-expand text-white text-3xl"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- Back -->
+            <div class="space-y-2">
+              <p class="text-white text-sm font-semibold">Documento (Dorso)</p>
+              <div
+                class="aspect-video bg-black rounded-lg overflow-hidden border border-white border-opacity-20 relative group">
+                <img id="docBack" src="" alt="Dorso" class="w-full h-full object-contain">
+                <a id="linkBack" href="#" target="_blank"
+                  class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                  <i class="fas fa-expand text-white text-3xl"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- Selfie -->
+            <div class="space-y-2 md:col-span-2">
+              <p class="text-white text-sm font-semibold">Selfie con Documento</p>
+              <div
+                class="aspect-video bg-black rounded-lg overflow-hidden border border-white border-opacity-20 relative group max-w-md mx-auto">
+                <img id="docSelfie" src="" alt="Selfie" class="w-full h-full object-contain">
+                <a id="linkSelfie" href="#" target="_blank"
+                  class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                  <i class="fas fa-expand text-white text-3xl"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Error Fixes -->
+<<<<<<< HEAD
   <script type="module" src="../js/error-fixes.js"></script>
+=======
+  <script src="./js/error-fixes.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
   <!-- Firebase Scripts -->
   <script type="module">
@@ -410,7 +574,7 @@
     import '../js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from '../js/firebase-config.js';
+    import { auth, db } from '../js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
     import { loadTheme } from '../js/theme.js';
@@ -430,7 +594,7 @@
         if (!currentUserData.isAdmin && !currentUser.email.includes('admin')) {
           showToast('Acceso denegado. Solo administradores.', 'error');
           setTimeout(() => {
-            window.location.href = '/webapp/perfil.html';
+            window.location.href = '/perfil.html';
           }, 2000);
           return;
         }
@@ -462,7 +626,7 @@
           showToast('Error al activar membresía', 'error');
         }
       } else {
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       }
     });
 
@@ -496,6 +660,9 @@
 
         // Load recent activity
         await loadRecentActivity();
+
+        // Load pending verifications
+        await loadPendingVerifications();
 
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -861,8 +1028,8 @@
                       <p class="text-white text-opacity-80 text-xs font-semibold">Indicadores detectados:</p>
                       <div class="flex flex-wrap gap-1">
                         ${alert.indicators.slice(0, 5).map(indicator =>
-                          `<span class="px-2 py-1 text-xs rounded bg-white bg-opacity-10 text-white">${indicator}</span>`
-                        ).join('')}
+            `<span class="px-2 py-1 text-xs rounded bg-white bg-opacity-10 text-white">${indicator}</span>`
+          ).join('')}
                         ${alert.indicators.length > 5 ? `<span class="px-2 py-1 text-xs rounded bg-white bg-opacity-10 text-white">+${alert.indicators.length - 5} más</span>` : ''}
                       </div>
                     </div>
@@ -934,7 +1101,7 @@
     }
 
     // Mark fraud alert as read
-    window.markFraudAlertAsRead = async function(alertId) {
+    window.markFraudAlertAsRead = async function (alertId) {
       try {
         await updateDoc(doc(db, 'admin_notifications', alertId), {
           read: true,
@@ -949,7 +1116,7 @@
     };
 
     // Dismiss fraud alert
-    window.dismissFraudAlert = async function(alertId) {
+    window.dismissFraudAlert = async function (alertId) {
       if (!confirm('¿Descartar esta alerta de fraude?')) return;
 
       try {
@@ -966,8 +1133,8 @@
     };
 
     // View user details
-    window.viewUserDetails = function(userId) {
-      window.open(`/webapp/admin/user-detail.html?userId=${userId}`, '_blank');
+    window.viewUserDetails = function (userId) {
+      window.open(`/admin/user-detail.html?userId=${userId}`, '_blank');
     };
 
     // Fraud filter change handler
@@ -1008,7 +1175,7 @@
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try {
         await signOut(auth);
-        window.location.href = '/webapp/login.html';
+        window.location.href = '/login.html';
       } catch (error) {
         console.error('Error signing out:', error);
         showToast('Error al cerrar sesión', 'error');
@@ -1035,7 +1202,235 @@
         toast.classList.add('hidden');
       }, 4000);
     }
-  </script>
 
+    // ==========================================
+    // VERIFICATION LOGIC
+    // ==========================================
+
+    let currentVerificationUserId = null;
+
+    async function loadPendingVerifications() {
+      try {
+        const verificationsList = document.getElementById('verificationsList');
+        const noVerifications = document.getElementById('noVerifications');
+        const loadingVerifications = document.getElementById('loadingVerifications');
+        const countElement = document.getElementById('pendingVerificationsCount');
+
+        loadingVerifications.classList.remove('hidden');
+        verificationsList.innerHTML = '';
+        noVerifications.classList.add('hidden');
+
+        // Query users with pending verification
+        const q = query(
+          collection(db, 'users'),
+          where('verificationStatus', '==', 'pending'),
+          orderBy('verificationDocuments.submittedAt', 'asc'),
+          limit(20)
+        );
+
+        const snapshot = await getDocs(q);
+
+        loadingVerifications.classList.add('hidden');
+        countElement.textContent = snapshot.size;
+
+        if (snapshot.empty) {
+          noVerifications.classList.remove('hidden');
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const user = doc.data();
+          const submittedAt = user.verificationDocuments?.submittedAt?.toDate();
+          const timeAgo = submittedAt ? getTimeAgo(submittedAt) : 'Desconocido';
+
+          const card = document.createElement('div');
+          card.className = 'glass-container p-6 hover:bg-white hover:bg-opacity-5 transition';
+          card.innerHTML = `
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+                ${(user.alias || user.email || 'U')[0].toUpperCase()}
+              </div>
+              <div>
+                <h4 class="text-white font-bold">${user.alias || 'Usuario'}</h4>
+                <p class="text-white text-opacity-60 text-sm">${user.email}</p>
+              </div>
+            </div>
+            
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-white text-opacity-50">Enviado:</span>
+                <span class="text-white font-medium">${timeAgo}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-white text-opacity-50">Género:</span>
+                <span class="text-white font-medium capitalize">${user.gender || 'N/A'}</span>
+              </div>
+            </div>
+
+            <button onclick="openVerificationModal('${doc.id}')" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold transition">
+              <i class="fas fa-eye mr-2"></i> Revisar
+            </button>
+          `;
+          verificationsList.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error('Error loading verifications:', error);
+        document.getElementById('loadingVerifications').classList.add('hidden');
+
+        if (error.message.includes('index')) {
+          // Show helpful message for missing index
+          const verificationsList = document.getElementById('verificationsList');
+          verificationsList.innerHTML = `
+            <div class="col-span-full text-center py-8 bg-yellow-500 bg-opacity-20 rounded-lg">
+              <i class="fas fa-database text-yellow-300 text-4xl mb-3"></i>
+              <p class="text-white font-semibold mb-2">Índice requerido no encontrado</p>
+              <p class="text-white text-opacity-70 text-sm">
+                Necesitas crear el índice compuesto en Firestore:<br>
+                Colección: users | Campos: verificationStatus (asc), verificationDocuments.submittedAt (asc)
+              </p>
+            </div>
+          `;
+        } else {
+          showToast('Error al cargar verificaciones', 'error');
+        }
+      }
+    }
+
+    window.openVerificationModal = async function (userId) {
+      try {
+        currentVerificationUserId = userId;
+        const modal = document.getElementById('verificationModal');
+
+        // Show loading state in modal
+        // (Simplified for brevity, just showing modal)
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (!userDoc.exists()) {
+          showToast('Usuario no encontrado', 'error');
+          closeVerificationModal();
+          return;
+        }
+
+        const user = userDoc.data();
+        const docs = user.verificationDocuments || {};
+
+        // Populate User Info
+        document.getElementById('modalUserAvatar').textContent = (user.alias || user.email || 'U')[0].toUpperCase();
+        document.getElementById('modalUserName').textContent = user.alias || 'Usuario sin nombre';
+        document.getElementById('modalUserEmail').textContent = user.email;
+        document.getElementById('modalUserBirth').textContent = user.birthDate || 'No especificada';
+        document.getElementById('modalUserGender').textContent = user.gender || 'No especificado';
+        document.getElementById('modalUserJoined').textContent = user.createdAt?.toDate().toLocaleDateString() || 'Desconocido';
+
+        // Populate Images
+        const setImg = (id, linkId, url) => {
+          const img = document.getElementById(id);
+          const link = document.getElementById(linkId);
+          if (url) {
+            img.src = url;
+            link.href = url;
+            img.parentElement.classList.remove('hidden');
+          } else {
+            img.src = ''; // Placeholder could go here
+            img.parentElement.classList.add('hidden');
+          }
+        };
+
+        setImg('docFront', 'linkFront', docs.front);
+        setImg('docBack', 'linkBack', docs.back);
+        setImg('docSelfie', 'linkSelfie', docs.selfie);
+
+      } catch (error) {
+        console.error('Error opening verification modal:', error);
+        showToast('Error al abrir detalles', 'error');
+      }
+    };
+
+    window.closeVerificationModal = function () {
+      document.getElementById('verificationModal').classList.add('hidden');
+      document.getElementById('verificationModal').classList.remove('flex');
+      currentVerificationUserId = null;
+    };
+
+    window.approveVerification = async function () {
+      if (!currentVerificationUserId) return;
+      if (!confirm('¿Estás seguro de APROBAR esta verificación? El usuario tendrá acceso verificado.')) return;
+
+      try {
+        const btn = document.getElementById('btnApprove');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        btn.disabled = true;
+
+        await updateDoc(doc(db, 'users', currentVerificationUserId), {
+          verificationStatus: 'verified',
+          isVerified: true,
+          verifiedAt: serverTimestamp(),
+          'verificationDocuments.reviewedBy': currentUser.uid,
+          'verificationDocuments.reviewedAt': serverTimestamp()
+        });
+
+        showToast('Usuario verificado exitosamente', 'success');
+        closeVerificationModal();
+        loadPendingVerifications(); // Refresh list
+
+        // Restore button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+      } catch (error) {
+        console.error('Error approving verification:', error);
+        showToast('Error al aprobar verificación', 'error');
+        document.getElementById('btnApprove').disabled = false;
+        document.getElementById('btnApprove').innerHTML = '<i class="fas fa-check-circle mr-2"></i> Aprobar Verificación';
+      }
+    };
+
+    window.rejectVerification = async function () {
+      if (!currentVerificationUserId) return;
+      const reason = prompt('Por favor ingresa la razón del rechazo (se enviará al usuario):');
+      if (reason === null) return; // Cancelled
+
+      try {
+        const btn = document.getElementById('btnReject');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        btn.disabled = true;
+
+        await updateDoc(doc(db, 'users', currentVerificationUserId), {
+          verificationStatus: 'rejected',
+          isVerified: false,
+          verificationRejectionReason: reason,
+          'verificationDocuments.reviewedBy': currentUser.uid,
+          'verificationDocuments.reviewedAt': serverTimestamp()
+        });
+
+        showToast('Verificación rechazada', 'success');
+        closeVerificationModal();
+        loadPendingVerifications(); // Refresh list
+
+        // Restore button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+      } catch (error) {
+        console.error('Error rejecting verification:', error);
+        showToast('Error al rechazar verificación', 'error');
+        document.getElementById('btnReject').disabled = false;
+        document.getElementById('btnReject').innerHTML = '<i class="fas fa-times-circle mr-2"></i> Rechazar';
+      }
+    };
+
+    // Refresh button handler
+    document.getElementById('refreshVerifications')?.addEventListener('click', () => {
+      loadPendingVerifications();
+      showToast('Lista actualizada', 'success');
+    });
+
+  </script>
 </body>
+
 </html>

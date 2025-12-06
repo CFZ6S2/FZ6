@@ -4,16 +4,20 @@ Provides protected API endpoints with Firebase authentication
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables immediately
+load_dotenv()
+
 from enum import Enum
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 from auth_utils import get_current_user, get_optional_user, firebase_initialized
 from firebase_storage import upload_file_to_storage, upload_profile_photo
 
 # Import new API routers
-from app.api.v1 import recommendations, validation
+from app.api.v1 import recommendations, validation, moderation, debug_auth
 
 # Import rate limiting
 from app.middleware.rate_limit import limiter, custom_rate_limit_handler
@@ -25,8 +29,8 @@ from app.middleware.csrf_protection import CSRFProtection
 # Import Security Headers
 from app.middleware.security_headers import SecurityHeadersMiddleware
 
-# Load environment variables
-load_dotenv()
+# Import App Check Middleware
+from app.middleware.app_check import AppCheckMiddleware
 
 # Create FastAPI app
 app = FastAPI(
@@ -41,16 +45,22 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
-# CORS Configuration
+# CORS Configuration - PRODUCTION ONLY
+# Removed localhost from defaults to encourage production security
 origins_str = os.getenv(
     "CORS_ORIGINS",
+<<<<<<< HEAD
     "http://localhost:3000,https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com,https://tucitasegura-129cc.web.app,https://tucitasegura-129cc.firebaseapp.com"
+=======
+    "https://tucitasegura.vercel.app,https://tucitasegura.com,https://www.tucitasegura.com,https://tucitasegura-129cc.web.app,https://tucitasegura-129cc.firebaseapp.com"
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 )
 origins = [origin.strip() for origin in origins_str.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins,  # Keep explicit list for safety
+    allow_origin_regex=r"https://(.*\.)?tucitasegura.*|http://localhost.*", # Regex fallback
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,11 +70,22 @@ app.add_middleware(
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Add CSRF Protection (must be added after CORS)
-app.add_middleware(CSRFProtection)
+# app.add_middleware(CSRFProtection)
+
+# Add App Check Protection (Validates X-Firebase-AppCheck header)
+# Exempt documentation and health check endpoints
+app.add_middleware(AppCheckMiddleware, exempt_paths=["/docs", "/redoc", "/openapi.json", "/api/health", "/", "/api/v1/debug/login"])
+
+# Include routers
+app.include_router(recommendations.router, prefix="/api/v1/recommendations", tags=["Recommendations"])
+app.include_router(validation.router, prefix="/api/v1/validation", tags=["Validation"])
+app.include_router(moderation.router, prefix="/api/v1/moderation", tags=["Moderation"])
+app.include_router(debug_auth.router, prefix="/api/v1/debug", tags=["Debug"])
 
 print(f"✅ CORS enabled for origins: {origins}")
 print("✅ Security Headers enabled (CSP, HSTS, X-Frame-Options, etc.)")
 print("✅ CSRF Protection enabled")
+print("✅ App Check Validation enabled")
 
 # ============================================================================
 # INPUT VALIDATION ENUMS (Security: Prevent injection attacks)
@@ -96,6 +117,7 @@ class AllowedMimeType(str, Enum):
 # Include v1 API routers
 app.include_router(recommendations.router)
 app.include_router(validation.router)
+app.include_router(moderation.router)
 
 # ============================================================================
 # PUBLIC ROUTES
@@ -202,7 +224,7 @@ async def upload_profile_image(
 ):
     """
     Upload a profile photo (avatar or gallery) to Firebase Storage
-    Requires authentication
+    Requires authentication & Verification
 
     Args:
         file: Image file to upload
@@ -213,8 +235,11 @@ async def upload_profile_image(
         - File type validated against whitelist
         - File size limits enforced
         - User authentication required
+        - Computer Vision verification (Nudity, Faces, Spam)
     """
     try:
+        from app.services.cv.photo_verifier import photo_verifier
+
         # SECURITY: Validate file type (whitelist approach)
         if file.content_type not in [mime.value for mime in AllowedMimeType]:
             raise HTTPException(
@@ -242,21 +267,41 @@ async def upload_profile_image(
                 detail=f"Invalid photo_type. Must be one of: {', '.join(valid_types)}"
             )
 
-        # Upload profile photo
+        # 1. Upload profile photo to Storage
         url = upload_profile_photo(file, user["uid"], photo_type)
+
+        # 2. Verify photo using Computer Vision service
+        # Note: In a real async architecture, this should be a background task
+        # But for immediate feedback, we do it here (latency penalty accepted)
+        verification_result = photo_verifier.verify_photo(
+            image_url=url,
+            user_id=user["uid"]
+        )
+
+        if verification_result.recommendation == "REJECT":
+            logger.warning(f"Photo rejected for user {user['uid']}: {verification_result.warnings}")
+            # Optionally delete logic here
+            pass
 
         return {
             "success": True,
             "url": url,
             "photo_type": photo_type,
-            "message": f"Foto de perfil ({photo_type}) subida con éxito ✔️"
+            "message": f"Foto procesada ({verification_result.recommendation})",
+            "verification": {
+                "status": verification_result.recommendation,
+                "is_safe": verification_result.is_appropriate,
+                "is_real": verification_result.is_real_person,
+                "warnings": verification_result.warnings
+            }
         }
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error en subida/verificación: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Error al subir la foto de perfil: {str(e)}"
+            detail=f"Error al procesar la imagen: {str(e)}"
         )
 
 

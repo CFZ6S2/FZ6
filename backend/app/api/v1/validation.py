@@ -344,3 +344,61 @@ async def validate_batch(data: dict):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+class RecaptchaValidation(BaseModel):
+    token: str
+    action: Optional[str] = "LOGIN"
+
+
+@router.post("/recaptcha")
+async def verify_recaptcha_endpoint(data: RecaptchaValidation):
+    """
+    Verifies a reCAPTCHA token using Google reCAPTCHA Enterprise.
+    Returns the score and validation status.
+    """
+    try:
+        from app.services.security.recaptcha_service import recaptcha_service
+        
+        result = await recaptcha_service.verify_recaptcha(
+            token=data.token,
+            action=data.action
+        )
+        
+        if not result.get("success"):
+            logger.warning(f"reCAPTCHA rejected: {result}")
+            return JSONResponse(status_code=400, content=result)
+            
+        return result
+        
+    except Exception as e:
+        logger.error(f"reCAPTCHA endpoint error: {e}")
+        raise HTTPException(status_code=500, detail="Error verifying reCAPTCHA")
+
+
+class RecaptchaAnnotation(BaseModel):
+    assessment_name: str
+    annotation: str  # LEGITIMATE or FRAUDULENT
+
+
+@router.post("/recaptcha/annotation")
+async def annotate_recaptcha_endpoint(data: RecaptchaAnnotation):
+    """
+    Annotates a reCAPTCHA assessment to provide feedback to Google.
+    """
+    try:
+        from app.services.security.recaptcha_service import recaptcha_service
+        
+        success = await recaptcha_service.annotate_assessment(
+            assessment_name=data.assessment_name,
+            annotation=data.annotation
+        )
+        
+        if not success:
+            raise HTTPException(status_code=400, detail="Failed to annotate assessment")
+            
+        return {"success": True, "message": "Annotation submitted successfully"}
+        
+    except Exception as e:
+        logger.error(f"reCAPTCHA annotation error: {e}")
+        raise HTTPException(status_code=500, detail="Error submitting annotation")

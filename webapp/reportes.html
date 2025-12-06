@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,13 +29,17 @@
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
 
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
 
+<<<<<<< HEAD
     <script type="module" src="./js/sanitizer.js"></script>
+=======
+  <script src="./js/sanitizer.js"></script>
+>>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 
 
 
@@ -55,37 +60,97 @@
   </script>
 
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, #0F172A 0%, #1e3a8a 100%); }
-    .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
-    .gradient-text { background: linear-gradient(135deg, #f87171, #ef4444, #b91c1c); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2); transition:all 0.3s ease; }
-    .btn-danger:hover { transform: translateY(-2px); }
-    .form-label { font-weight: 600; margin-bottom: 0.5rem; display: block; }
-    .form-select, .form-textarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; background: rgba(255,255,255,0.05); color:white; }
-    .form-select:focus, .form-textarea:focus { outline: none; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2); }
-    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23f87171' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
-    .form-select option { background-color: #0F172A; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0F172A 0%, #1e3a8a 100%);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #f87171, #ef4444, #b91c1c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+    }
+
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23f87171' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem;
+    }
+
+    .form-select option {
+      background-color: #0F172A;
+    }
   </style>
 </head>
+
 <body class="text-white min-h-screen">
 
   <!-- Loading Overlay -->
   <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-xl font-semibold">Cargando...</p>
     </div>
   </div>
 
   <!-- Success Modal -->
-  <div id="successModal" class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+  <div id="successModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
     <div class="glass rounded-2xl max-w-md w-full p-8 text-center">
       <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
         <i class="fas fa-check-circle text-5xl text-green-400"></i>
       </div>
       <h3 class="text-3xl font-bold mb-4">Reporte Enviado</h3>
-      <p class="text-slate-200 mb-6">Nuestro equipo revisará tu reporte a la mayor brevedad. Gracias por tu colaboración.</p>
-      <button onclick="closeSuccessModal()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
+      <p class="text-slate-200 mb-6">Nuestro equipo revisará tu reporte a la mayor brevedad. Gracias por tu
+        colaboración.</p>
+      <button onclick="closeSuccessModal()"
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
         Entendido
       </button>
     </div>
@@ -103,7 +168,7 @@
   <main class="pt-24 pb-12">
     <div class="max-w-2xl mx-auto px-4">
       <div class="text-center mb-8">
-        <a href="/webapp/conversaciones.html" class="text-blue-300 hover:text-white mb-4 inline-block">
+        <a href="/conversaciones.html" class="text-blue-300 hover:text-white mb-4 inline-block">
           <i class="fa-solid fa-arrow-left mr-2"></i>Volver a Conversaciones
         </a>
         <h1 class="text-4xl md:text-5xl font-black gradient-text">Crear Reporte</h1>
@@ -179,14 +244,9 @@
               <i class="fa-solid fa-file-lines text-red-400 mr-2"></i>
               Descripción del problema
             </label>
-            <textarea
-              id="report-description"
-              rows="5"
-              class="form-textarea"
+            <textarea id="report-description" rows="5" class="form-textarea"
               placeholder="Explica detalladamente qué ha ocurrido. Aporta toda la información posible. Cuanto más específico seas, mejor podremos ayudarte."
-              required
-              minlength="20"
-            ></textarea>
+              required minlength="20"></textarea>
             <p class="text-xs text-slate-400 mt-2">
               <i class="fa-solid fa-info-circle mr-1"></i>
               Mínimo 20 caracteres. Sé específico para ayudarnos a resolver el problema.
@@ -207,11 +267,8 @@
 
           <!-- Submit Button -->
           <div class="pt-4">
-            <button
-              type="submit"
-              id="submitBtn"
-              class="btn-danger w-full py-3 rounded-lg font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <button type="submit" id="submitBtn"
+              class="btn-danger w-full py-3 rounded-lg font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
               <i class="fa-solid fa-paper-plane mr-2"></i>
               Enviar Reporte
             </button>
@@ -257,7 +314,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config.js';
+    import { auth, db } from './js/firebase-config-env.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
       collection,
@@ -536,12 +593,13 @@
     }
 
     // Close success modal
-    window.closeSuccessModal = function() {
+    window.closeSuccessModal = function () {
       document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
-      window.location.href = '/webapp/conversaciones.html';
+      window.location.href = '/conversaciones.html';
     };
 
   </script>
 
 </body>
+
 </html>

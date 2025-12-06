@@ -1,0 +1,7 @@
+{
+  "customToken": "eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCIsICJraWQiOiAiNzExZTJlNWEwMjdhMmRkNzJkMjM2ODU4ZWQ4MDI1YjU4OTY0ODdiYSJ9.eyJpc3MiOiAiZmlyZWJhc2UtYWRtaW5zZGstZmJzdmNAdHVzY2l0YXNzZWd1cmFzLTJkMWE2LmlhbS5nc2VydmljZWFjY291bnQuY29tIiwgInN1YiI6ICJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0B0dXNjaXRhc3NlZ3VyYXMtMmQxYTYuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCAiYXVkIjogImh0dHBzOi8vaWRlbnRpdHl0b29sa2l0Lmdvb2dsZWFwaXMuY29tL2dvb2dsZS5pZGVudGl0eS5pZGVudGl0eXRvb2xraXQudjEuSWRlbnRpdHlUb29sa2l0IiwgInVpZCI6ICJ3amw5RDd5OVRMWEFNUWo0MUdxRUp3VUxjeFYyIiwgImlhdCI6IDE3NjQ5NTE3NzksICJleHAiOiAxNzY0OTU1Mzc5fQ.Y9aQKkQSFcl3ovXwjYn_XdyOk2n76bkH16yDSKknzTRVxGMhV0wsk07mSiUpLwtWs0_SmJII0dePGxAbsAqF26aPXN9oLg2FDyzx0GB2CrsVPhwYtTTHYjXWGItburjgH0AdgqyOphQClopgtGXFzqx0jjCc_NOG_gEYiBg38zkiLZ0dnLuIPNCATi0UQIQfTjE_Mn2zi66JyN5BHjoR0B7J0z49QJsYJ0jEPVwj2VhIcY0awD3Se8jsWI7gvaKWoGoyTGHYUFVoRsVRVih93kqyp279GD53ZfxJVt7x1udF93cCowQWllIDRRZwacHg3Qc_5h-AQJRCmCV1JRJzqQ",
+  "uid": "wjl9D7y9TLXAMQj41GqEJwULcxV2",
+  "email": "prueba@tucitasegura.com",
+  "exchangeError": "{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"CREDENTIAL_MISMATCH\",\n    \"errors\": [\n      {\n        \"message\": \"CREDENTIAL_MISMATCH\",\n        \"domain\": \"global\",\n        \"reason\": \"invalid\"\n      }\n    ]\n  }\n}\n",
+  "message": "Exchange failed (400). Use signInWithCustomToken()."
+}

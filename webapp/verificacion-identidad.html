@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,8 +85,17 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.05); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+      }
     }
 
     .preview-image {
@@ -94,6 +104,7 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
   <!-- Header -->
@@ -127,7 +138,8 @@
         <!-- Step 1 -->
         <div id="step1" class="step active">
           <div class="flex items-start gap-4">
-            <div class="step-number flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg">
               1
             </div>
             <div class="flex-1">
@@ -143,7 +155,8 @@
         <!-- Step 2 -->
         <div id="step2" class="step">
           <div class="flex items-start gap-4">
-            <div class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
               2
             </div>
             <div class="flex-1">
@@ -159,7 +172,8 @@
         <!-- Step 3 -->
         <div id="step3" class="step">
           <div class="flex items-start gap-4">
-            <div class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
+            <div
+              class="step-number flex-shrink-0 w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center font-bold text-lg">
               3
             </div>
             <div class="flex-1">
@@ -200,9 +214,8 @@
         <!-- Front -->
         <div>
           <label class="block text-sm font-semibold mb-2">Cara Frontal *</label>
-          <div class="upload-area rounded-xl p-8 text-center cursor-pointer"
-               id="uploadFrontArea"
-               onclick="document.getElementById('frontInput').click()">
+          <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadFrontArea"
+            onclick="document.getElementById('frontInput').click()">
             <div id="frontPreview" class="hidden">
               <img id="frontImage" class="preview-image mx-auto rounded-lg mb-3">
               <button onclick="removeFront(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
@@ -215,15 +228,15 @@
               <p class="text-sm text-slate-300">o arrastra aquí</p>
             </div>
           </div>
-          <input type="file" id="frontInput" class="hidden" accept="image/*,application/pdf" onchange="handleFrontUpload(event)">
+          <input type="file" id="frontInput" class="hidden" accept="image/*,application/pdf"
+            onchange="handleFrontUpload(event)">
         </div>
 
         <!-- Back -->
         <div>
           <label class="block text-sm font-semibold mb-2">Cara Posterior *</label>
-          <div class="upload-area rounded-xl p-8 text-center cursor-pointer"
-               id="uploadBackArea"
-               onclick="document.getElementById('backInput').click()">
+          <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadBackArea"
+            onclick="document.getElementById('backInput').click()">
             <div id="backPreview" class="hidden">
               <img id="backImage" class="preview-image mx-auto rounded-lg mb-3">
               <button onclick="removeBack(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
@@ -236,13 +249,14 @@
               <p class="text-sm text-slate-300">o arrastra aquí</p>
             </div>
           </div>
-          <input type="file" id="backInput" class="hidden" accept="image/*,application/pdf" onchange="handleBackUpload(event)">
+          <input type="file" id="backInput" class="hidden" accept="image/*,application/pdf"
+            onchange="handleBackUpload(event)">
         </div>
       </div>
 
       <button id="continueToSelfieBtn" onclick="continueToSelfie()"
-              class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
-              disabled>
+        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
+        disabled>
         Continuar al Paso 2
         <i class="fas fa-arrow-right ml-2"></i>
       </button>
@@ -271,9 +285,8 @@
 
       <!-- Camera / Upload -->
       <div class="mb-6">
-        <div class="upload-area rounded-xl p-8 text-center cursor-pointer"
-             id="uploadSelfieArea"
-             onclick="document.getElementById('selfieInput').click()">
+        <div class="upload-area rounded-xl p-8 text-center cursor-pointer" id="uploadSelfieArea"
+          onclick="document.getElementById('selfieInput').click()">
           <div id="selfiePreview" class="hidden">
             <img id="selfieImage" class="preview-image mx-auto rounded-lg mb-3">
             <button onclick="removeSelfie(event)" class="glass hover:bg-red-500/50 px-4 py-2 rounded-lg text-sm">
@@ -286,12 +299,13 @@
             <p class="text-sm text-slate-300">Usa la cámara o selecciona archivo</p>
           </div>
         </div>
-        <input type="file" id="selfieInput" class="hidden" accept="image/*" capture="user" onchange="handleSelfieUpload(event)">
+        <input type="file" id="selfieInput" class="hidden" accept="image/*" capture="user"
+          onchange="handleSelfieUpload(event)">
       </div>
 
       <button id="submitVerificationBtn" onclick="submitVerification()"
-              class="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
-              disabled>
+        class="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 px-6 py-3 rounded-lg font-semibold transition opacity-50 cursor-not-allowed"
+        disabled>
         <i class="fas fa-paper-plane mr-2"></i>
         Enviar para Verificación
       </button>
@@ -318,24 +332,26 @@
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
   <!-- Loading Modal -->
-  <div id="loadingModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50" style="backdrop-filter: blur(10px);">
+  <div id="loadingModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    style="backdrop-filter: blur(10px);">
     <div class="glass rounded-2xl p-8 text-center">
-      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4"></div>
+      <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mb-4">
+      </div>
       <p class="text-lg font-semibold">Subiendo documentos...</p>
       <p class="text-sm text-slate-300 mt-2">Por favor espera</p>
     </div>
   </div>
 
   <!-- Firebase SDK -->
-    <!-- DOMPurify for XSS Protection -->
+  <!-- DOMPurify for XSS Protection -->
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-    <script type="module" src="./js/sanitizer.js"></script>
+  <script type="module" src="./js/sanitizer.js"></script>
 
 
   <script type="module">
-    import { auth, db, storage } from './js/firebase-config.js';
+    import { auth, db, storage } from './js/firebase-config-env.js';
     import {
       doc,
       getDoc,
@@ -435,7 +451,7 @@
     // HANDLE UPLOADS
     // ==========================================================================
 
-    window.handleFrontUpload = function(event) {
+    window.handleFrontUpload = function (event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -472,7 +488,7 @@
       checkDocumentStepComplete();
     };
 
-    window.handleBackUpload = function(event) {
+    window.handleBackUpload = function (event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -506,7 +522,7 @@
       checkDocumentStepComplete();
     };
 
-    window.handleSelfieUpload = function(event) {
+    window.handleSelfieUpload = function (event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -538,7 +554,7 @@
     // REMOVE FILES
     // ==========================================================================
 
-    window.removeFront = function(event) {
+    window.removeFront = function (event) {
       event.stopPropagation();
       frontFile = null;
       document.getElementById('frontPreview').classList.add('hidden');
@@ -547,7 +563,7 @@
       checkDocumentStepComplete();
     };
 
-    window.removeBack = function(event) {
+    window.removeBack = function (event) {
       event.stopPropagation();
       backFile = null;
       document.getElementById('backPreview').classList.add('hidden');
@@ -556,7 +572,7 @@
       checkDocumentStepComplete();
     };
 
-    window.removeSelfie = function(event) {
+    window.removeSelfie = function (event) {
       event.stopPropagation();
       selfieFile = null;
       document.getElementById('selfiePreview').classList.add('hidden');
@@ -595,7 +611,7 @@
     // CONTINUE TO SELFIE
     // ==========================================================================
 
-    window.continueToSelfie = function() {
+    window.continueToSelfie = function () {
       // Mark step 1 complete
       document.getElementById('step1').classList.remove('active');
       document.getElementById('step1').classList.add('completed');
@@ -615,7 +631,7 @@
     // SUBMIT VERIFICATION
     // ==========================================================================
 
-    window.submitVerification = async function() {
+    window.submitVerification = async function () {
       const modal = document.getElementById('loadingModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -680,4 +696,5 @@
   </script>
 
 </body>
+
 </html>

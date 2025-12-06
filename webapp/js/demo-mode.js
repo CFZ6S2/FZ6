@@ -72,12 +72,12 @@ export function initDemoModeUI() {
             </div>
         `;
         document.body.appendChild(banner);
-        
+
         // Add margin to prevent content overlap
         document.body.style.marginTop = '40px';
-        
+
         // Add exit function to window
-        window.exitDemoMode = function() {
+        window.exitDemoMode = function () {
             if (confirm('¿Salir del modo demo?')) {
                 clearDemoMode();
                 window.location.href = '/webapp/login.html';
@@ -93,7 +93,7 @@ export function initDemoModeUI() {
 export function getDemoAuthState() {
     const demoUser = getDemoUser();
     if (!demoUser) return null;
-    
+
     return {
         uid: demoUser.uid,
         email: demoUser.email,
@@ -145,5 +145,12 @@ export function initializeDemoMode() {
 
 // Auto-initialize on script load
 if (typeof window !== 'undefined') {
+    // FORCE CLEAR DEMO MODE (User request: "no quiero modo demo")
+    if (localStorage.getItem('isDemoMode') === 'true') {
+        console.log('🧹 Limpiando Modo Demo obsoletar automáticamente...');
+        localStorage.removeItem('isDemoMode');
+        localStorage.removeItem('demoUser');
+        localStorage.removeItem('demoToken');
+    }
     document.addEventListener('DOMContentLoaded', initializeDemoMode);
 }

@@ -6,9 +6,13 @@ pydantic==2.5.3
 pydantic-settings==2.2.1
 email-validator==2.1.0.post1
 python-multipart==0.0.6
+pydantic-settings==2.1.0
+email-validator>=2.0.0
+bleach>=6.0.0
 
 # Firebase & Database
 firebase-admin==6.4.0
+google-cloud-recaptcha-enterprise==1.25.0
 
 # Machine Learning & Data Science
 numpy==1.26.3
@@ -16,7 +20,7 @@ pandas==2.1.4
 scikit-learn==1.4.0
 
 # Computer Vision
-opencv-python==4.9.0.80
+opencv-python-headless==4.9.0.80
 Pillow==10.2.0
 
 # HTTP & Networking
