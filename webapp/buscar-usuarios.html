@@ -747,54 +747,9 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        window.checkDemoAuth = function () {
-        if (isDemoMode()) {
-        const demoUser = getDemoUser();
-        if (demoUser) {
-        // Simulate authenticated user
-        return {
-        uid: demoUser.uid,
-        email: demoUser.email,
-        emailVerified: true,
-        isDemo: true
-        };
-        }
-        }
-        return null;
-        };
-
-        // Override email verification check for demo
-        window.checkDemoEmailVerified = function () {
-        if (isDemoMode()) {
-        return true; // Demo users are always "verified"
-        }
-        return null;
-        };
-        </script>
-
 
         <script type="module">
-          async function loadGoogleMaps() {
-            try {
-              const { GOOGLE_MAPS_API_KEY } = await import('./js/google-maps-config.js');
-              if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-                console.error('⚠️ Configure Google Maps API Key in /webapp/js/google-maps-config.js');
-                return false;
-              }
-              await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&language=es&region=ES`;
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = () => reject(new Error('Google Maps failed to load'));
-                document.head.appendChild(script);
-              });
-              return true;
-            } catch (e) {
-              console.error('Error loading Google Maps API:', e);
-              return false;
-            }
-          }
+
 
           // Import App Check FIRST (must be before firebase-config.js)
           import './js/firebase-appcheck.js';
@@ -838,6 +793,29 @@
             if (message && message.includes('Google Maps')) return true;
             return false;
           };
+
+          // Verificar perfil completo ANTES de cargar la página
+          async function loadGoogleMaps() {
+            try {
+              const { GOOGLE_MAPS_API_KEY } = await import('./js/google-maps-config.js');
+              if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+                console.error('⚠️ Configure Google Maps API Key in /webapp/js/google-maps-config.js');
+                return false;
+              }
+              await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&language=es&region=ES`;
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Google Maps failed to load'));
+                document.head.appendChild(script);
+              });
+              return true;
+            } catch (e) {
+              console.error('Error loading Google Maps API:', e);
+              return false;
+            }
+          }
 
           // Verificar perfil completo ANTES de cargar la página
           await guardPage({
