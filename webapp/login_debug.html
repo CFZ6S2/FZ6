@@ -220,8 +220,8 @@
       setPersistence,
       browserSessionPersistence,
       browserLocalPersistence
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    } from 'firebase/auth';
+    import { doc, getDoc } from 'firebase/firestore';
 
     // Check if already logged in
     auth.onAuthStateChanged((user) => {
@@ -398,7 +398,7 @@
             console.log('⚠️ Got Custom Token only. Attempting SDK signin (may fail)...');
             alert('⚠️ Partial success. Attempting to complete login...');
 
-            const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            const { signInWithCustomToken } = await import('firebase/auth');
             const userCredential = await signInWithCustomToken(auth, data.customToken);
             var user = userCredential.user;
             console.log('✅ Authenticated with Custom Token via Backend Proxy');

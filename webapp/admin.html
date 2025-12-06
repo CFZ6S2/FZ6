@@ -229,8 +229,8 @@
     <script type="module">
         import './js/firebase-appcheck.js';
         import { auth, db } from './js/firebase-config-env.js';
-        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-        import { collection, getDocs, doc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { onAuthStateChanged, signOut } from 'firebase/auth';
+        import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
 
         let allUsers = [];
         let filteredUsers = [];
@@ -269,7 +269,9 @@
         async function loadData() {
             try {
                 // Get all users
-                const usersSnapshot = await getDocs(collection(db, 'users'));
+                // Get recent users (limited for performance)
+                const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(50));
+                const usersSnapshot = await getDocs(q);
                 allUsers = [];
 
                 usersSnapshot.forEach((doc) => {

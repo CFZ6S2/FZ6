@@ -90,3 +90,5 @@ backend/error_output.txt
 *.log
 **/*.log
 
+backend/.env.railway
+backend/crash_logs.json

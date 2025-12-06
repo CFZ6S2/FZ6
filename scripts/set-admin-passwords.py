@@ -8,7 +8,9 @@ from firebase_admin import credentials, auth
 import sys
 
 # Contraseña temporal segura para todos los admins
-TEMP_PASSWORD = "AdminTuCita2025!Seguro"
+import os
+# Contraseña obtenida de variable de entorno o input seguro
+TEMP_PASSWORD = os.getenv("ADMIN_TEMP_PASSWORD") or input("Ingresa la contraseña temporal para admins: ")
 
 # Lista de administradores
 ADMINS = [

@@ -50,9 +50,17 @@ export function setupGlobalErrorHandling() {
   window.onunhandledrejection = handleUnhandledRejection;
 
   // Reset error counter periodically
-  setInterval(() => {
+  // Store interval ID for cleanup
+  errorTracker.resetIntervalId = setInterval(() => {
     errorTracker.count = 0;
   }, errorTracker.resetInterval);
+
+  // Add cleanup method to window for teardown
+  window.__cleanupErrorHandler = () => {
+    if (errorTracker.resetIntervalId) {
+      clearInterval(errorTracker.resetIntervalId);
+    }
+  };
 
   isSetup = true;
   logger.info('Global error handling setup complete');

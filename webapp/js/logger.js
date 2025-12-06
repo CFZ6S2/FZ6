@@ -27,11 +27,13 @@ function isDevelopment() {
   // 2. 127.0.0.1
   // 3. .local domain
   // 4. URL parameter ?debug=true
+  if (typeof window === 'undefined') return false; // Non-browser env
+
   const hostname = window.location.hostname;
   const isDev = hostname === 'localhost' ||
-                hostname === '127.0.0.1' ||
-                hostname.endsWith('.local') ||
-                new URLSearchParams(window.location.search).get('debug') === 'true';
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.local') ||
+    new URLSearchParams(window.location.search).get('debug') === 'true';
 
   return isDev;
 }
@@ -185,7 +187,7 @@ export class StructuredLogger {
         component: this.component,
         ...context
       });
-      console.log(JSON.stringify(entry));
+      console.debug(JSON.stringify(entry));
     }
   }
 
@@ -197,7 +199,7 @@ export class StructuredLogger {
       component: this.component,
       ...context
     });
-    console.log(JSON.stringify(entry));
+    console.info(JSON.stringify(entry));
   }
 
   /**
@@ -408,7 +410,7 @@ export const logger = {
       const sanitized = args.map(arg =>
         typeof arg === 'object' ? sanitizeObject(arg) : arg
       );
-      console.log('[DEBUG]', ...sanitized);
+      console.debug('[DEBUG]', ...sanitized);
     }
   },
 
@@ -422,6 +424,7 @@ export const logger = {
   },
 
   warn(...args) {
+    // Warnings are kept in production but sanitized
     const sanitized = args.map(arg =>
       typeof arg === 'object' ? sanitizeObject(arg) : arg
     );
@@ -429,6 +432,7 @@ export const logger = {
   },
 
   error(...args) {
+    // Errors are always kept
     const sanitized = args.map(arg => {
       if (arg instanceof Error) {
         return {
@@ -475,6 +479,24 @@ export const logger = {
     }
   }
 };
+
+/**
+ * Override global console methods in PRODUCTION to silence noise
+ * This prevents data leaks via console.log in user browsers
+ */
+(function silencerConfig() {
+  if (typeof window !== 'undefined' && !isDevelopment()) {
+    const noop = () => { };
+    // Silence log, info, debug, time, timeEnd, table
+    window.console.log = noop;
+    window.console.info = noop;
+    window.console.debug = noop;
+    window.console.time = noop;
+    window.console.timeEnd = noop;
+    window.console.table = noop;
+    // Note: warn and error are preserved for critical diagnostics
+  }
+})();
 
 // Default export
 export default logger;

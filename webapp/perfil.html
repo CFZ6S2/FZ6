@@ -555,9 +555,9 @@
     // Then import Firebase services
     // Then import Firebase services
     import { auth, storage, app, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { doc, getDoc, updateDoc, serverTimestamp, getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import { doc, getDoc, updateDoc, serverTimestamp, getFirestore } from "firebase/firestore";
+    import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
     import { showToast, validateProfileComplete } from './js/utils.js';
 
     // Initialize Firestore locally to ensure valid instance

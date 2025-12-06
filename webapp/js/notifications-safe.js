@@ -4,7 +4,7 @@
 // ===========================================================================
 // Manages push notifications for TuCitaSegura
 
-import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
@@ -33,7 +33,7 @@ export async function initializeNotifications() {
 
     // Try to import Firebase Messaging dynamically
     try {
-      const messagingModule = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js');
+      const messagingModule = await import('firebase/messaging');
       const { getMessaging, getToken, onMessage } = messagingModule;
 
       await registerServiceWorker();

@@ -134,7 +134,8 @@ class FraudDetector:
                 if age < 18 or age > 80:
                     score += 0.3
                     indicators.append(f"Edad sospechosa: {age} años")
-            except:
+            except Exception as e:
+                logger.warning(f"Error parsing birth date: {e}")
                 score += 0.2
                 indicators.append("Formato de fecha inválido")
         
@@ -318,7 +319,8 @@ class FraudDetector:
                 curr_time = datetime.fromisoformat(messages[i].get('timestamp', ''))
                 response_time = (curr_time - prev_time).total_seconds() / 60  # minutos
                 response_times.append(response_time)
-            except:
+            except Exception as e:
+                logger.debug(f"Error calculating response time for message {i}: {e}")
                 continue
         
         return sum(response_times) / len(response_times) if response_times else 0.0

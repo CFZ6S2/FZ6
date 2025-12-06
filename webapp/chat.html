@@ -410,7 +410,7 @@
 
     // Then import Firebase services
     import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { onAuthStateChanged } from "firebase/auth";
     import {
       collection,
       query,
@@ -426,7 +426,7 @@
       getDocs,
       setDoc,
       increment
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    } from "firebase/firestore";
     import { showToast, calculateDistance, requireChatAccess } from './js/utils.js';
     import { loadTheme } from './js/theme.js';
     import { apiService } from './js/api-service.js';

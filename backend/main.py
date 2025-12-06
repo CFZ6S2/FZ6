@@ -111,9 +111,7 @@ class AllowedMimeType(str, Enum):
 # ============================================================================
 
 # Include v1 API routers
-app.include_router(recommendations.router)
-app.include_router(validation.router)
-app.include_router(moderation.router)
+
 
 # ============================================================================
 # PUBLIC ROUTES
