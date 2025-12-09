@@ -41,15 +41,8 @@ const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
   location.hostname === domain || location.hostname.includes(domain)
 );
 
-// Check if running in development environment
-const isDevelopment = location.hostname === 'localhost' ||
-  location.hostname === '127.0.0.1' ||
-  location.hostname.startsWith('10.') ||
-  location.hostname.startsWith('192.168.');
-
 logger.info(`🚀 Entorno: ${location.hostname}`);
 
-<<<<<<< HEAD
 let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
 try {
   const params = new URLSearchParams(location.search);
@@ -73,11 +66,10 @@ if (enableDebugToken) {
 } else if (DEV_DEBUG_TOKEN && !isDevelopment) {
 }
 
+
 // ============================================================================
 // Utilidades de limpieza local (solo desarrollo)
 // ============================================================================
-=======
->>>>>>> c6ecb8b (Fix Dockerfile and opencv for Cloud Run)
 function keysToRemoveFromStorage() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
