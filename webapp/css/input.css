@@ -1,0 +1,307 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================
+   TUCITASEGURA - GLOBAL THEME STYLES
+   Degradado azul + Glassmorphism
+   =================================== */
+
+@layer base {
+
+    /* Configuración global del body */
+    body {
+        @apply text-white antialiased;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
+        min-height: 100vh;
+        background-attachment: fixed;
+    }
+
+    /* Links por defecto */
+    a {
+        @apply transition-colors duration-200;
+    }
+
+    /* Inputs por defecto */
+    input,
+    textarea,
+    select {
+        @apply transition-all duration-200;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        @apply outline-none ring-2 ring-blue-400/50;
+    }
+}
+
+@layer components {
+    /* ===== GLASS EFFECTS ===== */
+
+    /* Glass effect básico */
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Glass effect más fuerte */
+    .glass-strong {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Glass effect muy sutil */
+    .glass-subtle {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Hero gradient background */
+    .hero-gradient {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    }
+
+    /* ===== BUTTONS ===== */
+
+    /* Botón primario con gradiente */
+    .btn-primary {
+        @apply bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* Botón secundario (rosa-morado) */
+    .btn-secondary {
+        @apply bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105;
+    }
+
+    /* Botón glass */
+    .btn-glass {
+        @apply glass px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 hover:bg-white/10;
+    }
+
+    /* ===== CARDS ===== */
+
+    /* Card con glass effect */
+    .card {
+        @apply glass-strong rounded-2xl p-6 transition-all hover:shadow-2xl;
+    }
+
+    /* Card con border de color */
+    .card-bordered {
+        @apply glass-strong rounded-2xl p-6 border-2 transition-all hover:shadow-2xl;
+    }
+
+    /* ===== INPUTS ===== */
+
+    /* Input estilo glass */
+    .input-glass {
+        @apply w-full px-4 py-3 rounded-lg glass text-white placeholder-slate-400 transition;
+    }
+
+    .input-glass:focus {
+        @apply ring-2 ring-blue-400/50 glass-strong;
+    }
+
+    /* ===== ANIMATIONS ===== */
+
+    /* Fade in básico */
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    /* Fade in con movimiento hacia arriba */
+    .fade-in-up {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* Animación flotante */
+    .float-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    /* Pulse suave */
+    .pulse-soft {
+        animation: pulseSoft 2s ease-in-out infinite;
+    }
+}
+
+@layer utilities {
+
+    /* ===== GRADIENT TEXT ===== */
+    .gradient-text {
+        @apply bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent;
+    }
+
+    .gradient-text-pink {
+        @apply bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent;
+    }
+
+    .gradient-text-green {
+        @apply bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent;
+    }
+}
+
+/* ===================================
+   KEYFRAME ANIMATIONS
+   =================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes pulseSoft {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ===================================
+   SCROLLBAR STYLING
+   =================================== */
+
+/* Scrollbar para navegadores webkit */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.5);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.7);
+}
+
+/* ===================================
+   SELECTION STYLING
+   =================================== */
+
+::selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+::-moz-selection {
+    background: rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+/* ===================================
+   RESPONSIVE UTILITIES
+   =================================== */
+
+/* Touch targets mínimos para móvil */
+@media (max-width: 768px) {
+
+    button,
+    a.btn-primary,
+    a.btn-secondary,
+    a.btn-glass {
+        min-height: 48px;
+        min-width: 48px;
+    }
+}
+
+/* ===================================
+   ACCESSIBILITY
+   =================================== */
+
+/* Focus visible para accesibilidad */
+*:focus-visible {
+    outline: 2px solid rgb(59, 130, 246);
+    outline-offset: 2px;
+}
+
+/* Reducir movimiento para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===================================
+   SPECIFIC COMPONENT OVERRIDES
+   =================================== */
+
+/* Header/Navigation sticky glass */
+header.glass {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+/* Footer glass */
+footer.glass {
+    margin-top: 5rem;
+    padding: 3rem 0;
+}
+
+/* Toast notifications con glass */
+.toast {
+    @apply glass-strong rounded-lg p-4 shadow-lg;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}

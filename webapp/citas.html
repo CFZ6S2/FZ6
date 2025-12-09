@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Citas - TuCitaSegura</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#764ba2">
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/output.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .date-card {
+      transition: all 0.3s ease;
+    }
+
+    .date-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .status-accepted {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-rejected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+  <!-- Header -->
+  <nav class="glass-strong sticky top-0 z-50 border-b border-white/20">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+            <i class="fas fa-arrow-left text-xl"></i>
+          </a>
+          <h1 class="text-2xl font-bold">
+            <i class="fas fa-calendar-check mr-2"></i>
+            Mis Citas
+          </h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <div id="userInfo" class="flex items-center gap-3">
+            <div id="userAvatar"
+              class="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center font-bold">
+              <i class="fas fa-user"></i>
+            </div>
+            <span id="userAlias" class="font-semibold hidden md:block">Usuario</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+
+    <!-- Filter Tabs -->
+    <div class="glass-strong rounded-2xl p-2 mb-6 flex gap-2">
+      <button id="filterAll" class="filter-tab active flex-1 py-3 px-4 rounded-xl font-semibold transition">
+        Todas
+      </button>
+      <button id="filterPending" class="filter-tab flex-1 py-3 px-4 rounded-xl font-semibold transition">
+        Pendientes
+      </button>
+      <button id="filterAccepted" class="filter-tab flex-1 py-3 px-4 rounded-xl font-semibold transition">
+        Aceptadas
+      </button>
+      <button id="filterRejected" class="filter-tab flex-1 py-3 px-4 rounded-xl font-semibold transition">
+        Rechazadas
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="glass-strong rounded-2xl p-8 text-center">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4">
+      </div>
+      <p class="text-lg">Cargando citas...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden glass-strong rounded-2xl p-12 text-center">
+      <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-calendar-times text-5xl text-white/50"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-3">No hay citas</h3>
+      <p class="text-slate-300 mb-6">Comienza proponiendo citas en tus conversaciones</p>
+      <a href="/conversaciones.html"
+        class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-xl transition">
+        Ver Conversaciones
+      </a>
+    </div>
+
+    <!-- Dates List -->
+    <div id="datesList" class="space-y-4">
+      <!-- Dates will be dynamically loaded here -->
+    </div>
+
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="./js/error-fixes.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script type="module" src="./js/sanitizer.js"></script>
+
+  <script type="module">
+    // Import App Check FIRST
+    import './js/firebase-appcheck.js';
+
+    // Then import Firebase services
+    import { auth, db } from './js/firebase-config-env.js';
+    import { onAuthStateChanged } from "firebase/auth";
+    import {
+      collection,
+      query,
+      where,
+      orderBy,
+      getDocs,
+      doc,
+      getDoc,
+      updateDoc
+    } from "firebase/firestore";
+    import { showToast } from './js/utils.js';
+    import { loadTheme } from './js/theme.js';
+    import { sanitizer } from './js/sanitizer.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let allDates = [];
+    let filteredDates = [];
+    let currentFilter = 'all';
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadCurrentUserData();
+        await loadDates();
+      } else {
+        window.location.href = '/login.html';
+      }
+    });
+
+    // Load current user data
+    async function loadCurrentUserData() {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
+
+          // Load user theme
+          loadTheme(currentUserData);
+
+          // Update UI
+          const alias = currentUserData.alias || currentUser.email;
+          document.getElementById('userAlias').textContent = alias;
+
+          if (alias) {
+            document.getElementById('userAvatar').textContent = alias.charAt(0).toUpperCase();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    }
+
+    // Load dates
+    async function loadDates() {
+      try {
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const datesList = document.getElementById('datesList');
+
+        // Get all conversations
+        const conversationsQuery = query(
+          collection(db, 'conversations'),
+          where('participants', 'array-contains', currentUser.uid)
+        );
+        const conversationsSnapshot = await getDocs(conversationsQuery);
+
+        allDates = [];
+
+        // For each conversation, get date proposals
+        for (const convDoc of conversationsSnapshot.docs) {
+          const conv = { id: convDoc.id, ...convDoc.data() };
+          
+          // Get other user ID
+          const otherUserId = conv.participants.find(id => id !== currentUser.uid);
+          if (!otherUserId) continue;
+
+          // Get other user data
+          const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
+          if (!otherUserDoc.exists()) continue;
+          const otherUser = { id: otherUserDoc.id, ...otherUserDoc.data() };
+
+          // Get date proposals from messages
+          const messagesQuery = query(
+            collection(db, 'conversations', convDoc.id, 'messages'),
+            where('type', '==', 'date_proposal'),
+            orderBy('timestamp', 'desc')
+          );
+          const messagesSnapshot = await getDocs(messagesQuery);
+
+          messagesSnapshot.forEach(msgDoc => {
+            const msg = { id: msgDoc.id, conversationId: convDoc.id, ...msgDoc.data() };
+            
+            allDates.push({
+              id: msg.id,
+              conversationId: convDoc.id,
+              date: msg.date,
+              time: msg.time,
+              place: msg.place,
+              message: msg.message || '',
+              status: msg.status || 'pending',
+              senderId: msg.senderId,
+              timestamp: msg.timestamp,
+              otherUser: {
+                id: otherUser.id,
+                alias: otherUser.alias || 'Usuario',
+                photoURL: otherUser.photoURL || '',
+                gender: otherUser.gender || ''
+              },
+              isSentByMe: msg.senderId === currentUser.uid
+            });
+          });
+        }
+
+        // Sort by timestamp (most recent first)
+        allDates.sort((a, b) => {
+          if (!a.timestamp || !b.timestamp) return 0;
+          return b.timestamp.toMillis() - a.timestamp.toMillis();
+        });
+
+        loadingState.classList.add('hidden');
+        
+        if (allDates.length === 0) {
+          emptyState.classList.remove('hidden');
+          datesList.innerHTML = '';
+        } else {
+          emptyState.classList.add('hidden');
+          applyFilter();
+        }
+      } catch (error) {
+        console.error('Error loading dates:', error);
+        showToast('Error al cargar citas', 'error');
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    // Apply filter
+    function applyFilter() {
+      if (currentFilter === 'all') {
+        filteredDates = allDates;
+      } else {
+        filteredDates = allDates.filter(date => date.status === currentFilter);
+      }
+
+      renderDates();
+    }
+
+    // Render dates
+    function renderDates() {
+      const datesList = document.getElementById('datesList');
+      
+      if (filteredDates.length === 0) {
+        datesList.innerHTML = `
+          <div class="glass-strong rounded-2xl p-12 text-center">
+            <i class="fas fa-calendar-times text-5xl text-white/50 mb-4"></i>
+            <p class="text-lg text-slate-300">No hay citas con este filtro</p>
+          </div>
+        `;
+        return;
+      }
+
+      datesList.innerHTML = filteredDates.map(date => {
+        const dateObj = date.timestamp?.toDate() || new Date();
+        const formattedDate = dateObj.toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        const safeDate = sanitizer.text(date.date || '');
+        const safeTime = sanitizer.text(date.time || '');
+        const safePlace = sanitizer.text(date.place || '');
+        const safeMessage = sanitizer.text(date.message || '');
+        const safeAlias = sanitizer.text(date.otherUser.alias || 'Usuario');
+
+        let statusClass = 'status-pending';
+        let statusText = 'Pendiente';
+        let statusIcon = 'fa-clock';
+
+        if (date.status === 'accepted') {
+          statusClass = 'status-accepted';
+          statusText = 'Aceptada';
+          statusIcon = 'fa-check-circle';
+        } else if (date.status === 'rejected') {
+          statusClass = 'status-rejected';
+          statusText = 'Rechazada';
+          statusIcon = 'fa-times-circle';
+        }
+
+        return `
+          <div class="date-card glass-strong rounded-2xl p-6">
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-shrink-0">
+                ${date.otherUser.photoURL ? 
+                  `<img src="${sanitizer.url(date.otherUser.photoURL)}" alt="${safeAlias}" class="w-20 h-20 rounded-full object-cover border-2 border-white/20">` :
+                  `<div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl font-bold border-2 border-white/20">
+                    ${safeAlias.charAt(0).toUpperCase()}
+                  </div>`
+                }
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 class="text-xl font-bold mb-1">${safeAlias}</h3>
+                    <span class="status-badge ${statusClass}">
+                      <i class="fas ${statusIcon} mr-1"></i>${statusText}
+                    </span>
+                  </div>
+                  ${date.isSentByMe ? 
+                    '<span class="text-sm text-slate-400"><i class="fas fa-paper-plane mr-1"></i>Enviada por ti</span>' :
+                    '<span class="text-sm text-slate-400"><i class="fas fa-inbox mr-1"></i>Recibida</span>'
+                  }
+                </div>
+                <div class="space-y-2 text-slate-300">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-calendar text-purple-400"></i>
+                    <span><strong>Fecha:</strong> ${safeDate}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-clock text-blue-400"></i>
+                    <span><strong>Hora:</strong> ${safeTime}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-map-marker-alt text-red-400"></i>
+                    <span><strong>Lugar:</strong> ${safePlace}</span>
+                  </div>
+                  ${safeMessage ? `
+                    <div class="flex items-start gap-2 mt-3 pt-3 border-t border-white/10">
+                      <i class="fas fa-comment text-green-400 mt-1"></i>
+                      <span><strong>Mensaje:</strong> ${safeMessage}</span>
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="flex gap-3 mt-4">
+                  <a href="/chat.html?conversation=${date.conversationId}" 
+                     class="flex-1 glass hover:glass-strong text-center py-2 px-4 rounded-xl transition font-semibold">
+                    <i class="fas fa-comments mr-2"></i>Ver Conversación
+                  </a>
+                  ${date.status === 'accepted' ? `
+                    <a href="/cita-detalle.html?dateId=${date.id}&conversationId=${date.conversationId}" 
+                       class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-center py-2 px-4 rounded-xl transition font-semibold">
+                      <i class="fas fa-info-circle mr-2"></i>Detalles
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filter tabs
+    document.getElementById('filterAll').addEventListener('click', () => {
+      currentFilter = 'all';
+      updateFilterTabs();
+      applyFilter();
+    });
+
+    document.getElementById('filterPending').addEventListener('click', () => {
+      currentFilter = 'pending';
+      updateFilterTabs();
+      applyFilter();
+    });
+
+    document.getElementById('filterAccepted').addEventListener('click', () => {
+      currentFilter = 'accepted';
+      updateFilterTabs();
+      applyFilter();
+    });
+
+    document.getElementById('filterRejected').addEventListener('click', () => {
+      currentFilter = 'rejected';
+      updateFilterTabs();
+      applyFilter();
+    });
+
+    function updateFilterTabs() {
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active', 'bg-gradient-to-r', 'from-purple-500', 'to-pink-500');
+        tab.classList.add('glass');
+      });
+      
+      const activeTab = document.getElementById(`filter${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`) || 
+                        document.getElementById('filterAll');
+      activeTab.classList.remove('glass');
+      activeTab.classList.add('active', 'bg-gradient-to-r', 'from-purple-500', 'to-pink-500');
+    }
+  </script>
+</body>
+
+</html>
+
+
