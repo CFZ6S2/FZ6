@@ -1,7 +1,7 @@
 // Profile Guard - Bloquea acceso a funcionalidades hasta que el perfil esté completo
 // ============================================================================
 
-import { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config-env.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { logger } from './logger.js';
 
