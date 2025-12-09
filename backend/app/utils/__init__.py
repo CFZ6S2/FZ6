@@ -14,6 +14,12 @@ from .structured_logger import (
     sanitize_object,
     sanitize_value
 )
+from .app_check_metrics import (
+    AppCheckMetrics,
+    get_metrics,
+    detect_legacy_sdk,
+    extract_client_version
+)
 
 __all__ = [
     "sanitize_html",
@@ -26,5 +32,9 @@ __all__ = [
     "create_logger",
     "Severity",
     "sanitize_object",
-    "sanitize_value"
+    "sanitize_value",
+    "AppCheckMetrics",
+    "get_metrics",
+    "detect_legacy_sdk",
+    "extract_client_version"
 ]
