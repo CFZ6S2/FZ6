@@ -94,3 +94,25 @@ webapp/dist/
 
 # Nested repositories
 FZ6/
+
+# Temporary documentation and scripts
+*-RESUMEN.md
+*_AUDIT*.md
+CHECKLIST-*.md
+CAMBIOS-*.md
+AUDITORIA*.md
+APPCHECK*.md
+INSTRUCCIONES*.md
+TEST_*.md
+cleanup-*.ps1
+make-admin.js
+test-*.js
+firestore-rules-manual.txt
+
+# Build and deployment logs
+build_log.txt
+webapp/build_log.txt
+*.build.log
+
+# Debug pages (moved to webapp/debug/)
+webapp/debug/

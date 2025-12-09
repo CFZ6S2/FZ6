@@ -11,13 +11,14 @@ export default defineConfig(({ mode }) => {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
                     login: path.resolve(__dirname, 'login.html'),
+                    login2: path.resolve(__dirname, 'login2.html'),
                     admin: path.resolve(__dirname, 'admin.html'),
                     admin_login: path.resolve(__dirname, 'admin-login.html'),
-                    seed_demo: path.resolve(__dirname, 'seed-demo-user.html'),
 
                     ayuda: path.resolve(__dirname, 'ayuda.html'),
                     buscar_usuarios: path.resolve(__dirname, 'buscar-usuarios.html'),
                     chat: path.resolve(__dirname, 'chat.html'),
+                    citas: path.resolve(__dirname, 'citas.html'),
                     cita_detalle: path.resolve(__dirname, 'cita-detalle.html'),
                     concierge_dashboard: path.resolve(__dirname, 'concierge-dashboard.html'),
                     conversaciones: path.resolve(__dirname, 'conversaciones.html'),
@@ -36,8 +37,7 @@ export default defineConfig(({ mode }) => {
                     suscripcion: path.resolve(__dirname, 'suscripcion.html'),
                     verificacion_identidad: path.resolve(__dirname, 'verificacion-identidad.html'),
                     verify_email: path.resolve(__dirname, 'verify-email.html'),
-                    video_chat: path.resolve(__dirname, 'video-chat.html'),
-                    example_notification: path.resolve(__dirname, 'example-notification-integration.html')
+                    video_chat: path.resolve(__dirname, 'video-chat.html')
                 }
             }
         },
