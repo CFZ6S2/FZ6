@@ -43,64 +43,6 @@ const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
 
 logger.info(`🚀 Entorno: ${location.hostname}`);
 
-let DEV_DEBUG_TOKEN = null; // Initialize to null instead of undefined DEBUG_TOKEN
-try {
-  const params = new URLSearchParams(location.search);
-  const qToken = params.get('debugToken');
-  if (!DEV_DEBUG_TOKEN && isDevelopment && qToken) DEV_DEBUG_TOKEN = qToken;
-  const lsToken = (typeof localStorage !== 'undefined') ? localStorage.getItem('APPCHECK_DEBUG_TOKEN') : null;
-  if (!DEV_DEBUG_TOKEN && isDevelopment && lsToken) DEV_DEBUG_TOKEN = lsToken;
-} catch { }
-if (!DEV_DEBUG_TOKEN && isDevelopment) {
-  DEV_DEBUG_TOKEN = '1ACC3630-42C6-4D01-92BA-ED0DE8C718FF';
-}
-
-const enableDebugToken = isDevelopment && !!DEV_DEBUG_TOKEN;
-
-if (enableDebugToken) {
-  try {
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
-    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = DEV_DEBUG_TOKEN;
-  } catch (e) { }
-} else if (DEV_DEBUG_TOKEN && !isDevelopment) {
-}
-
-
-// ============================================================================
-// Utilidades de limpieza local (solo desarrollo)
-// ============================================================================
-function keysToRemoveFromStorage() {
-  const keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (!k) continue;
-    if (k.includes('firebase') || k.includes('appCheck') || k.includes('fac') || k.includes('heartbeat') || k.includes('firebaseLocalStorage')) {
-      keys.push(k);
-    }
-  }
-  return keys;
-}
-
-async function clearIndexedDBDatabases() {
-  if (!window.indexedDB) return;
-  const dbs = [
-    'firebaseLocalStorageDb',
-    'firebase-app-check-database',
-    'firebase-heartbeat-database',
-    'firebase-installations-database'
-  ];
-  const promises = dbs.map(name => {
-    return new Promise((resolve) => {
-      const req = indexedDB.deleteDatabase(name);
-      req.onsuccess = () => resolve({ name, ok: true });
-      req.onerror = () => resolve({ name, ok: false });
-      req.onblocked = () => resolve({ name, ok: false });
-    });
-  });
-  return Promise.all(promises);
-}
-
 async function clearAppCheckStorage() {
   const lsKeys = keysToRemoveFromStorage();
   lsKeys.forEach(k => {
@@ -150,8 +92,7 @@ window.detectAppCheckThrottled = function () {
 };
 
 // ============================================================================
-// Inicializar App Check (solo si dominio permitido y en producción
-// o con debug token en dev)
+// Inicializar App Check (solo producción con reCAPTCHA Enterprise)
 // ============================================================================
 let appCheck = null;
 
@@ -162,30 +103,10 @@ async function initAppCheck() {
     return;
   }
 
-  // En desarrollo sin debug token: no inicializar App Check
-  if (isDevelopment && !enableDebugToken) {
-    logger.info('⚠️  App Check DESACTIVADO en desarrollo (no hay debug token configurado).');
-    window._appCheckInstance = null;
-    return;
-  }
-
-  // Si estamos en desarrollo y hay estado local inconsistente, no inicializar hasta limpiar
+  // Verificar si hay throttling en el estado local
   const throttled = window.detectAppCheckThrottled && window.detectAppCheckThrottled();
   if (throttled) {
-    logger.warn('⚠️ App Check en estado local inconsistente. Usa clearAppCheckThrottle() o /webapp/clear-appcheck-throttle.html');
-    window._appCheckInstance = null;
-    return;
-  }
-
-  // FORCE DISABLE ON LOCALHOST/LAN to avoid "verify recapcha score" errors
-  const isLocalOrLAN =
-    location.hostname === 'localhost' ||
-    location.hostname === '127.0.0.1' ||
-    location.hostname.startsWith('192.168.') ||
-    location.hostname.startsWith('10.');
-
-  if (isLocalOrLAN) {
-    logger.info(`🛡️ LAN/Localhost detectado (${location.hostname}): App Check deshabilitado para evitar conflictos.`);
+    logger.warn('⚠️ App Check en estado local inconsistente. Usa clearAppCheckThrottle()');
     window._appCheckInstance = null;
     return;
   }
