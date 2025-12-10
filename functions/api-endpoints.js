@@ -311,5 +311,3 @@ exports.apiOptional = functions.https.onRequest(async (req, res) => {
         });
     }
 });
-
-logger.info('API endpoints module loaded');
