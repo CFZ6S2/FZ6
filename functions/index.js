@@ -28,8 +28,17 @@ logger.info('Cloud Functions initialized', {
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
-<<<<<<< HEAD
-  const base = (functions.config()?.api?.base_url) || process.env.API_BASE_URL || 'https://fz6-production-ea5d.up.railway.app';
+  
+  // Verificar App Check token opcionalmente (soft enforcement)
+  const appCheckMiddleware = verifyAppCheckHTTP(false);
+  await new Promise((resolve) => {
+    appCheckMiddleware(req, res, () => {
+      resolve();
+    });
+  });
+
+  // Resolve conflict: prioritize functions.config or env var, fallback to Cloud Run
+  let base = process.env.API_BASE_URL || 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
   try {
     if (functions.config().api && functions.config().api.base_url) {
       base = functions.config().api.base_url;
@@ -37,13 +46,13 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
   } catch (e) {
     logger.warn('Failed to read functions.config', { error: e.message });
   }
->>>>>>> eead00d (feat: add new web application pages, Firebase functions, and update deployment configurations.)
   const url = base + req.originalUrl;
 
   logger.debug('API proxy request', {
     method: req.method,
     path: req.originalUrl,
-    url
+    url,
+    hasAppCheck: !!req.appCheckClaims
   });
 
   try {

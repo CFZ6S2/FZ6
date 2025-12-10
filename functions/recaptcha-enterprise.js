@@ -1,7 +1,16 @@
 // functions/recaptcha-enterprise.js - Lazy init
 // Verificación de tokens de reCAPTCHA Enterprise
 
+const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
+const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
 const functions = require('firebase-functions/v1');
+
+// Logger
+const logger = createLogger('recaptcha-enterprise');
+
+// Cliente lazy-initialized
+let recaptchaClient = null;
+
 function getRecaptchaClient() {
   if (!recaptchaClient) {
     recaptchaClient = new RecaptchaEnterpriseServiceClient();
@@ -21,7 +30,7 @@ const SITE_KEY = (functions.config()?.recaptcha?.site_key) || process.env.RECAPT
  * @returns {Promise<Object>} Resultado de la verificación
  */
 async function verifyRecaptchaToken(token, expectedAction, recaptchaAction = null) {
-  const timer = logger.startTimer();
+  const timer = new PerformanceTimer(logger, 'verifyRecaptchaToken');
 
   try {
     const client = getRecaptchaClient();
@@ -86,11 +95,12 @@ async function verifyRecaptchaToken(token, expectedAction, recaptchaAction = nul
       };
     }
 
+    const duration = timer.end();
     logger.info('reCAPTCHA verification successful', {
       score,
       action,
       expectedAction,
-      duration: timer.end()
+      durationMs: duration
     });
 
     return {
@@ -101,9 +111,10 @@ async function verifyRecaptchaToken(token, expectedAction, recaptchaAction = nul
     };
 
   } catch (error) {
+    const duration = timer.end();
     logger.error('reCAPTCHA verification error', error, {
       expectedAction,
-      duration: timer.end()
+      durationMs: duration
     });
 
     return {
@@ -129,7 +140,12 @@ const { onRequest, onCall, HttpsError } = require('firebase-functions/v2/https')
  * Method: POST
  * Body: { token: string, action: string }
  */
-exports.verifyRecaptcha = onRequest({ cors: true }, async (req, res) => {
+exports.verifyRecaptcha = onRequest({ 
+  cors: true,
+  region: 'us-central1',
+  timeoutSeconds: 60,
+  memory: '256MiB'
+}, async (req, res) => {
   // Solo permitir POST
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -209,7 +225,11 @@ exports.verifyRecaptcha = onRequest({ cors: true }, async (req, res) => {
  * Cloud Function Callable para verificar reCAPTCHA
  * Más seguro que HTTP porque requiere autenticación de Firebase
  */
-exports.verifyRecaptchaCallable = onCall(async (request) => {
+exports.verifyRecaptchaCallable = onCall({
+  region: 'us-central1',
+  timeoutSeconds: 60,
+  memory: '256MiB'
+}, async (request) => {
   const { token, action } = request.data;
   const context = {
     auth: request.auth,
