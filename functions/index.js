@@ -26,9 +26,22 @@ logger.info('Cloud Functions initialized', {
   environment: process.env.FUNCTION_TARGET || 'unknown'
 });
 
+// ============================================================================
+// API ENDPOINTS (migrated from FastAPI backend)
+// ============================================================================
+const apiEndpoints = require('./api-endpoints');
+
+// Export API functions
+exports.apiHealth = apiEndpoints.apiHealth;
+exports.apiPublic = apiEndpoints.apiPublic;
+exports.apiProtected = apiEndpoints.apiProtected;
+exports.apiUserProfile = apiEndpoints.apiUserProfile;
+exports.apiUpload = apiEndpoints.apiUpload;
+exports.apiOptional = apiEndpoints.apiOptional;
+
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
-  
+
   // Verificar App Check token opcionalmente (soft enforcement)
   const appCheckMiddleware = verifyAppCheckHTTP(false);
   await new Promise((resolve) => {
