@@ -16,6 +16,10 @@ from fastapi.responses import JSONResponse
 from auth_utils import get_current_user, get_optional_user, firebase_initialized
 from firebase_storage import upload_file_to_storage, upload_profile_photo
 
+# Import logger for error handling
+import logging
+logger = logging.getLogger(__name__)
+
 # Import new API routers
 from app.api.v1 import recommendations, validation, moderation, debug_auth
 
@@ -346,6 +350,19 @@ async def general_exception_handler(request, exc):
 
 
 # ============================================================================
+# APP CHECK ENFORCEMENT
+# ============================================================================
+def require_app_check(request: Request):
+    """App Check enforcement via HTTP header"""
+    enforce = os.getenv("APP_CHECK_ENFORCE", "false").lower() == "true"
+    if not enforce:
+        return
+    token = request.headers.get("X-Firebase-AppCheck")
+    if not token or not token.strip():
+        raise HTTPException(status_code=401, detail="App Check token missing")
+
+
+# ============================================================================
 # STARTUP EVENT
 # ============================================================================
 
@@ -369,11 +386,3 @@ if __name__ == "__main__":
         port=int(os.getenv("PORT", "8080")),
         reload=True if os.getenv("ENVIRONMENT") == "development" else False
     )
-# App Check enforcement (HTTP header)
-def require_app_check(request: Request):
-    enforce = os.getenv("APP_CHECK_ENFORCE", "false").lower() == "true"
-    if not enforce:
-        return
-    token = request.headers.get("X-Firebase-AppCheck")
-    if not token or not token.strip():
-        raise HTTPException(status_code=401, detail="App Check token missing")
