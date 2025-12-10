@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
             proxy: {
                 // Redirige llamadas /api/* a backend local
                 '/api': {
-                    target: 'http://127.0.0.1:8001',
+                    target: 'http://127.0.0.1:5000',
                     changeOrigin: true,
                     secure: false,
                     // Rewrite path if needed (optional)

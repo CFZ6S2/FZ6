@@ -11,26 +11,26 @@ export class APIService {
     const override = (typeof window !== 'undefined' && window.API_BASE_URL) ? String(window.API_BASE_URL) : '';
     const useSameOrigin = !override; // usar origen siempre que no haya override
     this.useSameOrigin = useSameOrigin;
-    this.baseURL = override ? override : (isLocal ? 'http://localhost:8080' : '');
+    this.baseURL = override ? override : ''; // Always use relative paths by default (proxied via Vite or Firebase Hosting)
     this.fallbackBaseURL = ''; // sin fallback externo
 
     this.token = null;
-    
+
     // Obtener versiones para headers
     const appVersion = this._getAppVersion();
     const firebaseSDKVersion = this._getFirebaseSDKVersion();
-    
+
     this.headers = {
       'Content-Type': 'application/json',
       'X-Client-Version': appVersion,
     };
-    
+
     // Agregar versión del SDK de Firebase si está disponible
     if (firebaseSDKVersion) {
       this.headers['X-Firebase-SDK-Version'] = firebaseSDKVersion;
     }
   }
-  
+
   /**
    * Obtener versión de la aplicación
    * @returns {string} Versión de la app
@@ -43,7 +43,7 @@ export class APIService {
     // Versión por defecto (debería coincidir con package.json)
     return 'webapp/1.0.0';
   }
-  
+
   /**
    * Obtener versión del SDK de Firebase
    * @returns {string|null} Versión del SDK o null
@@ -57,14 +57,14 @@ export class APIService {
           return `firebase-js/${version}`;
         }
       }
-      
+
       // Intentar detectar desde imports dinámicos o módulos cargados
       // Firebase SDK v9+ usa módulos ES, así que puede que no esté en window
       // Por ahora retornamos la versión conocida si está disponible
       if (typeof window !== 'undefined' && window.FIREBASE_SDK_VERSION) {
         return `firebase-js/${window.FIREBASE_SDK_VERSION}`;
       }
-      
+
       // Versión conocida del package.json (debería coincidir con dependencies)
       // Firebase ^12.6.0 según package.json
       return 'firebase-js/12.6.0';
@@ -103,13 +103,13 @@ export class APIService {
     const url = this.useSameOrigin ? endpoint : `${this.baseURL}${endpoint}`;
     const method = (options.method ? String(options.method) : 'GET').toUpperCase();
     const mergedHeaders = { ...this.headers, ...(options.headers || {}) };
-    
+
     // PRODUCCIÓN: Incluir App Check token en todas las peticiones
     let appCheckAvailable = false;
     try {
       const hasGetter = typeof window !== 'undefined' && typeof window.getAppCheckToken === 'function';
       const hasInstance = typeof window !== 'undefined' && !!window._appCheckInstance;
-      
+
       if (hasGetter && hasInstance) {
         // Obtener token sin forzar refresh (usa cache si está disponible)
         const tokenResult = await window.getAppCheckToken(false);
@@ -125,7 +125,7 @@ export class APIService {
         console.warn('App Check token not available:', e?.message || e);
       }
     }
-    
+
     // Agregar header indicando si App Check está disponible (útil para debugging)
     mergedHeaders['X-App-Check-Available'] = appCheckAvailable ? 'true' : 'false';
     if (method === 'GET') {
@@ -281,12 +281,12 @@ export class APIService {
   async uploadProfilePhoto(file, photoType = 'avatar') {
     // HOTFIX: Upload directly to Firebase Storage to avoid backend 500 errors
     console.log('🔧 Using direct Storage upload (backend bypassed)');
-    
+
     try {
       // Dynamic import to avoid circular dependencies
       const { uploadPhotoToStorage } = await import('./storage-upload.js');
       const downloadURL = await uploadPhotoToStorage(file, photoType);
-      
+
       return {
         success: true,
         url: downloadURL,
@@ -299,7 +299,7 @@ export class APIService {
       console.error('Upload error:', error);
       throw error;
     }
-    
+
     /* CÓDIGO ORIGINAL (comentado - backend dando 500)
     const formData = new FormData();
     formData.append('file', file);

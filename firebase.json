@@ -45,17 +45,23 @@
     "rewrites": [
       {
         "source": "/health",
-        "run": {
-          "serviceId": "tucitasegura-backend",
-          "region": "us-central1"
-        }
+        "function": "apiHealth"
       },
       {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "tucitasegura-backend",
-          "region": "us-central1"
-        }
+        "source": "/api/v1/auth/status",
+        "function": "apiOptional"
+      },
+      {
+        "source": "/api/v1/users/me",
+        "function": "apiUserProfile"
+      },
+      {
+        "source": "/api/files/upload/**",
+        "function": "apiUpload"
+      },
+      {
+        "source": "/api/v1/**",
+        "function": "apiProtected"
       }
     ],
     "redirects": [
