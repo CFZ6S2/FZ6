@@ -1,7 +1,7 @@
 // Firebase App Check Configuration v1.0.1 (Cache Bust)
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 import { app } from './firebase-config-env.js';
 import { logger } from './logger.js';
 const __hideRecaptchaBadge = (() => { try { const s = document.createElement('style'); s.setAttribute('data-hide-recaptcha', 'true'); s.textContent = '.grecaptcha-badge{visibility:hidden!important}'; document.head.appendChild(s); } catch { } })();
@@ -170,7 +170,7 @@ async function initAppCheck() {
   if (!isDevelopment && appCheck) {
     setTimeout(async () => {
       try {
-        const { getToken } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js");
+        const { getToken } = await import("firebase/app-check");
         const tokenResult = await getToken(appCheck, false);
         if (tokenResult && tokenResult.token) {
           logger.success('✅ App Check token obtenido (producción)');
@@ -200,7 +200,7 @@ window.getAppCheckToken = async function () {
     return null;
   }
   try {
-    const { getToken } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js");
+    const { getToken } = await import("firebase/app-check");
     const tokenResult = await getToken(window._appCheckInstance, false);
     logger.success('✅ App Check Token obtenido');
     return tokenResult;
