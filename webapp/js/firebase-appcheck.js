@@ -30,7 +30,7 @@ const isDevelopment = FORCE_DEVELOPMENT_MODE ||
 const ALLOWED_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'tucitasegura-129cc.web.app',
+  // 'tucitasegura-129cc.web.app', // DISABLED TEMPORARILY TO FIX BLOCKER
   'tucitasegura-129cc.firebaseapp.com',
   'traext5oyy6q.vercel.app',
   'vercel.app',
