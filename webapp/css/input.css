@@ -9,12 +9,24 @@
 
 @layer base {
 
+    /* Root HTML config para PWA */
+    html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        touch-action: manipulation;
+    }
+
     /* Configuración global del body */
     body {
         @apply text-white antialiased;
         background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
         min-height: 100vh;
         background-attachment: fixed;
+        /* Prevenir rubber-band scroll en iOS */
+        overscroll-behavior-y: none;
+        /* Mejorar performance en móvil */
+        -webkit-overflow-scrolling: touch;
     }
 
     /* Links por defecto */
@@ -243,15 +255,80 @@
    RESPONSIVE UTILITIES
    =================================== */
 
-/* Touch targets mínimos para móvil */
+/* PWA Safe Area Support (para notch/barra de estado) */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+
+    header.glass {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+}
+
+/* Mobile-First Responsive Fixes */
 @media (max-width: 768px) {
 
+    /* Prevenir zoom en inputs */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* Touch targets mínimos para móvil */
     button,
     a.btn-primary,
     a.btn-secondary,
     a.btn-glass {
         min-height: 48px;
         min-width: 48px;
+    }
+
+    /* Mejorar espaciado en móvil */
+    .max-w-7xl {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Headers más compactos */
+    h1 {
+        font-size: 1.5rem !important;
+        line-height: 2rem !important;
+    }
+
+    h2 {
+        font-size: 1.25rem !important;
+        line-height: 1.75rem !important;
+    }
+
+    /* Glass cards más pequeños en móvil */
+    .glass-strong,
+    .glass {
+        padding: 1rem !important;
+    }
+
+    /* Modales full-screen en móvil */
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+    }
+
+    /* Prevenir scroll horizontal */
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    /* Grid responsive */
+    .grid {
+        grid-template-columns: 1fr !important;
     }
 }
 

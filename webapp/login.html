@@ -169,30 +169,6 @@
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-  <!-- NUKE SERVICE WORKERS & CACHE (DEBUGGING) -->
-  <script>
-    console.log("🧨 STARTING CLEANUP SEQUENCE...");
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (let registration of registrations) {
-          console.log("💀 Unregistering SW:", registration);
-          registration.unregister();
-        }
-        if (registrations.length > 0) {
-          console.log("♻️ Service Workers nuked. RELOADING PAGE...");
-          window.location.reload();
-        }
-      });
-    }
-    // Visual Indicator
-    document.addEventListener("DOMContentLoaded", () => {
-      const div = document.createElement("div");
-      div.style = "position:fixed;top:0;left:0;width:100%;background:red;color:white;text-align:center;z-index:9999;padding:5px;font-weight:bold;";
-      div.innerText = "🛠️ DEBUG MODE: v.881 - CACHE BUSTED";
-      document.body.appendChild(div);
-    });
-  </script>
-
   <!-- HOTFIX: Initialize verifyRecaptchaScore globally before any modules load -->
   <script>
     console.log('🛡️ Initializing critical shims...');
