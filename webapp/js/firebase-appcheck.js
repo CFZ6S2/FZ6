@@ -43,7 +43,7 @@ const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
 
 logger.info(`🚀 Entorno: ${location.hostname}`);
 
-let DEV_DEBUG_TOKEN = DEBUG_TOKEN;
+let DEV_DEBUG_TOKEN = null; // Initialize to null instead of undefined DEBUG_TOKEN
 try {
   const params = new URLSearchParams(location.search);
   const qToken = params.get('debugToken');
