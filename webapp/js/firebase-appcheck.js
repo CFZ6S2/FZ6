@@ -1,4 +1,4 @@
-// Firebase App Check Configuration
+// Firebase App Check Configuration v1.0.1 (Cache Bust)
 // Importar ANTES de firebase-config.js en todos los archivos HTML
 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js";
