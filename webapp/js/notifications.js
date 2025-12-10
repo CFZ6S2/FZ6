@@ -3,9 +3,9 @@
 // ===========================================================================
 // Manages push notifications for TuCitaSegura
 
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-import { doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { auth, db, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { auth, db, app, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
 let messaging = null;
@@ -32,7 +32,7 @@ export async function initializeNotifications() {
     await registerServiceWorker();
 
     // Initialize messaging
-    messaging = getMessaging();
+    messaging = getMessaging(app);
 
     // Request permission and get token
     const hasPermission = await requestNotificationPermission();
