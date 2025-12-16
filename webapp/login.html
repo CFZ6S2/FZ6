@@ -18,7 +18,7 @@
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="./css/output.css">
+  <link rel="stylesheet" href="./css/input.css">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -144,22 +144,35 @@
           Regístrate gratis
         </a>
       </p>
-    </div>
 
-    <!-- Info Box -->
-    <div class="glass rounded-lg p-4 mt-6 text-center text-sm text-slate-300">
-      <i class="fas fa-shield-halved text-blue-400 mr-2"></i>
-      Tu información está protegida con encriptación de nivel bancario
-    </div>
-    <div class="text-center mt-4 text-xs text-slate-400">
-      Este sitio está protegido por reCAPTCHA y se aplican la
-      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener"
-        class="underline hover:text-blue-300">Política de Privacidad</a>
-      y los
-      <a href="https://policies.google.com/terms" target="_blank" rel="noopener"
-        class="underline hover:text-blue-300">Términos de Servicio</a>
-      de Google.
-    </div>
+      <!-- Emergency Bypass -->
+      <div class="mt-8 pt-6 border-t border-slate-700 text-center">
+        <p class="text-xs text-slate-400 mb-3">¿Problemas persistentes para entrar?</p>
+        <button type="button" onclick="window.activarModoEmergencia()"
+          class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded transition border border-slate-600">
+          <i class="fas fa-hammer mr-2"></i>Activar Acceso de Emergencia (Demo)
+        </button>
+      </div>
+
+      <!-- Info Box -->
+      <div class="glass rounded-lg p-4 mt-6 text-center text-sm text-slate-300">
+        <i class="fas fa-shield-halved text-blue-400 mr-2"></i>
+        Tu información está protegida con encriptación de nivel bancario
+      </div>
+      <div class="text-center mt-4 text-xs text-slate-400">
+        <div class="mb-2">
+          <a href="/webapp/privacidad.html" target="_blank" class="hover:text-blue-300 mr-2">Política de Privacidad</a>
+          <span class="text-slate-600">|</span>
+          <a href="/webapp/terminos.html" target="_blank" class="hover:text-blue-300 ml-2">Términos de Servicio</a>
+        </div>
+        Este sitio está protegido por reCAPTCHA y se aplican la
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener"
+          class="underline hover:text-blue-300">Política de Privacidad</a>
+        y los
+        <a href="https://policies.google.com/terms" target="_blank" rel="noopener"
+          class="underline hover:text-blue-300">Términos de Servicio</a>
+        de Google.
+      </div>
   </main>
 
   <!-- Toast Container -->
@@ -169,330 +182,7 @@
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
-  <!-- HOTFIX: Initialize verifyRecaptchaScore globally before any modules load -->
-  <script>
-    console.log('🛡️ Initializing critical shims...');
-
-    // 1. Define directly
-    window.verifyRecaptchaScore = async function (token) {
-      console.warn('👻 verifyRecaptchaScore global shim intercepted call. Returning success.');
-      return { success: true, score: 1.0, action: 'shim_global', hostname: window.location.hostname };
-    };
-
-    // 2. Aggressive Error Trap
-    window.addEventListener('error', function (e) {
-      if (e.message && e.message.includes('verifyRecaptchaScore is not defined')) {
-        console.warn('🚨 Trapped verifyRecaptchaScore ReferenceError! Defining it now...');
-        e.preventDefault(); // Stop the crash
-        window.verifyRecaptchaScore = async function (token) {
-          return { success: true, score: 1.0, action: 'shim_lazy' };
-        };
-      }
-    });
-  </script>
-
-  <script type="module">
-    // Firebase configuration
-    import './js/firebase-appcheck.js';
-
-
-
-    import { auth, db } from './js/firebase-config-env.js';
-    import { sanitizer } from './js/sanitizer.js';
-    import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
-    import { validators } from './js/input-validator.js';
-    import { SecurityLogger } from './js/security-logger.js';
-    import { logger } from './js/logger.js';
-    import { handleFirebaseNetworkError, showNetworkError } from './js/network-error-handler.js';
-    import { isDemoMode, getDemoUser, initializeDemoMode } from './js/demo-mode.js';
-    import {
-      signInWithEmailAndPassword,
-      sendPasswordResetEmail,
-      setPersistence,
-      browserSessionPersistence,
-      browserLocalPersistence
-
-    } from 'firebase/auth';
-    import { doc, getDoc } from 'firebase/firestore';
-    import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
-
-    // Check if already logged in
-    auth.onAuthStateChanged((user) => {
-      if (user && user.emailVerified) {
-        // Already logged in, redirect to app
-        window.location.href = '/buscar-usuarios.html';
-      }
-    });
-
-    // Toast notification function
-    function showToast(message, type = 'info') {
-      const toast = document.createElement('div');
-      toast.className = `glass-strong rounded-lg p-4 shadow-lg transform transition-all duration-300 ${type === 'success' ? 'border-l-4 border-green-500' :
-        type === 'error' ? 'border-l-4 border-red-500' :
-          type === 'warning' ? 'border-l-4 border-yellow-500' :
-            'border-l-4 border-blue-500'
-        }`;
-
-      const icon = type === 'success' ? 'fa-check-circle' :
-        type === 'error' ? 'fa-exclamation-circle' :
-          type === 'warning' ? 'fa-exclamation-triangle' :
-            'fa-info-circle';
-
-      const color = type === 'success' ? 'text-green-400' :
-        type === 'error' ? 'text-red-400' :
-          type === 'warning' ? 'text-yellow-400' :
-            'text-blue-400';
-
-      // Sanitize message to prevent XSS
-      const safeMessage = sanitizer.text(message);
-
-      toast.innerHTML = `
-        <div class="flex items-center gap-3">
-          <i class="fas ${icon} ${color} text-xl"></i>
-          <span class="text-white">${safeMessage}</span>
-        </div>
-      `;
-
-      document.getElementById('toastContainer').appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-      }, 4000);
-    }
-
-    // Toggle password visibility
-    document.getElementById('togglePassword').addEventListener('click', function () {
-      const passwordInput = document.getElementById('password');
-      const icon = this.querySelector('i');
-
-      if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    });
-
-    // Forgot password handler
-    document.getElementById('forgotPassword').addEventListener('click', async function (e) {
-      e.preventDefault();
-
-      const email = document.getElementById('email').value;
-
-      if (!email) {
-        showToast('Por favor ingresa tu correo electrónico', 'warning');
-        document.getElementById('email').focus();
-        return;
-      }
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        showToast('Correo de recuperación enviado. Revisa tu bandeja de entrada.', 'success');
-      } catch (error) {
-        logger.error('Error sending password reset:', error);
-        if (error.code === 'auth/user-not-found') {
-          showToast('No existe una cuenta con este correo electrónico', 'error');
-        } else {
-          showToast('Error al enviar correo de recuperación: ' + error.message, 'error');
-        }
-      }
-    });
-
-    // Login form handler
-    document.getElementById('loginForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const rememberMe = document.getElementById('rememberMe').checked;
-      const loginButton = document.getElementById('loginButton');
-
-      // ✅ Email validation
-      if (!validators.email(email)) {
-        showToast('Por favor ingresa un email válido', 'error');
-        return;
-      }
-
-      // ✅ Password basic validation
-      if (!password || password.length < 6) {
-        showToast('Contraseña inválida', 'error');
-        return;
-      }
-
-      // ✅ Rate limiting check (5 attempts per minute)
-      if (!RateLimiters.login.tryRequest(email)) {
-        const retryAfter = RateLimiters.login.getRetryAfter(email);
-        showRateLimitError('inicio de sesión', retryAfter);
-        return;
-      }
-
-      // Disable button
-      loginButton.disabled = true;
-      loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
-
-      try {
-        // Set persistence based on "Remember Me"
-        const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-        await setPersistence(auth, persistence);
-
-        // Sign in
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Get user token to check if admin
-        const tokenResult = await user.getIdTokenResult();
-        const isAdmin = tokenResult.claims.role === 'admin';
-
-        // ADMINS: Skip email verification and profile checks
-        if (!isAdmin) {
-          // Check if email is verified (only for regular users)
-          if (!user.emailVerified) {
-            showToast('Por favor verifica tu correo electrónico antes de iniciar sesión', 'warning');
-            await auth.signOut();
-            loginButton.disabled = false;
-            loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
-            return;
-          }
-
-          // Check if user profile exists (only for regular users)
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-
-          if (!userDoc.exists()) {
-            showToast('Error: Perfil de usuario no encontrado', 'error');
-            await auth.signOut();
-            loginButton.disabled = false;
-            loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
-            return;
-          }
-        } else {
-          logger.info('Admin login - bypassing email verification and profile checks', { uid: user.uid });
-        }
-
-        // ✅ Log successful login
-        SecurityLogger.logSuccessfulLogin(user.uid, email);
-
-        showToast('¡Bienvenido de vuelta!', 'success');
-
-        // Redirect to app
-        setTimeout(() => {
-          window.location.href = '/buscar-usuarios.html';
-        }, 1000);
-
-      } catch (error) {
-        // IMPROVED DEBUGGING: Explicitly log strings
-        console.error("❌ LOGIN FAILURE DEBUG INFO:");
-        console.error("   Message:", error.message);
-        console.error("   Code:", error.code);
-        console.error("   Full Error:", JSON.stringify(error, null, 2));
-
-        logger.error('Login error:', error.message || error);
-
-        // Handle network errors with detailed information
-        if (error.code === 'auth/network-request-failed' ||
-          error.code === 'auth/internal-error' ||
-          error.code === 'auth/unavailable' ||
-          error.code === 'auth/timeout') {
-
-          const errorInfo = handleFirebaseNetworkError(error, 'inicio de sesión');
-          showNetworkError(errorInfo, showToast);
-
-          // Log additional debugging information
-          console.error('[LOGIN NETWORK ERROR]', {
-            code: error.code,
-            hostname: location.hostname,
-            protocol: location.protocol,
-            online: navigator.onLine,
-            timestamp: new Date().toISOString()
-          });
-
-          // Offer demo mode for development/testing
-          if (errorInfo.isDomainIssue || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-            // Automatically activate demo mode for domain issues
-            try {
-              console.log('🔄 Activando modo demo automáticamente para login...');
-
-              // Demo mode login (for testing only)
-              const demoUserData = {
-                uid: 'demo_user_123',
-                email: email,
-                displayName: 'Usuario Demo',
-                role: 'user',
-                subscription: 'free',
-                isDemo: true,
-                loginTime: new Date().toISOString(),
-                demoMessage: 'Modo demo activado - dominio no autorizado en Firebase'
-              };
-
-              // Store demo user data in localStorage for testing
-              localStorage.setItem('demoUser', JSON.stringify(demoUserData));
-              localStorage.setItem('demoToken', 'demo_token_' + Date.now());
-              localStorage.setItem('isDemoMode', 'true');
-
-              showToast('✅ Modo demo activado automáticamente', 'success');
-              showToast('🎯 Inicio de sesión demo exitoso', 'info');
-              showToast('💡 Nota: Estás en modo demo - funcionalidad limitada', 'warning');
-
-              // Redirect to demo dashboard
-              setTimeout(() => {
-                window.location.href = '/buscar-usuarios.html?demo=true&auto=true';
-              }, 3000);
-
-              return; // Exit early since we handled it
-            } catch (demoError) {
-              console.error('Demo mode error:', demoError);
-              showToast('❌ Error incluso en modo demo', 'error');
-            }
-          }
-
-        } else {
-          // Handle other authentication errors
-          let errorMessage = 'Error al iniciar sesión';
-
-          switch (error.code) {
-            case 'auth/invalid-email':
-              errorMessage = 'Correo electrónico inválido';
-              break;
-            case 'auth/user-disabled':
-              errorMessage = 'Esta cuenta ha sido deshabilitada';
-              break;
-            case 'auth/user-not-found':
-              errorMessage = 'No existe una cuenta con este correo';
-              break;
-            case 'auth/wrong-password':
-              errorMessage = 'Contraseña incorrecta';
-              break;
-            case 'auth/invalid-credential':
-              errorMessage = 'Credenciales inválidas. Verifica tu correo y contraseña';
-              break;
-            case 'auth/too-many-requests':
-              errorMessage = 'Demasiados intentos fallidos. Intenta más tarde';
-              break;
-            default:
-              errorMessage = error.message;
-          }
-
-          // ✅ Log failed login
-          SecurityLogger.logFailedLogin(email, errorMessage);
-
-          showToast(errorMessage, 'error');
-        }
-
-        // Re-enable button
-        loginButton.disabled = false;
-        loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión';
-      }
-    });
-
-    // Initialize demo mode UI if active
-    initializeDemoMode();
-  </script>
-
-  <!-- Auth Proxy Fallback -->
+  <script type="module" src="./js/login.js"></script>
 
 </body>
 

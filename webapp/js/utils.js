@@ -140,7 +140,29 @@ function toRad(degrees) {
  * @param {string} reputation - Reputation level: 'BRONCE', 'PLATA', 'ORO', 'PLATINO'
  * @returns {object} Badge information with color, icon, and label
  */
-export function getReputationBadge(reputation) {
+/**
+ * Get reputation badge information
+ * @param {string} reputation - Reputation level: 'BRONCE', 'PLATA', 'ORO', 'PLATINO'
+ * @param {number} completedDates - Number of completed dates (optional)
+ * @returns {object} Badge information with color, icon, and label
+ */
+export function getReputationBadge(reputation, completedDates = 0) {
+  // Logic: Default is ORO. If dates >= 5, upgrade to PLATINO.
+  // We keep 'BRONCE' and 'PLATA' just in case they are explicitly set in DB for some reason (e.g. penalty)
+  // But generally, all men start at ORO.
+
+  let effectiveReputation = reputation || 'ORO';
+
+  // Upgrade to Platinum if criteria met
+  if (completedDates >= 5) {
+    effectiveReputation = 'PLATINO';
+  }
+
+  // Ensure default is ORO if weird value comes in, unless it's a known lower tier
+  if (!['BRONCE', 'PLATA', 'ORO', 'PLATINO'].includes(effectiveReputation)) {
+    effectiveReputation = 'ORO';
+  }
+
   const badges = {
     'BRONCE': {
       color: 'text-amber-700 bg-amber-900/30 border border-amber-700/50',
@@ -164,7 +186,37 @@ export function getReputationBadge(reputation) {
     }
   };
 
-  return badges[reputation] || badges['BRONCE'];
+  return badges[effectiveReputation] || badges['ORO'];
+}
+
+/**
+ * Get availability status info for women
+ * @param {string} status - Status code: 'available', 'planned', 'unavailable'
+ * @returns {object} Status info with color, icon, label
+ */
+export function getAvailabilityStatus(status) {
+  const statuses = {
+    'available': { // VERDE
+      color: 'text-green-400 bg-green-900/30 border border-green-500/50',
+      dotColor: 'bg-green-500',
+      icon: 'fa-check-circle',
+      label: 'Disponible (Inmediata)'
+    },
+    'planned': { // AMARILLO
+      color: 'text-yellow-400 bg-yellow-900/30 border border-yellow-500/50',
+      dotColor: 'bg-yellow-500',
+      icon: 'fa-calendar-check',
+      label: 'Cita Planeada'
+    },
+    'unavailable': { // ROJO
+      color: 'text-red-400 bg-red-900/30 border border-red-500/50',
+      dotColor: 'bg-red-500',
+      icon: 'fa-ban',
+      label: 'No Acepta Citas'
+    }
+  };
+
+  return statuses[status] || statuses['available']; // Default to available
 }
 
 /**
