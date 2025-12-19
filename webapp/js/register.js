@@ -256,12 +256,14 @@ if (registerForm) {
                 },
                 stats: {
                     score: 0,
-                    flakeCount: 0
+                    flakeCount: 0,
+                    reputation: gender === 'masculino' ? 'ORO' : 'BRONCE' // ✅ Default reputation
                 },
                 // Keep root metadata for standard Firebase querying/rules
                 createdAt: serverTimestamp(),
                 isOnline: true,
                 lastActivity: serverTimestamp(),
+                reputation: gender === 'masculino' ? 'ORO' : 'BRONCE', // ✅ Flattened for easier access
                 // Legacy fields support (optional, can be removed if strictly following new schema, but safer to keep some for transition)
                 email: email,
                 userRole: 'regular',

@@ -1442,6 +1442,24 @@
         if (userNameEl) userNameEl.textContent = currentUserData.alias || 'Usuario';
         if (userEmailEl) userEmailEl.textContent = currentUser.email;
 
+        // Reputation - Display logic
+        const reputationEl = document.getElementById('reputation');
+        const reputationBadgeEl = document.getElementById('reputationBadge');
+        const reputationTextEl = document.getElementById('reputationText');
+
+        if (reputationEl || reputationBadgeEl || reputationTextEl) {
+          const reputation = currentUserData.reputation || currentUserData.stats?.reputation || 'BRONCE';
+          // Simple mapping matching badges-system.js/css classes
+          // Classes are usually: reputation-badge reputation-oro / reputation-plata / etc.
+          const reputationLower = reputation.toLowerCase();
+
+          if (reputationEl) reputationEl.textContent = reputation;
+          if (reputationTextEl) reputationTextEl.textContent = reputation.charAt(0).toUpperCase() + reputation.slice(1).toLowerCase();
+          if (reputationBadgeEl) {
+            reputationBadgeEl.className = `reputation-badge reputation-${reputationLower}`;
+          }
+        }
+
         // Photo - SAFE ELEMENT ACCESS
         const profilePhotoEl = document.getElementById('profilePhoto');
         const photoPlaceholderEl = document.getElementById('photoPlaceholder');
