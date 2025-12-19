@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel - TuCitaSegura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="./css/input.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-white">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+    </div>
+
+    <!-- Top Bar -->
+    <nav class="glass sticky top-0 z-40 border-b border-white/10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-rocket text-blue-500 text-2xl"></i>
+                <span class="font-bold text-lg tracking-wide">TuCitaSegura</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="language-selector-container" class="relative z-50"></div>
+                <button id="logoutBtn"
+                    class="p-2 rounded-full hover:bg-white/10 transition text-slate-300 hover:text-white"
+                    title="Cerrar Sesión" data-i18n="nav.logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-5xl pb-24">
+
+        <!-- Welcome Section -->
+        <div class="flex flex-col md:flex-row items-center gap-6 mb-10 animate-fade-in">
+            <div class="relative group cursor-pointer" onclick="window.location.href='/perfil.html'">
+                <img id="userAvatar" src="" alt="Avatar"
+                    class="w-24 h-24 rounded-full border-4 border-blue-500/30 object-cover shadow-lg group-hover:border-blue-500 transition-colors">
+                <div
+                    class="absolute bottom-0 right-0 bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-slate-900">
+                    <i class="fas fa-pen text-xs"></i>
+                </div>
+            </div>
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl font-bold mb-1"><span data-i18n="dash.welcome">¡Hola</span>, <span id="userAlias"
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Usuario</span>!
+                    👋</h1>
+                <p class="text-slate-400 text-sm mb-3">Bienvenido a tu panel de control.</p>
+
+                <!-- Verification Status -->
+                <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                    <span id="emailBadge"
+                        class="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-400">
+                        <i class="fas fa-envelope mr-1"></i> Email
+                    </span>
+                    <span id="phoneBadge"
+                        class="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-400 cursor-pointer hover:bg-white/10 transition">
+                        <i class="fas fa-mobile-alt mr-1"></i> Móvil (Sin verificar)
+                    </span>
+                    <span id="idBadge"
+                        class="px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-400">
+                        <i class="fas fa-id-card mr-1"></i> ID
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24 animate-fade-in" style="animation-delay: 0.1s">
+            <div class="glass p-4 rounded-2xl text-center">
+                <div class="text-2xl font-bold text-blue-400 mb-1" id="balanceStat">0€</div>
+                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-i18n="dash.balance">
+                    Saldo</div>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center cursor-pointer hover:bg-white/5 transition"
+                onclick="window.location.href='/conversaciones.html'">
+                <div class="text-2xl font-bold text-green-400 mb-1" id="messagesStat">0</div>
+                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-i18n="nav.chat">Mensajes
+                </div>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center cursor-pointer hover:bg-white/5 transition"
+                onclick="window.location.href='/citas.html'">
+                <div class="text-2xl font-bold text-purple-400 mb-1" id="datesStat">0</div>
+                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-i18n="dash.dates">Citas
+                </div>
+            </div>
+            <div class="glass p-4 rounded-2xl text-center cursor-pointer hover:bg-white/5 transition"
+                onclick="window.location.href='/favoritos.html'">
+                <div class="text-2xl font-bold text-pink-400 mb-1" id="likesStat">0</div>
+                <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold" data-i18n="dash.favorites">
+                    Favoritos</div>
+            </div>
+        </div>
+
+
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.2s">
+
+            <!-- Buscar -->
+            <a href="/buscar-usuarios.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-search text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg" data-i18n="dash.search">Buscar Pareja</h3>
+            </a>
+
+            <!-- Mensajes -->
+            <a href="/conversaciones.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform relative">
+                    <i class="fas fa-comments text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg" data-i18n="dash.messages">Mis Mensajes</h3>
+            </a>
+
+            <!-- Citas -->
+            <a href="/citas.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform relative">
+                    <i class="fas fa-calendar-check text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg" data-i18n="dash.my_dates">Mis Citas</h3>
+            </a>
+
+            <!-- Monedero / Pagos -->
+            <a href="/cuenta-pagos.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-wallet text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg">Monedero & Pagos</h3>
+                <span class="text-xs text-slate-400 mt-1">PayPal, Depósitos</span>
+            </a>
+
+            <!-- Favoritos -->
+            <a href="/favoritos.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-heart text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg">Mis Favoritos</h3>
+            </a>
+
+            <!-- Perfil -->
+            <a href="/perfil.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-user-circle text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg" data-i18n="profile.edit">Editar Perfil</h3>
+            </a>
+
+
+    </main>
+
+    <!-- Verify Phone Modal -->
+    <div id="phoneModal" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center p-4">
+        <div class="glass-card bg-slate-900 w-full max-w-md rounded-2xl p-6 relative">
+            <button onclick="document.getElementById('phoneModal').classList.add('hidden')"
+                class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-mobile-alt text-3xl text-blue-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold">Verificar Móvil</h3>
+                <p class="text-slate-400 mt-2">Introduce tu número para recibir un código OTP y asegurar tu cuenta.</p>
+            </div>
+
+            <form id="phoneForm" class="space-y-4">
+                <div>
+                    <label class="text-sm font-semibold text-slate-300 ml-1">Número de teléfono</label>
+                    <div class="flex gap-2 mt-1">
+                        <select class="bg-white/5 border border-white/10 rounded-xl px-3 py-3 w-24">
+                            <option value="+34">🇪🇸 +34</option>
+                            <option value="+1">🇺🇸 +1</option>
+                            <!-- More codes -->
+                        </select>
+                        <input type="tel" placeholder="600 000 000"
+                            class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition shadow-lg">
+                    Enviar Código
+                </button>
+            </form>
+            <p class="text-xs text-center text-slate-500 mt-4"><i class="fas fa-lock mr-1"></i> Tu número no será
+                público.</p>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script type="module">
+        import { auth, db } from './js/firebase-config-env.js';
+        import { onAuthStateChanged, signOut } from "firebase/auth";
+        import { loadDashboardData } from './js/dashboard-loader.js';
+        import { loadTheme } from './js/theme.js';
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Initialize Dashboard
+                await loadDashboardData(user);
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            } else {
+                window.location.href = '/login.html';
+            }
+        });
+
+
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        });
+
+        // Phone Form (Placeholder)
+        document.getElementById('phoneForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Funcionalidad de verificación OTP en desarrollo (Requiere integración SMS backend).');
+            document.getElementById('phoneModal').classList.add('hidden');
+        });
+
+    </script>
+
+    <script type="module" src="./js/i18n.js"></script>
+    <script type="module" src="./js/language-selector.js"></script>
+    <!-- Presence Heartbeat -->
+    <script type="module" src="./js/presence.js"></script>
+</body>
+
+</html>
