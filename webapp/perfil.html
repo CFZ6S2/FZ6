@@ -15,6 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
+
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
@@ -180,11 +186,12 @@
           <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
-          <h1 class="text-2xl font-bold">
+          <h1 class="text-2xl font-bold" data-i18n="profile.title">
             <i class="fas fa-user-circle mr-2"></i>
             Mi Perfil
           </h1>
         </div>
+        <div id="language-selector-container" class="relative z-50"></div>
       </div>
     </div>
   </nav>
@@ -334,15 +341,28 @@
               </button>
             </div>
 
+            <div class="relative mb-2">
+              <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="locationSearch"
+                class="w-full pl-12 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 focus:border-blue-500 focus:bg-white/5 transition"
+                placeholder="Buscar ciudad o lugar manualmente...">
+            </div>
+
             <input type="hidden" id="latitude" value="">
             <input type="hidden" id="longitude" value="">
-            <div id="locationMap"
-              class="hidden h-48 w-full rounded-xl overflow-hidden shadow-inner border border-white/10"></div>
+            <!-- Fixed: Explicit styles -->
+            <div id="locationMap" style="height: 400px; width: 100%; display: block; background-color: #1e293b;"
+              class="h-64 w-full rounded-xl overflow-hidden shadow-inner relative z-0">
+              <div class="h-full w-full flex items-center justify-center text-slate-500">
+                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando mapa...
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- Profesión -->
         <div class="md:col-span-2">
+          <!-- (Keeping existing content) -->
           <label class="label text-sm uppercase tracking-wide text-slate-400">¿A Qué Te Dedicas?</label>
           <div class="relative">
             <i class="fas fa-briefcase absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
@@ -352,9 +372,11 @@
           </div>
         </div>
 
+
         <!-- Autodescripción -->
         <div class="md:col-span-2">
-          <label class="label text-sm uppercase tracking-wide text-slate-400">Autodescripción</label>
+          <label class="label text-sm uppercase tracking-wide text-slate-400"
+            data-i18n="profile.bio">Autodescripción</label>
           <div class="relative">
             <textarea id="bio" rows="4"
               class="w-full p-4 rounded-xl bg-black/20 border border-white/10 focus:border-blue-500 focus:bg-white/5 transition resize-none"
@@ -521,7 +543,7 @@
           class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
           <i class="fas fa-images text-white text-lg"></i>
         </div>
-        <h3 class="text-xl md:text-2xl font-bold">Galería de Fotos</h3>
+        <h3 class="text-xl md:text-2xl font-bold" data-i18n="profile.photos">Galería de Fotos</h3>
       </div>
 
       <p class="text-sm text-slate-400 mb-4">Sube hasta 6 fotos adicionales para tu perfil (mínimo 2 requeridas)</p>
@@ -670,6 +692,9 @@
 
   <!-- DOMPurify for XSS Protection -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script type="module" src="./js/i18n.js"></script>
+  <script type="module" src="./js/language-selector.js"></script>
   <script type="module" src="./js/sanitizer.js"></script>
 
   <!-- Demo Mode Banner -->
@@ -916,8 +941,12 @@
         // Load Google Maps API if not loaded (idempotent)
         await loadGoogleMapsAPI();
 
-        // Show map container
+        // Show map container forcefully
         mapContainer.classList.remove('hidden');
+        mapContainer.style.display = 'block';
+        mapContainer.style.height = '300px'; // Force height
+        mapContainer.style.width = '100%';
+        console.log('🗺️ Map container forcefully unhidden');
 
         // If map already exists, update the view
         if (map) {
@@ -935,22 +964,82 @@
 
         // Create new map
         const { Map } = await google.maps.importLibrary("maps");
-        // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker"); // Future proofing
 
-        map = new Map(mapContainer, {
-          center: { lat: lat, lng: lon },
-          zoom: MAP_CONFIG.zoom,
-          mapTypeId: MAP_CONFIG.mapTypeId,
-          gestureHandling: MAP_CONFIG.gestureHandling,
-          styles: MAP_CONFIG.styles,
-          mapId: 'DEMO_MAP_ID', // Required for AdvancedMarkerElement
-          mapTypeControl: true,
-          streetViewControl: false,
-          fullscreenControl: false
-        });
+        // Ensure container is empty (remove loading spinner)
+        mapContainer.innerHTML = '';
+
+        // Remove class hidden explicitly again just in case
+        mapContainer.classList.remove('hidden');
+
+        try {
+          map = new Map(mapContainer, {
+            center: { lat: lat, lng: lon },
+            zoom: MAP_CONFIG.zoom || 15,
+            mapTypeId: 'roadmap',
+            // Default styles to avoid JSON errors
+            styles: [],
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: false
+          });
+          console.log('✅ Map initialized (Legacy mode)');
+        } catch (mapErr) {
+          console.error('❌ Error creating Map variables:', mapErr);
+        }
 
         // Create marker
         createMarker(lat, lon);
+
+        // Initialize Autocomplete
+        const input = document.getElementById("locationSearch");
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.bindTo("bounds", map);
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+
+          if (!place.geometry || !place.geometry.location) {
+            showToast("No se encontraron detalles para: " + place.name, 'warning');
+            return;
+          }
+
+          // If the place has a geometry, then present it on a map.
+          if (place.geometry.viewport) {
+            map.fitBounds(place.geometry.viewport);
+          } else {
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+          }
+
+          marker.setPosition(place.geometry.location);
+
+          userLatitude = place.geometry.location.lat();
+          userLongitude = place.geometry.location.lng();
+
+          // Save to inputs
+          document.getElementById('latitude').value = userLatitude;
+          document.getElementById('longitude').value = userLongitude;
+
+          // Update city input safely
+          let municipality = 'Ubicación seleccionada';
+          if (place.address_components) {
+            const locality = place.address_components.find(c => c.types.includes('locality'));
+            if (locality) municipality = locality.long_name;
+            else {
+              const admin = place.address_components.find(c => c.types.includes('administrative_area_level_1'));
+              if (admin) municipality = admin.long_name;
+            }
+          }
+
+          const cityInput = document.getElementById('city');
+          if (cityInput) {
+            cityInput.removeAttribute('readonly');
+            cityInput.value = municipality;
+            cityInput.setAttribute('readonly', 'readonly');
+          }
+
+          showToast(`📍 Ubicación actualizada: ${municipality}`, 'success');
+        });
 
         // Update location when map is clicked
         map.addListener('click', async (event) => {
@@ -961,6 +1050,9 @@
           userLatitude = clickedLat;
           userLongitude = clickedLng;
 
+          document.getElementById('latitude').value = userLatitude;
+          document.getElementById('longitude').value = userLongitude;
+
           await reverseGeocode(clickedLat, clickedLng);
         });
 
@@ -970,32 +1062,38 @@
       }
     }
 
-    // Create draggable marker
+    // Create draggable marker (Legacy)
     async function createMarker(lat, lon) {
-      // Fallback to legacy marker if AdvancedMarkerElement is complex for now, 
-      // but the warning says Marker is deprecated. 
-      // Let's stick to legacy Marker for stability unless specifically asked to migrate.
-      // The user complained about LOCATION, not just the warning.
+      if (marker) {
+        marker.setMap(null);
+      }
 
       marker = new google.maps.Marker({
         position: { lat: lat, lng: lon },
         map: map,
         draggable: true,
-        animation: google.maps.Animation.DROP,
-        title: 'Arrastra para ajustar tu ubicación'
+        title: 'Tu ubicación',
+        animation: google.maps.Animation.DROP
       });
 
-      // Update location when marker is dragged
+      console.log('✅ Legacy Marker created at', lat, lon);
+
       marker.addListener('dragend', async (event) => {
         const newLat = event.latLng.lat();
         const newLng = event.latLng.lng();
 
+        console.log('📍 Marker dragged to:', newLat, newLng);
+
         userLatitude = newLat;
         userLongitude = newLng;
+
+        document.getElementById('latitude').value = newLat;
+        document.getElementById('longitude').value = newLng;
 
         await reverseGeocode(newLat, newLng);
       });
     }
+
 
     // ... (rest of code) ...
 
@@ -1420,6 +1518,10 @@
           document.getElementById('latitude').value = userLatitude;
           document.getElementById('longitude').value = userLongitude;
           initializeMap(userLatitude, userLongitude);
+        } else {
+          // Initialize map with default (Madrid) if no location set
+          console.log('🌍 No location set. Initializing map with default.');
+          initializeMap(null, null);
         }
 
         // Load gallery photos - SAFE ELEMENT ACCESS
@@ -1988,8 +2090,23 @@
           console.log('Some photos could not be deleted:', e);
         }
 
-        // 3. Sign out and delete authentication account
-        await signOut(auth);
+        // 3. Delete authentication account (Actual user deletion)
+        try {
+          if (auth.currentUser) {
+            await auth.currentUser.delete();
+          }
+        } catch (authError) {
+          console.warn('Auth delete failed:', authError);
+          if (authError.code === 'auth/requires-recent-login') {
+            showToast('Vuelve a iniciar sesión para confirmar la eliminación.', 'warning');
+            setTimeout(async () => {
+              await signOut(auth);
+              window.location.href = '/login.html';
+            }, 2000);
+            return;
+          }
+          await signOut(auth);
+        }
 
         showToast('Cuenta eliminada exitosamente', 'success');
 
