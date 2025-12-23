@@ -11,7 +11,8 @@ export default defineConfig(({ mode }) => {
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
                     login: path.resolve(__dirname, 'login.html'),
-                    login2: path.resolve(__dirname, 'login2.html'),
+                    dashboard: path.resolve(__dirname, 'dashboard.html'),
+
                     admin: path.resolve(__dirname, 'admin.html'),
                     admin_login: path.resolve(__dirname, 'admin-login.html'),
 
@@ -37,12 +38,20 @@ export default defineConfig(({ mode }) => {
                     suscripcion: path.resolve(__dirname, 'suscripcion.html'),
                     verificacion_identidad: path.resolve(__dirname, 'verificacion-identidad.html'),
                     verify_email: path.resolve(__dirname, 'verify-email.html'),
-                    video_chat: path.resolve(__dirname, 'video-chat.html')
+                    video_chat: path.resolve(__dirname, 'video-chat.html'),
+                    diagnostics: path.resolve(__dirname, 'diagnostics.html'),
+                    test_firestore_minimal: path.resolve(__dirname, 'test-firestore-minimal.html'),
+
+                    // Legal & Support
+                    privacidad: path.resolve(__dirname, 'privacidad.html'),
+                    terminos: path.resolve(__dirname, 'terminos.html'),
+                    contacto: path.resolve(__dirname, 'contacto.html')
                 }
             }
         },
         server: {
-            port: 3000,
+            port: 5173,
+            hmr: false, // ⚠️ HMR desactivado temporalmente para pruebas de reCAPTCHA - reactivar con hmr: true
             proxy: {
                 // Redirige llamadas /api/* a backend local
                 '/api': {

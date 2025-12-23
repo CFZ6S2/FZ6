@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,7 +15,12 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-    <meta name="theme-color" content="#764ba2">
+  
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+      <meta name="theme-color" content="#764ba2">
 
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -135,10 +140,18 @@
                     if (!user) return;
                     document.getElementById('resendEmailBtn').disabled = true;
                     document.getElementById('resendEmailBtn').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-                    await sendEmailVerification(user, {
-                        url: window.location.origin + '/verify-email.html?redirect=' + encodeURIComponent(this.redirectUrl),
-                        handleCodeInApp: true
+                    const res = await fetch('/api/v1/debug/send-verification-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: user.email,
+                            displayName: user.displayName || user.email.split('@')[0],
+                            redirect: window.location.origin + '/verify-email.html?redirect=' + encodeURIComponent(this.redirectUrl)
+                        })
                     });
+                    if (!res.ok) {
+                        throw new Error('No se pudo enviar el email de verificación');
+                    }
                     this.showStatus('success', 'Email de verificación enviado. Por favor revisa tu bandeja de entrada.');
                     setTimeout(() => {
                         document.getElementById('resendEmailBtn').disabled = false;

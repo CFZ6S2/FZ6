@@ -18,17 +18,31 @@ export const themes = {
       end: 'rgba(255, 0, 128, 0.2)'
     }
   },
-  blue: {
-    name: 'Azul Océano',
-    icon: '💙',
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    primary: '#4facfe',
-    secondary: '#00f2fe',
-    accent: '#0080ff',
+  light: {
+    name: 'Modo Claro',
+    icon: '☀️',
+    gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    primary: '#667eea',
+    secondary: '#764ba2',
+    accent: '#ff0080',
     background: {
-      start: 'rgba(79, 172, 254, 0.3)',
-      middle: 'rgba(0, 242, 254, 0.3)',
-      end: 'rgba(0, 128, 255, 0.2)'
+      start: 'rgba(255, 255, 255, 0.8)',
+      middle: 'rgba(245, 247, 250, 0.8)',
+      end: 'rgba(195, 207, 226, 0.6)'
+    },
+    isLight: true // Flag to identify light mode
+  },
+  blue: {
+    name: 'Azul Profundo',
+    icon: '💙',
+    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)', // Dark Blue to Royal Blue
+    primary: '#2563eb',
+    secondary: '#1d4ed8',
+    accent: '#60a5fa',
+    background: {
+      start: 'rgba(30, 58, 138, 0.4)',
+      middle: 'rgba(37, 99, 235, 0.3)',
+      end: 'rgba(59, 130, 246, 0.2)'
     }
   },
   green: {
@@ -165,6 +179,11 @@ export function applyTheme(themeName) {
   const isDarkMode = theme.isDark || false;
 
   style.textContent = `
+    /* Global Transitions */
+    body, .glass, .glass-strong, input, textarea, select, label, h1, h2, h3, h4, h5, h6, .fas, .far, .fab {
+      transition: background 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease !important;
+    }
+
     body {
       background: ${theme.gradient} !important;
       ${isDarkMode ? 'color: #e2e8f0 !important;' : ''}
@@ -175,8 +194,13 @@ export function applyTheme(themeName) {
         radial-gradient(circle at 20% 50%, ${theme.background.start}, transparent 50%),
         radial-gradient(circle at 80% 80%, ${theme.background.middle}, transparent 50%),
         radial-gradient(circle at 40% 20%, ${theme.background.end}, transparent 50%) !important;
+      transition: background 0.5s ease !important;
     }
-
+    
+    /* ... rest of styles ... */
+    
+    /* Omitted for brevity, but I will include the full necessary context below to be safe */
+    
     .gradient-button {
       background: ${theme.gradient} !important;
     }
@@ -253,12 +277,78 @@ export function applyTheme(themeName) {
         color: #e2e8f0 !important;
       }
     ` : ''}
+
+    /* Light mode specific adjustments */
+    ${theme.isLight ? `
+      body {
+        color: #1a202c !important;
+      }
+      
+      .text-white {
+        color: #1a202c !important;
+      }
+      
+      .text-slate-300, .text-slate-200, .text-slate-400 {
+        color: #4a5568 !important;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.85) !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        color: #1a202c !important;
+      }
+      
+      .glass-strong {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid rgba(203, 213, 224, 0.8) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+      }
+
+      input, textarea, select {
+        background: #ffffff !important;
+        color: #1a202c !important;
+        border: 1px solid #cbd5e0 !important;
+      }
+      
+      input:focus, textarea:focus, select:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+      }
+
+      label, .label {
+        color: #2d3748 !important;
+      }
+      
+      h1, h2, h3, h4, h5, h6 {
+        color: #1a202c !important;
+      }
+      
+      /* Make icons visible on light bg */
+      .fas, .far, .fab {
+        color: inherit;
+      }
+      
+      .text-white\/80 {
+        color: #4a5568 !important;
+      }
+      
+      /* Fix placeholder colors */
+      ::placeholder {
+        color: #a0aec0 !important;
+      }
+    ` : ''}
   `;
 
   document.head.appendChild(style);
 
   // Save to localStorage for instant loading
   localStorage.setItem('userTheme', themeName);
+
+  // Dispatch event for UI sync
+  document.dispatchEvent(new CustomEvent('themeChanged', {
+    detail: { theme: themeName }
+  }));
 }
 
 /**
@@ -267,8 +357,8 @@ export function applyTheme(themeName) {
  * @returns {string} Theme name
  */
 export function loadTheme(userData = null) {
-  // Priority: userData from Firestore > localStorage > default (purple)
-  let themeName = 'purple';
+  // Priority: userData from Firestore > localStorage > default (blue)
+  let themeName = 'blue';
 
   if (userData && userData.theme) {
     themeName = userData.theme;

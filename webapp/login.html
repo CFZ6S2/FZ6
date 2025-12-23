@@ -13,8 +13,14 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon\" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
+
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
@@ -77,9 +83,12 @@
           <i class="fas fa-heart-circle-check text-3xl text-blue-400"></i>
           <span class="font-bold text-2xl">TuCitaSegura</span>
         </a>
-        <a href="/register.html" class="text-sm hover:text-blue-300 transition">
-          ¿No tienes cuenta? <span class="font-bold">Regístrate</span>
-        </a>
+        <div class="flex items-center gap-4">
+          <div id="language-selector-container" class="relative z-50"></div>
+          <a href="/register.html" class="text-sm hover:text-blue-300 transition" data-i18n="nav.register">
+            ¿No tienes cuenta? <span class="font-bold">Regístrate</span>
+          </a>
+        </div>
       </div>
     </div>
   </header>
@@ -89,7 +98,7 @@
     <div class="glass-strong rounded-2xl p-8 fade-in">
       <div class="text-center mb-8">
         <i class="fas fa-user-circle text-6xl text-blue-400 mb-4"></i>
-        <h1 class="text-3xl font-bold mb-2">Iniciar Sesión</h1>
+        <h1 class="text-3xl font-bold mb-2" data-i18n="auth.login.title">Iniciar Sesión</h1>
         <p class="text-slate-300">Bienvenido de vuelta a TuCitaSegura</p>
       </div>
 
@@ -97,7 +106,7 @@
       <form id="loginForm" class="space-y-6">
         <!-- Email -->
         <div>
-          <label for="email" class="block text-sm font-medium mb-2">
+          <label for="email" class="block text-sm font-medium mb-2" data-i18n="auth.email">
             <i class="fas fa-envelope mr-2"></i>Correo Electrónico
           </label>
           <input type="email" id="email" name="email" required placeholder="tu@email.com"
@@ -106,7 +115,7 @@
 
         <!-- Password -->
         <div>
-          <label for="password" class="block text-sm font-medium mb-2">
+          <label for="password" class="block text-sm font-medium mb-2" data-i18n="auth.password">
             <i class="fas fa-lock mr-2"></i>Contraseña
           </label>
           <div class="relative">
@@ -131,7 +140,7 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" id="loginButton"
+        <button type="submit" id="loginButton" data-i18n="auth.login.submit"
           class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
           <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
         </button>
@@ -145,14 +154,7 @@
         </a>
       </p>
 
-      <!-- Emergency Bypass -->
-      <div class="mt-8 pt-6 border-t border-slate-700 text-center">
-        <p class="text-xs text-slate-400 mb-3">¿Problemas persistentes para entrar?</p>
-        <button type="button" onclick="window.activarModoEmergencia()"
-          class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-2 rounded transition border border-slate-600">
-          <i class="fas fa-hammer mr-2"></i>Activar Acceso de Emergencia (Demo)
-        </button>
-      </div>
+
 
       <!-- Info Box -->
       <div class="glass rounded-lg p-4 mt-6 text-center text-sm text-slate-300">
@@ -184,6 +186,8 @@
 
   <script type="module" src="./js/login.js"></script>
 
+  <script type="module" src="./js/i18n.js"></script>
+  <script type="module" src="./js/language-selector.js"></script>
 </body>
 
 </html>

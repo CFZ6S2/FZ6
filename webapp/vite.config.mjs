@@ -16,7 +16,7 @@ export default defineConfig({
         'register': resolve(__dirname, 'register.html'),
         'login': resolve(__dirname, 'login.html'),
         'clear-appcheck-throttle': resolve(__dirname, 'clear-appcheck-throttle.html'),
-        'recaptcha-enterprise-test': resolve(__dirname, 'recaptcha-enterprise-test.html'),
+
         'clear-cache': resolve(__dirname, 'clear-cache.html'),
         'clear-appcheck': resolve(__dirname, 'clear-appcheck.html'),
         'video-chat': resolve(__dirname, 'video-chat.html'),

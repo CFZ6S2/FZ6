@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -16,7 +16,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#764ba2">
+  
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+    <meta name="theme-color" content="#764ba2">
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#0F172A">
 
@@ -341,77 +346,83 @@
         <a href="mailto:soporte@tucitasegura.com" class="btn-primary font-bold px-8 py-3 rounded-full inline-block">
           <i class="fa-solid fa-envelope mr-2"></i>Contactar con Soporte
         </a>
-        // Then import Firebase services
-        import { auth, db } from './js/firebase-config-env.js';
-        import { onAuthStateChanged } from "firebase/auth";
-        import { doc, getDoc } from "firebase/firestore";
-        import { loadTheme } from './js/theme.js';
+      </div>
+    </div>
+  </main>
 
-        let currentUser = null;
-        let currentUserData = null;
+  <!-- Navigation / Footer (To be added later or centralized) -->
 
-        // Auth State
-        onAuthStateChanged(auth, async (user) => {
-        if (user) {
+  <!-- Firebase SDK & Logic -->
+  <script type="module">
+    import { auth, db } from './js/firebase-config-env.js';
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc } from "firebase/firestore";
+    import { loadTheme } from './js/theme.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+
+    // Auth State
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
         currentUser = user;
         await loadUserData();
         document.getElementById('loadingOverlay').classList.add('hidden');
-        } else {
+      } else {
         // Allow access without login for help page
         document.getElementById('loadingOverlay').classList.add('hidden');
-        }
-        });
+      }
+    });
 
-        // Load user data
-        async function loadUserData() {
-        try {
+    // Load user data
+    async function loadUserData() {
+      try {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
-        currentUserData = { id: userDoc.id, ...userDoc.data() };
+          currentUserData = { id: userDoc.id, ...userDoc.data() };
 
-        // Load user theme
-        loadTheme(currentUserData);
+          // Load user theme
+          loadTheme(currentUserData);
 
-        // Show SOS FAQ only for women
-        const faqSosItem = document.getElementById('faq-sos-item');
-        if (currentUserData.gender === 'femenino') {
-        faqSosItem.classList.remove('hidden');
+          // Show SOS FAQ only for women
+          const faqSosItem = document.getElementById('faq-sos-item');
+          if (currentUserData.gender === 'femenino') {
+            faqSosItem.classList.remove('hidden');
+          }
         }
-        }
-        } catch (error) {
+      } catch (error) {
         console.error('Error loading user data:', error);
-        }
-        }
+      }
+    }
 
-        // Rotación de flecha en acordeón
-        const detailsElements = document.querySelectorAll('.faq-item details');
-        detailsElements.forEach(details => {
-        details.addEventListener('toggle', () => {
+    // Rotación de flecha en acordeón
+    const detailsElements = document.querySelectorAll('.faq-item details');
+    detailsElements.forEach(details => {
+      details.addEventListener('toggle', () => {
         const icon = details.querySelector('summary i');
         if (details.open) {
-        icon.classList.add('rotate-180');
+          icon.classList.add('rotate-180');
         } else {
-        icon.classList.remove('rotate-180');
+          icon.classList.remove('rotate-180');
         }
-        });
-        });
+      });
+    });
 
-        // Búsqueda en FAQ
-        const searchInput = document.getElementById('faq-search');
-        const faqItems = document.querySelectorAll('.faq-item');
-        searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        faqItems.forEach(item => {
+    // Búsqueda en FAQ
+    const searchInput = document.getElementById('faq-search');
+    const faqItems = document.querySelectorAll('.faq-item');
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      faqItems.forEach(item => {
         const text = item.textContent.toLowerCase();
         if (text.includes(searchTerm) || searchTerm === '') {
-        item.style.display = 'block';
+          item.style.display = 'block';
         } else {
-        item.style.display = 'none';
+          item.style.display = 'none';
         }
-        });
-        });
-
-        </script>
+      });
+    });
+  </script>
 
 </body>
 

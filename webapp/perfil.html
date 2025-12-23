@@ -168,11 +168,46 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button onclick="goToSearch()"
           class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition">
-          Buscar
+          Volver al Panel
         </button>
         <button onclick="closeSuccessModal()"
           class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition">
           Seguir aquí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onboarding Wizard Modal -->
+  <div id="onboardingWizard" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[200] p-4">
+    <div class="glass-strong rounded-2xl max-w-2xl w-full p-8">
+      <!-- Progress Bar -->
+      <div class="mb-8">
+        <div class="flex justify-between mb-2">
+          <span class="text-sm font-semibold" id="wizardStepText">Paso 1 de 4</span>
+          <span class="text-sm text-slate-400" id="wizardProgress">25%</span>
+        </div>
+        <div class="w-full bg-white/10 rounded-full h-2">
+          <div id="wizardProgressBar"
+            class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
+            style="width: 25%"></div>
+        </div>
+      </div>
+
+      <!-- Step Content -->
+      <div id="wizardContent">
+        <!-- Steps will be injected here -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex gap-4 mt-8">
+        <button id="wizardPrevBtn"
+          class="hidden flex-1 glass hover:glass-strong text-white font-bold py-3 px-6 rounded-xl transition">
+          <i class="fas fa-arrow-left mr-2"></i> Anterior
+        </button>
+        <button id="wizardNextBtn"
+          class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-3 px-6 rounded-xl transition">
+          Siguiente <i class="fas fa-arrow-right ml-2"></i>
         </button>
       </div>
     </div>
@@ -183,7 +218,7 @@
     <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <a href="/buscar-usuarios.html" class="text-white/80 hover:text-white transition">
+          <a href="/dashboard.html" class="text-white/80 hover:text-white transition">
             <i class="fas fa-arrow-left text-xl"></i>
           </a>
           <h1 class="text-2xl font-bold" data-i18n="profile.title">
@@ -243,6 +278,51 @@
         </div>
 
 
+      </div>
+    </div>
+
+
+    <!-- Referral Section (Girls Only - "Invita y Gana") -->
+    <div id="referralSection" class="hidden glass-strong rounded-2xl p-6 md:p-8 mb-6 border-2 border-pink-500/30">
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <!-- Left: Hero/Icon -->
+        <div class="flex-shrink-0 text-center">
+          <div
+            class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg mx-auto mb-2">
+            <i class="fas fa-gift text-3xl text-white"></i>
+          </div>
+          <h3 class="font-bold text-pink-400">Invita y Gana</h3>
+        </div>
+
+        <!-- Middle: Stats & Code -->
+        <div class="flex-1 w-full text-center md:text-left">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="glass p-3 rounded-xl text-center">
+              <div class="text-xs text-slate-400 uppercase">Mi Código</div>
+              <div id="myReferralCode" class="text-xl font-bold text-white tracking-wider my-1 font-mono">...</div>
+              <button onclick="copyReferralCode()" class="text-xs text-blue-400 hover:text-white transition">
+                <i class="fas fa-copy mr-1"></i> Copiar
+              </button>
+            </div>
+            <div class="glass p-3 rounded-xl text-center">
+              <div class="text-xs text-slate-400 uppercase">Ganancias</div>
+              <div id="myReferralEarnings" class="text-xl font-bold text-green-400 my-1">0€</div>
+              <div class="text-xs text-slate-500">Saldo Disponible</div>
+            </div>
+          </div>
+          <p class="text-sm text-slate-300">
+            Gana <span class="font-bold text-white">10€</span> por cada amigo que se suscriba usando tu código.
+          </p>
+        </div>
+
+        <!-- Right: Action -->
+        <div class="w-full md:w-auto">
+          <button onclick="triggerShareReferral()"
+            class="w-full btn-primary bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg flex items-center justify-center gap-2 transition transform hover:scale-105">
+            <i class="fab fa-whatsapp text-xl"></i>
+            <span>Invitar por WhatsApp</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -324,6 +404,30 @@
           <p class="text-xs text-slate-400 mt-1 ml-1">Indica tu estado actual para los demás usuarios.</p>
         </div>
 
+        <!-- Privacy / Hidden Profile (Females Only) -->
+        <div id="privacyContainer"
+          class="hidden md:col-span-2 relative p-4 rounded-xl border border-pink-500/20 bg-pink-500/5 mt-4">
+          <div class="flex items-start md:items-center gap-4">
+            <div class="h-10 w-10 text-pink-400 flex items-center justify-center text-2xl shrink-0">
+              <i class="fas fa-user-secret"></i>
+            </div>
+            <div class="flex-1">
+              <label class="flex items-center cursor-pointer mb-1">
+                <div class="relative">
+                  <input type="checkbox" id="isProfileHidden" class="sr-only peer">
+                  <div
+                    class="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600">
+                  </div>
+                </div>
+                <span class="ml-3 font-bold text-white">Perfil Oculto / Modo Incógnito</span>
+              </label>
+              <p class="text-xs text-slate-300">Si activas esto, tu perfil <span class="text-pink-300 font-bold">no
+                  aparecerá en las búsquedas</span> ni en el mapa. Útil si eres influencer o publicista y solo quieres
+                usar la app para gestionar pero no ser encontrada por usuarios random.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Ubicación (Full width or split?) -> Split gives balance -->
         <div class="md:col-span-2">
           <label class="label text-sm uppercase tracking-wide text-slate-400">Ubicación (Municipio)</label>
@@ -333,7 +437,7 @@
                 <i class="fas fa-map-marker-alt absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                 <input type="text" id="city"
                   class="w-full pl-12 pr-4 py-4 rounded-xl bg-black/20 border border-white/10 focus:border-blue-500 focus:bg-white/5 transition"
-                  placeholder="Tu municipio" required readonly>
+                  placeholder="Tu municipio" required>
               </div>
               <button type="button" id="getLocationBtn"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl transition shadow-lg flex items-center justify-center">
@@ -341,22 +445,11 @@
               </button>
             </div>
 
-            <div class="relative mb-2">
-              <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-              <input type="text" id="locationSearch"
-                class="w-full pl-12 pr-4 py-3 rounded-xl bg-black/20 border border-white/10 focus:border-blue-500 focus:bg-white/5 transition"
-                placeholder="Buscar ciudad o lugar manualmente...">
-            </div>
-
             <input type="hidden" id="latitude" value="">
             <input type="hidden" id="longitude" value="">
-            <!-- Fixed: Explicit styles -->
-            <div id="locationMap" style="height: 400px; width: 100%; display: block; background-color: #1e293b;"
-              class="h-64 w-full rounded-xl overflow-hidden shadow-inner relative z-0">
-              <div class="h-full w-full flex items-center justify-center text-slate-500">
-                <i class="fas fa-spinner fa-spin mr-2"></i> Cargando mapa...
-              </div>
-            </div>
+
+            <!-- Map removed for cost optimization -->
+            <div id="locationMap" class="hidden"></div>
           </div>
         </div>
 
@@ -651,7 +744,7 @@
 
     <!-- Save Buttons -->
     <div class="flex flex-col md:flex-row gap-4">
-      <button type="button" onclick="window.location.href='/buscar-usuarios.html'"
+      <button type="button" onclick="window.location.href='/dashboard.html'"
         class="flex-1 glass hover:glass-strong text-white font-bold py-4 px-6 rounded-xl transition order-3 md:order-1">
         Cancelar / Salir
       </button>
@@ -733,12 +826,16 @@
     import { setupGlobalErrorHandling } from './js/error-handler.js';
     import { initializeNotifications } from './js/notifications.js';
     import { isDemoMode, getDemoUser, getDemoAuthState } from './js/demo-mode.js';
-    import { GOOGLE_MAPS_API_KEY, MAP_CONFIG, GEOCODING_CONFIG } from './js/google-maps-config-env.js';
     import { fileValidator, showValidationErrors } from './js/file-validator.js';
     import { verifyRecaptchaScore } from './js/recaptcha-enterprise.js';
+    import { generateReferralCode, shareReferralCode } from './js/referral-system.js';
 
     // Image optimization with lazy loading
     import './js/image-optimizer.js';
+    import { imageCompressor } from './js/image-compressor.js';
+
+    // Onboarding wizard
+    import { initOnboardingWizard } from './js/onboarding-wizard.js';
 
     // Setup global error handling
     setupGlobalErrorHandling();
@@ -763,18 +860,24 @@
     let isLoadingProfile = false; // PREVENT INFINITE LOOP
     let hasLoadedProfile = false; // TRACK IF PROFILE ALREADY LOADED
     let isNewUser = false; // TRACK IF DOCUMENT NEEDS CREATION
+    window.isPhotoProcessing = false; // TRACK PHOTO COMPRESSION STATUS
 
     // ... (rest of code) ...
 
     // Save profile (Logic Updated)
     // Availability Selector Logic
+    // Availability Selector Logic (Expanded for Privacy)
     window.toggleAvailabilitySelector = function () {
       const gender = document.getElementById('gender').value;
-      const container = document.getElementById('availabilityContainer');
+      const availContainer = document.getElementById('availabilityContainer');
+      const privacyContainer = document.getElementById('privacyContainer');
+
       if (gender === 'femenino') {
-        container.classList.remove('hidden');
+        availContainer.classList.remove('hidden');
+        if (privacyContainer) privacyContainer.classList.remove('hidden');
       } else {
-        container.classList.add('hidden');
+        availContainer.classList.add('hidden');
+        if (privacyContainer) privacyContainer.classList.add('hidden');
       }
     };
 
@@ -797,6 +900,16 @@
       };
 
       setButtonsLoading(true);
+
+      // WAIT FOR PHOTO PROCESSING (Race Condition Fix)
+      if (window.isPhotoProcessing) {
+        console.log('⏳ Waiting for photo compression...');
+        // Wait max 5 seconds
+        for (let i = 0; i < 50; i++) {
+          if (!window.isPhotoProcessing) break;
+          await new Promise(r => setTimeout(r, 100));
+        }
+      }
 
       try {
         // 1. Validate Form
@@ -839,7 +952,7 @@
         showToast('Perfil guardado exitosamente', 'success');
 
         if (shouldExit) {
-          window.location.href = '/buscar-usuarios.html';
+          window.location.href = '/dashboard.html';
         } else {
           setButtonsLoading(false);
           // Optionally Update UI
@@ -860,239 +973,15 @@
     // Splitting this into two replacements for safety.
 
 
-    // Map variables
-    let map = null;
-    let marker = null;
-    let geocoder = null;
+    // Map variables (Legacy - Removed for Cost Optimization)
     let userLatitude = null;
     let userLongitude = null;
-    let googleMapsLoaded = false;
 
-    // Load Google Maps API dynamically
-    function loadGoogleMapsAPI() {
-      return new Promise((resolve, reject) => {
-        if (window.google && window.google.maps) {
-          googleMapsLoaded = true;
-          geocoder = new google.maps.Geocoder();
-          resolve();
-          return;
-        }
-
-        if (googleMapsLoaded) {
-          resolve();
-          return;
-        }
-
-        // Check if script already exists
-        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-        if (existingScript) {
-          if (window.google && window.google.maps) {
-            resolve();
-          } else {
-            existingScript.addEventListener('load', () => {
-              googleMapsLoaded = true;
-              geocoder = new google.maps.Geocoder();
-              resolve();
-            });
-          }
-          return;
-        }
-
-        if (GOOGLE_MAPS_API_KEY === 'TU_API_KEY_AQUI') {
-          const errorMsg = '⚠️ IMPORTANTE: Configura tu Google Maps API Key en ./js/google-maps-config.js';
-          console.error(errorMsg);
-          showToast('Configura la API Key de Google Maps', 'error');
-          reject(new Error(errorMsg));
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&language=es&region=ES&callback=initMapCallback`;
-        script.async = true;
-        script.defer = true;
-        script.id = 'google-maps-script';
-
-        // Global callback for safety
-        window.initMapCallback = () => {
-          console.log('🗺️ Google Maps loaded via callback');
-          googleMapsLoaded = true;
-          geocoder = new google.maps.Geocoder();
-          resolve();
-        };
-
-        script.onerror = () => {
-          reject(new Error('Error al cargar Google Maps API'));
-        };
-        document.head.appendChild(script);
-      });
-    }
-
-    // Initialize map with Google Maps
+    // Initialize map with Google Maps (DISABLED)
     async function initializeMap(lat, lon) {
-      const mapContainer = document.getElementById('locationMap');
-
-      // Default to Madrid if no coordinates provided
-      if (!lat || !lon) {
-        lat = 40.4168; // Madrid
-        lon = -3.7038;
-      }
-
-      try {
-        // Load Google Maps API if not loaded (idempotent)
-        await loadGoogleMapsAPI();
-
-        // Show map container forcefully
-        mapContainer.classList.remove('hidden');
-        mapContainer.style.display = 'block';
-        mapContainer.style.height = '300px'; // Force height
-        mapContainer.style.width = '100%';
-        console.log('🗺️ Map container forcefully unhidden');
-
-        // If map already exists, update the view
-        if (map) {
-          const newPosition = new google.maps.LatLng(lat, lon);
-          map.setCenter(newPosition);
-          if (marker) {
-            marker.setPosition(newPosition);
-          } else {
-            createMarker(lat, lon);
-          }
-          // Trigger resize to ensure it renders correctly after being hidden
-          google.maps.event.trigger(map, 'resize');
-          return;
-        }
-
-        // Create new map
-        const { Map } = await google.maps.importLibrary("maps");
-
-        // Ensure container is empty (remove loading spinner)
-        mapContainer.innerHTML = '';
-
-        // Remove class hidden explicitly again just in case
-        mapContainer.classList.remove('hidden');
-
-        try {
-          map = new Map(mapContainer, {
-            center: { lat: lat, lng: lon },
-            zoom: MAP_CONFIG.zoom || 15,
-            mapTypeId: 'roadmap',
-            // Default styles to avoid JSON errors
-            styles: [],
-            mapTypeControl: true,
-            streetViewControl: false,
-            fullscreenControl: false
-          });
-          console.log('✅ Map initialized (Legacy mode)');
-        } catch (mapErr) {
-          console.error('❌ Error creating Map variables:', mapErr);
-        }
-
-        // Create marker
-        createMarker(lat, lon);
-
-        // Initialize Autocomplete
-        const input = document.getElementById("locationSearch");
-        const autocomplete = new google.maps.places.Autocomplete(input);
-        autocomplete.bindTo("bounds", map);
-
-        autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
-
-          if (!place.geometry || !place.geometry.location) {
-            showToast("No se encontraron detalles para: " + place.name, 'warning');
-            return;
-          }
-
-          // If the place has a geometry, then present it on a map.
-          if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-          } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(15);
-          }
-
-          marker.setPosition(place.geometry.location);
-
-          userLatitude = place.geometry.location.lat();
-          userLongitude = place.geometry.location.lng();
-
-          // Save to inputs
-          document.getElementById('latitude').value = userLatitude;
-          document.getElementById('longitude').value = userLongitude;
-
-          // Update city input safely
-          let municipality = 'Ubicación seleccionada';
-          if (place.address_components) {
-            const locality = place.address_components.find(c => c.types.includes('locality'));
-            if (locality) municipality = locality.long_name;
-            else {
-              const admin = place.address_components.find(c => c.types.includes('administrative_area_level_1'));
-              if (admin) municipality = admin.long_name;
-            }
-          }
-
-          const cityInput = document.getElementById('city');
-          if (cityInput) {
-            cityInput.removeAttribute('readonly');
-            cityInput.value = municipality;
-            cityInput.setAttribute('readonly', 'readonly');
-          }
-
-          showToast(`📍 Ubicación actualizada: ${municipality}`, 'success');
-        });
-
-        // Update location when map is clicked
-        map.addListener('click', async (event) => {
-          const clickedLat = event.latLng.lat();
-          const clickedLng = event.latLng.lng();
-
-          marker.setPosition(event.latLng);
-          userLatitude = clickedLat;
-          userLongitude = clickedLng;
-
-          document.getElementById('latitude').value = userLatitude;
-          document.getElementById('longitude').value = userLongitude;
-
-          await reverseGeocode(clickedLat, clickedLng);
-        });
-
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        showToast('Error al cargar el mapa. Verifica la API Key de Google Maps.', 'error');
-      }
+      console.log('🗺️ Map disabled by optimization settings');
     }
 
-    // Create draggable marker (Legacy)
-    async function createMarker(lat, lon) {
-      if (marker) {
-        marker.setMap(null);
-      }
-
-      marker = new google.maps.Marker({
-        position: { lat: lat, lng: lon },
-        map: map,
-        draggable: true,
-        title: 'Tu ubicación',
-        animation: google.maps.Animation.DROP
-      });
-
-      console.log('✅ Legacy Marker created at', lat, lon);
-
-      marker.addListener('dragend', async (event) => {
-        const newLat = event.latLng.lat();
-        const newLng = event.latLng.lng();
-
-        console.log('📍 Marker dragged to:', newLat, newLng);
-
-        userLatitude = newLat;
-        userLongitude = newLng;
-
-        document.getElementById('latitude').value = newLat;
-        document.getElementById('longitude').value = newLng;
-
-        await reverseGeocode(newLat, newLng);
-      });
-    }
 
 
     // ... (rest of code) ...
@@ -1126,104 +1015,28 @@
         document.getElementById('latitude').value = userLatitude;
         document.getElementById('longitude').value = userLongitude;
 
-        // Initialize or update map
-        initializeMap(userLatitude, userLongitude);
+        // Initialize or update map (Removed)
+        // initializeMap(userLatitude, userLongitude);
 
-        // Get municipality name
-        await reverseGeocode(userLatitude, userLongitude);
+        // Get municipality name (Removed geocoding)
+        // await reverseGeocode(userLatitude, userLongitude);
 
-        showToast('Ubicación obtenida correctamente', 'success');
+        showToast('Coordenadas guardadas. Por favor escribe tu municipio.', 'success');
+        document.getElementById('city').focus();
 
       } catch (error) {
         console.error('Error getting location:', error);
-        let errorMsg = 'Error al obtener la ubicación';
-
-        if (error.code === 1) {
-          errorMsg = 'Permiso de ubicación denegado. Por favor, permite el acceso a tu ubicación.';
-        } else if (error.code === 2) {
-          errorMsg = 'No se pudo determinar tu ubicación. Intenta de nuevo.';
-        } else if (error.code === 3) {
-          errorMsg = 'Tiempo de espera agotado. Intenta de nuevo.';
-        }
-
-        showToast(errorMsg, 'error');
+        // ... err handling
+        showToast('Error al obtener ubicación GPS', 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Usar mi ubicación actual';
+        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Obtener coordenadas (GPS)';
       }
     }
 
-    // Reverse geocode to get municipality only (privacy) using Google Geocoding API
+    // Reverse geocode - Removed for Cost Optimization
     async function reverseGeocode(lat, lon) {
-      try {
-        // Ensure Google Maps API is loaded
-        await loadGoogleMapsAPI();
-
-        const latlng = new google.maps.LatLng(lat, lon);
-
-        geocoder.geocode({ location: latlng }, (results, status) => {
-          console.log('🌍 Geocoder status:', status);
-          console.log('🌍 Geocoder results:', results);
-
-          if (status === 'OK') {
-            if (results && results.length > 0) {
-              // Find the locality (municipality/city) component
-              // PRIVACY: We only extract city/town, never street or postal code
-              let municipality = 'Ubicación desconocida';
-
-              // Search for locality in all results
-              for (const result of results) {
-                // Look for locality (ciudad/municipio)
-                const localityComponent = result.address_components.find(component =>
-                  component.types.includes('locality') ||
-                  component.types.includes('administrative_area_level_3') ||
-                  component.types.includes('administrative_area_level_2')
-                );
-
-                if (localityComponent) {
-                  municipality = localityComponent.long_name;
-                  break;
-                }
-              }
-
-              // If no locality found, try to get at least the administrative area
-              if (municipality === 'Ubicación desconocida') {
-                const adminComponent = results[0].address_components.find(component =>
-                  component.types.includes('administrative_area_level_1')
-                );
-                if (adminComponent) {
-                  municipality = adminComponent.long_name;
-                }
-              }
-
-              // Update city input with municipality name only
-              const cityInput = document.getElementById('city');
-              cityInput.removeAttribute('readonly'); // Remove readonly temporarily
-              cityInput.value = municipality;
-              cityInput.setAttribute('readonly', 'readonly'); // Add it back for user protection
-
-              // Save coordinates to hidden inputs
-              document.getElementById('latitude').value = lat;
-              document.getElementById('longitude').value = lon;
-
-              console.log('📍 Municipio obtenido:', municipality);
-              console.log('🔒 Privacidad: Solo se muestra el municipio, sin dirección exacta');
-
-              // Show success message
-              showToast(`✅ Ubicación establecida: ${municipality}`, 'success');
-
-            } else {
-              throw new Error('No se encontraron resultados');
-            }
-          } else {
-            throw new Error(`Geocoding falló: ${status}`);
-          }
-        });
-
-      } catch (error) {
-        console.error('Error in reverse geocoding:', error);
-        showToast('No se pudo obtener el nombre del municipio', 'warning');
-      }
+      console.log('Geocoding disabled');
     }
 
     // Event listener for location button
@@ -1380,6 +1193,20 @@
       }
     }
 
+    // CHECK FOR PENDING DELETION ON LOAD
+    function checkPendingDeletion() {
+      if (sessionStorage.getItem('pendingAccountDeletion') === 'true') {
+        sessionStorage.removeItem('pendingAccountDeletion'); // Clear flag
+        // Show confirmation immediately
+        // Wait a bit for UI to settle
+        setTimeout(() => {
+          if (currentUser) {
+            confirmDeleteAccount(true); // Helper flag to skip first prompt
+          }
+        }, 1000);
+      }
+    }
+
     // Load user profile - FIXED TO USE API (BYPASS FIRESTORE RULES/APP CHECK ISSUES)
     async function loadUserProfile() {
       if (isLoadingProfile || hasLoadedProfile) {
@@ -1401,6 +1228,8 @@
           currentUserData = { ...response.profile, id: response.profile.uid };
           isNewUser = false;
           console.log('✅ User data loaded via API:', currentUserData.alias);
+
+          checkPendingDeletion();
         } else {
           throw new Error('Profile not found or error in response');
         }
@@ -1460,6 +1289,60 @@
           }
         }
 
+        // REFERRAL SYSTEM LOGIC (Updated: Only Men carry codes)
+        const referralSection = document.getElementById('referralSection');
+        if (referralSection) {
+          const gender = currentUserData.gender || '';
+          // Update per user request: "solo los hombres llevan codigo de registro"
+          if (gender === 'masculino') {
+            referralSection.classList.remove('hidden');
+
+            // Generate Code
+            const alias = currentUserData.alias || currentUser.email.split('@')[0];
+            const code = generateReferralCode(alias, currentUser.uid);
+
+            // Store code for usage
+            window.currentUserReferralCode = code;
+            window.currentUserAlias = alias;
+
+            // Update UI
+            document.getElementById('myReferralCode').textContent = code;
+
+            // Update Wallet/Earnings
+            const earnings = currentUserData.wallet?.balance ?? currentUserData.stats?.referralEarnings ?? 0;
+            document.getElementById('myReferralEarnings').textContent = earnings + '€';
+          } else {
+            referralSection.classList.add('hidden');
+          }
+        }
+
+        // Referral Helper Functions attached to window
+        window.copyReferralCode = function () {
+          const code = window.currentUserReferralCode;
+          if (code) {
+            navigator.clipboard.writeText(code).then(() => {
+              showToast('Código copiado al portapapeles', 'success');
+            });
+          }
+        };
+
+        window.triggerShareReferral = async function () {
+          const code = window.currentUserReferralCode;
+          const alias = window.currentUserAlias;
+          if (code) {
+            // Construct WhatsApp specific link first for better conversion
+            const text = `¡Hola! Únete a TuCitaSegura conmigo. Usa mi código *${code}* al registrarte. Aquí tienes el link: ${window.location.origin}/register.html?ref=${code}`;
+            const waLink = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+            // Try native share first
+            const result = await shareReferralCode(code, alias);
+            if (!result || !result.success) {
+              // Fallback to direct WhatsApp open
+              window.open(waLink, '_blank');
+            }
+          }
+        };
+
         // Photo - SAFE ELEMENT ACCESS
         const profilePhotoEl = document.getElementById('profilePhoto');
         const photoPlaceholderEl = document.getElementById('photoPlaceholder');
@@ -1506,13 +1389,18 @@
 
         if (genderInput) {
           genderInput.value = currentUserData.gender || '';
+          // Strictly disable if value exists (Immutable)
           if (currentUserData.gender) {
             genderInput.disabled = true;
-            genderInput.classList.add('opacity-50', 'cursor-not-allowed');
+            genderInput.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-800'); // Added visual reinforcement
             // Remove chevron for disabled select
             const chevron = genderInput.parentElement.querySelector('.fa-chevron-down');
             if (chevron) chevron.remove();
-            genderInput.parentElement.insertAdjacentHTML('beforeend', '<i class="fas fa-lock absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500" title="No editable"></i>');
+
+            // Only add lock icon if not present
+            if (!genderInput.parentElement.querySelector('.fa-lock')) {
+              genderInput.parentElement.insertAdjacentHTML('beforeend', '<i class="fas fa-lock absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500" title="No editable"></i>');
+            }
           }
         }
 
@@ -1582,6 +1470,13 @@
           availabilityStatusInput.value = currentUserData.availabilityStatus || 'available';
         }
 
+        // Set Hidden Profile Checkbox (Privacy)
+        const hiddenProfileBox = document.getElementById('isProfileHidden');
+        if (hiddenProfileBox) {
+          // If field is missing, default to false (visible)
+          hiddenProfileBox.checked = !!currentUserData.isProfileHidden;
+        }
+
         // Initialize visibility
         if (typeof window.toggleAvailabilitySelector === 'function') {
           window.toggleAvailabilitySelector();
@@ -1603,6 +1498,9 @@
 
         // UPDATE DEBUG PANEL (Success)
         if (window.updateDebugPanel) window.updateDebugPanel(currentUserData);
+
+        // Initialize onboarding wizard if needed
+        initOnboardingWizard();
 
       } catch (error) {
         console.error('❌ CRITICAL ERROR loading profile:', error);
@@ -1693,6 +1591,8 @@
       const file = e.target.files[0];
       if (!file) return;
 
+      window.isPhotoProcessing = true; // START LOCK
+
       // Validate file with FileValidator
       try {
         const validation = await fileValidator.validateImage(file);
@@ -1703,10 +1603,18 @@
         // If validation failed, don't proceed
         if (!validation.isValid) {
           e.target.value = ''; // Clear the input
+          window.isPhotoProcessing = false; // RELEASE LOCK
           return;
         }
 
-        photoFile = file;
+        // COMPRESSION STEP
+        try {
+          showToast('Procesando imagen...', 'info');
+          photoFile = await imageCompressor.compress(file);
+        } catch (compError) {
+          console.warn('Compression failed, using original', compError);
+          photoFile = file;
+        }
 
         // Preview
         const reader = new FileReader();
@@ -1730,6 +1638,8 @@
         logger.error('Photo validation error', error);
         showToast('Error al validar la imagen', 'error');
         e.target.value = ''; // Clear the input
+      } finally {
+        window.isPhotoProcessing = false; // RELEASE LOCK
       }
     });
 
@@ -1763,7 +1673,14 @@
             return;
           }
 
-          galleryFiles[i - 1] = file;
+          // COMPRESSION STEP
+          try {
+            showToast(`Procesando foto ${i}...`, 'info');
+            galleryFiles[i - 1] = await imageCompressor.compress(file);
+          } catch (compErr) {
+            console.warn(`Gallery ${i} compression failed`, compErr);
+            galleryFiles[i - 1] = file;
+          }
 
           // Preview
           const reader = new FileReader();
@@ -1981,6 +1898,7 @@
           photoURL: photoURL,
           photos: galleryPhotos, // CRITICAL FIX: Backend expects 'photos', not 'galleryPhotos'
           galleryPhotos: galleryPhotos, // Keep for backward compatibility
+          isProfileHidden: document.getElementById('isProfileHidden')?.checked || false, // NEW PRIVACY FIELD
           theme: currentUserData?.theme || 'blue',
           updatedAt: serverTimestamp()
         };
@@ -2060,14 +1978,19 @@
 
     window.goToSearch = function () {
       document.getElementById('successModal').classList.add('opacity-0', 'pointer-events-none');
-      window.location.href = '/buscar-usuarios.html';
+      window.location.href = '/dashboard.html';
     };
 
     // Confirm delete account
-    window.confirmDeleteAccount = function () {
-      const confirmed = confirm('¿Estás COMPLETAMENTE SEGURO de que quieres eliminar tu cuenta?\n\nEsta acción NO se puede deshacer.\n\nPerderás:\n- Todas tus conversaciones\n- Todas tus citas\n- Tu perfil completo\n- Acceso a la plataforma\n\nEscribe "ELIMINAR" para confirmar.');
+    window.confirmDeleteAccount = function (skipFirstConfirm = false) {
+      let confirmed = skipFirstConfirm;
+
+      if (!skipFirstConfirm) {
+        confirmed = confirm('¿Estás COMPLETAMENTE SEGURO de que quieres eliminar tu cuenta?\n\nEsta acción NO se puede deshacer.\n\nPerderás:\n- Todas tus conversaciones\n- Todas tus citas\n- Tu perfil completo\n- Acceso a la plataforma\n\nEscribe "ELIMINAR" para confirmar.');
+      }
 
       if (confirmed) {
+        // If we skipped first confirm (automatic flow), verify manually once
         const verification = prompt('Escribe "ELIMINAR" (en mayúsculas) para confirmar:');
         if (verification === 'ELIMINAR') {
           deleteAccount();
@@ -2116,7 +2039,8 @@
         } catch (authError) {
           console.warn('Auth delete failed:', authError);
           if (authError.code === 'auth/requires-recent-login') {
-            showToast('Vuelve a iniciar sesión para confirmar la eliminación.', 'warning');
+            sessionStorage.setItem('pendingAccountDeletion', 'true'); // SET FLAG
+            showToast('Por seguridad, inicia sesión nuevamente para confirmar.', 'warning');
             setTimeout(async () => {
               await signOut(auth);
               window.location.href = '/login.html';

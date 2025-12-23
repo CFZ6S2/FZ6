@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,6 +15,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
+
+  <!-- iOS PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
   <meta name="theme-color" content="#764ba2">
   <link rel="stylesheet" href="./css/input.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -413,10 +418,7 @@
                 <i class="fas fa-th-large"></i>
                 <span class="hidden sm:inline">Lista</span>
               </button>
-              <button id="viewMap" class="flex items-center gap-2 flex-1 sm:flex-none justify-center">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="hidden sm:inline">Mapa</span>
-              </button>
+              <!-- Map Toggle Removed -->
             </div>
 
             <button id="toggleFilters"
@@ -581,19 +583,8 @@
         </div>
       </div>
 
-      <!-- Map View -->
-      <div id="mapContainer" class="glass rounded-2xl p-6 mb-8 hidden">
-        <div class="mb-4">
-          <h2 class="text-xl font-bold">
-            <i class="fas fa-map-marked-alt mr-2 text-blue-400"></i>
-            Usuarios Cercanos
-          </h2>
-          <p class="text-sm text-slate-400 mt-1">
-            Haz clic en los marcadores para ver perfiles
-          </p>
-        </div>
-        <div id="map"></div>
-      </div>
+      <!-- Map View REMOVED -->
+      <div id="mapContainer" class="hidden"></div>
 
       <!-- User Grid -->
       <div id="gridContainer" class="px-4 md:px-0">
@@ -757,10 +748,10 @@
           <div id="modalInterests" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <!-- Map in Modal -->
-        <div id="modalMapContainer" class="mb-8 hidden rounded-xl overflow-hidden border border-white/10">
+        <!-- Map in Modal REMOVED for Cost Optimization -->
+        <!-- <div id="modalMapContainer" class="mb-8 hidden rounded-xl overflow-hidden border border-white/10">
           <div id="userModalMap" class="h-48 w-full"></div>
-        </div>
+        </div> -->
 
         <!-- Match Status & Actions -->
         <div class="sticky bottom-0 bg-[#0f172a] pt-4 pb-2 border-t border-white/10 -mx-6 md:-mx-8 px-6 md:px-8">
@@ -1522,6 +1513,10 @@
           querySnapshot.forEach((doc) => {
             if (doc.id !== currentUser.uid) {
               const data = doc.data();
+
+              // 🛡️ ZOMBIE FILTER: Ignore banned, deleted, or HIDDEN users
+              if (data.disabled === true || data.deleted === true || data.isProfileHidden === true) return;
+
               const age = data.birthDate ? calculateAge(data.birthDate) : null;
 
               // Add mock location if not present (logic preserved)

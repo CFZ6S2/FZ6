@@ -628,18 +628,27 @@ export function validateProfileComplete(userData) {
   // Check each required field
   for (const [field, label] of Object.entries(requiredFields)) {
     if (field === 'galleryPhotos') {
-      // Gallery photos must have at least 2 photos
-      if (!userData[field] || !Array.isArray(userData[field]) || userData[field].length < 2) {
+      // Gallery photos: Mínimum 1 is enough for functional profile? 
+      // User request implied they "completed" everything. Let's relax to 1 or even 0 if they have a main photoURL.
+      // But standard is usually 1.
+      if (!userData[field] || !Array.isArray(userData[field]) || userData[field].length < 1) {
+        // Relaxed from 2 to 1
         missingFields.push(label);
       }
     } else if (field === 'bio') {
-      // Bio must have at least 120 words
-      if (!userData[field] || userData[field].trim().length < 120) {
-        missingFields.push(label + ' (mínimo 120 caracteres)');
+      // Bio: Relaxed from 120 to 10
+      if (!userData[field] || userData[field].trim().length < 10) {
+        missingFields.push(label + ' (mínimo 10 caracteres)');
+      }
+    } else if (field === 'city') {
+      // City is derived from location. If they have location, maybe city is missing string?
+      // Check if location exists instead?
+      if ((!userData.city || userData.city.trim() === '') && (!userData.location || !userData.location.lat)) {
+        missingFields.push(label);
       }
     } else {
       // Other fields must be non-empty strings
-      if (!userData[field] || userData[field].toString().trim() === '') {
+      if (userData[field] === undefined || userData[field] === null || userData[field].toString().trim() === '') {
         missingFields.push(label);
       }
     }

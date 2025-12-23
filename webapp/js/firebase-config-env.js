@@ -1,8 +1,8 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import { getStorage } from "firebase/storage";
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
@@ -16,7 +16,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+// Initialize Firestore with default settings (no custom persistence)
+// This fixes the "Failed to obtain exclusive access" error that was blocking all reads
 const db = getFirestore(app);
+console.log("✅ Firestore initialized");
+
 const functions = getFunctions(app);
 const storage = getStorage(app);
 
@@ -27,9 +32,45 @@ if (typeof window !== 'undefined') {
         return { success: true, score: 1.0, action: 'shim_config' };
     };
     // Expose Firebase instances to window for global functions
+    // Expose Firebase instances to window for global functions
     window._firebaseAuth = auth;
     window._firebaseDb = db;
     window._firebaseStorage = storage;
+}
+
+// STORAGE HEALTH CHECK & FALLBACK SYSTEM
+// Detects if "Tracking Prevention" or "Incognito" is blocking IndexedDB
+(async () => {
+    try {
+        const testDbRequest = window.indexedDB.open("firebase-health-check", 1);
+        testDbRequest.onsuccess = (e) => {
+            const tempDb = e.target.result;
+            tempDb.close();
+            console.log("✅ Storage Health Check Passed: IndexedDB is available.");
+            // We can delete the test DB to be clean
+            window.indexedDB.deleteDatabase("firebase-health-check");
+        };
+        testDbRequest.onerror = (e) => {
+            console.error("❌ Storage Health Check Failed:", e);
+            handleStorageBlocked();
+        };
+    } catch (e) {
+        console.warn("⚠️ Storage Access Exception (Tracking Prevention?):", e);
+        handleStorageBlocked();
+    }
+})();
+
+async function handleStorageBlocked() {
+    console.warn("🛡️ Detectado bloqueo de almacenamiento (Tracking Prevention). Cambiando a Memoria...");
+    try {
+        const { setPersistence, browserSessionPersistence, inMemoryPersistence } = await import("firebase/auth");
+        // Try Session first, then Memory
+        await setPersistence(auth, inMemoryPersistence);
+        console.warn("⚠️ Auth Persistence set to MEMORY_ONLY due to storage block. User will be logged out on reload.");
+        alert("⚠️ Tu navegador está bloqueando el almacenamiento (Tracking Prevention).\n\nLa app funcionará, pero tendrás que iniciar sesión cada vez que recargues.");
+    } catch (e) {
+        console.error("failed to downgrade persistence:", e);
+    }
 }
 
 export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";

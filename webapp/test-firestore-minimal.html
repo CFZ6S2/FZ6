@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firestore Minimal</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+
+        .log {
+            margin: 5px 0;
+        }
+
+        .error {
+            color: #ff0000;
+        }
+
+        .success {
+            color: #00ff00;
+        }
+
+        .info {
+            color: #ffff00;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Test Firestore Permissions - Minimal</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = msg;
+            output.appendChild(div);
+            console.log(msg);
+        }
+
+        async function testFirestore() {
+            try {
+                log('1️⃣ Importing Firebase config...', 'info');
+
+                const { auth, db } = await import('./js/firebase-config-env.js');
+                const { onAuthStateChanged } = await import('firebase/auth');
+                const { doc, getDoc } = await import('firebase/firestore');
+
+                log('✅ Using shared app config', 'success');
+                log('2️⃣ Checking auth state...', 'info');
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) {
+                        log('❌ No user logged in', 'error');
+                        log('   You must be logged in first!', 'info');
+                        return;
+                    }
+
+                    log('✅ User authenticated', 'success');
+                    log(`   UID: ${user.uid}`, 'info');
+
+                    log('3️⃣ Attempting Firestore read...', 'info');
+
+                    try {
+                        const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+                        if (userDoc.exists()) {
+                            log('✅✅✅ SUCCESS! FIRESTORE READ WORKS!', 'success');
+                            const data = userDoc.data();
+                            log(`   Alias: ${data.alias}`, 'success');
+                            log('', 'info');
+                            log('🎉 Rules work! Bug is in dashboard code.', 'success');
+                        } else {
+                            log('⚠️  Document does not exist', 'error');
+                        }
+                    } catch (error) {
+                        log('❌❌❌ FAILED! FIRESTORE BLOCKED!', 'error');
+                        log(`   Code: ${error.code}`, 'error');
+                        log(`   Message: ${error.message}`, 'error');
+                        log('', 'info');
+                        log('💡 Firestore permissions blocking access', 'info');
+                    }
+                });
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        testFirestore();
+    </script>
+</body>
+
+</html>

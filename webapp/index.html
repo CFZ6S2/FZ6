@@ -1,21 +1,411 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TuCitaSegura</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TuCitaSegura - Conexiones Reales, Sin Riesgos</title>
+  <meta name="description"
+    content="La plataforma de citas más segura y exclusiva. Verificación de identidad obligatoria para garantizar conexiones 100% reales.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#764ba2">
-  <meta http-equiv="refresh" content="0; url=login.html">
+  <meta name="theme-color" content="#1e3a8a">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="apple-touch-startup-image" href="/icon-512.png">
+
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./css/input.css">
+  <link rel="stylesheet" href="./css/landing.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
+      z-index: -1;
+      pointer-events: none;
+      animation: pulseBg 10s infinite alternate;
+    }
+
+    @keyframes pulseBg {
+      0% {
+        transform: scale(1);
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+
+    .glass-nav {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .text-gradient {
+      background: linear-gradient(to right, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #3b82f6, #8b5cf6);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+      background: linear-gradient(to right, #2563eb, #7c3aed);
+    }
+  </style>
 </head>
 
-<body>
+<body class="font-sans antialiased">
+
+  <!-- Navigation -->
+  <nav class="glass-nav fixed w-full z-50">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="/" class="flex items-center gap-2 group">
+        <div
+          class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-blue-500/30 transition-shadow">
+          <i class="fas fa-shield-heart text-white text-sm md:text-lg"></i>
+        </div>
+        <span class="text-xl md:text-2xl font-bold font-heading tracking-tight">TuCita<span
+            class="text-blue-400">Segura</span></span>
+      </a>
+
+      <div class="flex items-center gap-4">
+        <!-- Language Selector -->
+        <div id="language-selector-container" class="relative z-50"></div>
+
+        <a href="login.html" class="hidden md:inline-block text-slate-300 hover:text-white transition font-medium"
+          data-i18n="nav.login">
+          Iniciar Sesión
+        </a>
+        <a href="register.html" class="btn-primary px-5 py-2.5 rounded-full text-white font-bold text-sm shadow-lg"
+          data-i18n="nav.register">
+          Crear Cuenta
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-24 pb-20 md:pt-48 md:pb-32 px-6 relative overflow-hidden">
+    <canvas id="particle-canvas"></canvas>
+    <div class="container mx-auto text-center max-w-4xl relative z-10">
+      <div
+        class="inline-block mb-6 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-sm font-semibold animate-[fadeIn_1s_ease-out]">
+        <i class="fas fa-check-circle mr-2"></i> <span data-i18n="landing.hero.verified">100% Usuarios
+          Verificados</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
+        <span data-i18n="landing.hero.title_start">Conexiones Reales,</span> <br><span class="text-gradient"
+          data-i18n="landing.hero.title_end">Sin Riesgos</span>
+      </h1>
+      <p class="text-base md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed"
+        data-i18n="landing.hero.subtitle">
+        La plataforma de citas más exclusiva donde la seguridad es lo primero. Conoce gente auténtica mediante videochat
+        y verificación de identidad avanzada.
+      </p>
+      <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+        <a href="register.html"
+          class="w-full md:w-auto btn-primary px-6 md:px-8 py-3 md:py-4 rounded-xl text-base md:text-lg font-bold shadow-xl flex items-center justify-center gap-3">
+          <span data-i18n="landing.hero.cta_start">Comenzar Gratis</span> <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="login.html"
+          class="w-full md:w-auto px-6 md:px-8 py-3 md:py-4 rounded-xl text-base md:text-lg font-bold text-white border border-white/20 hover:bg-white/5 transition flex items-center justify-center"
+          data-i18n="landing.hero.cta_login">
+          Ya tengo cuenta
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- How It Works Section -->
+  <section class="how-it-works">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8" data-i18n="landing.how.title">Cómo funciona</h2>
+    <div class="how-it-works">
+      <div class="how-step" data-i18n="landing.how.step1">1. Regístrate y verifica tu identidad</div>
+      <div class="how-step" data-i18n="landing.how.step2">2. Completa tu perfil</div>
+      <div class="how-step" data-i18n="landing.how.step3">3. Busca coincidencias seguras</div>
+      <div class="how-step" data-i18n="landing.how.step4">4. Conecta vía videochat</div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8" data-i18n="landing.testimonials.title">Testimonios</h2>
+    <div class="testimonials">
+      <div class="testimonial-card" data-i18n="landing.testimonials.1">“¡Una experiencia increíble!” – Ana</div>
+      <div class="testimonial-card" data-i18n="landing.testimonials.2">“Me sentí seguro y respetado.” – Luis</div>
+      <div class="testimonial-card" data-i18n="landing.testimonials.3">“¡Encontré a mi pareja ideal!” – Carla</div>
+    </div>
+  </section>
+
+  <!-- Comparison Section -->
+  <section class="comparison">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Comparativa</h2>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Características</th>
+          <th>TuCitaSegura</th>
+          <th>Otros</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Verificación</td>
+          <td>✅</td>
+          <td>❌</td>
+        </tr>
+        <tr>
+          <td>Videochat</td>
+          <td>✅</td>
+          <td>❌</td>
+        </tr>
+        <tr>
+          <td>Soporte 24/7</td>
+          <td>✅</td>
+          <td>❌</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-20 bg-slate-900/50">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4" data-i18n="landing.features.title">¿Por qué elegirnos?</h2>
+        <p class="text-slate-400 max-w-2xl mx-auto" data-i18n="landing.features.subtitle">Diseñado para personas que
+          valoran su tiempo y seguridad por encima
+          de matches infinitos.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <article class="glass-card p-8 rounded-2xl relative group">
+          <div
+            class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+            <i class="fas fa-id-card-clip"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3" data-i18n="landing.features.1.title">Verificación Rigurosa</h3>
+          <p class="text-slate-400 leading-relaxed" data-i18n="landing.features.1.desc">
+            Cada perfil es validado manualmente y por IA. Adiós a los perfiles falsos y las sorpresas desagradables.
+          </p>
+        </article>
+
+        <!-- Feature 2 -->
+        <article class="glass-card p-8 rounded-2xl relative group">
+          <div
+            class="w-14 h-14 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+            <i class="fas fa-video"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3" data-i18n="landing.features.2.title">Video First</h3>
+          <p class="text-slate-400 leading-relaxed" data-i18n="landing.features.2.desc">
+            Conoce a tu cita por videollamada segura antes de compartir tu número o quedar en persona.
+          </p>
+        </article>
+
+        <!-- Feature 3 -->
+        <article class="glass-card p-8 rounded-2xl relative group">
+          <div
+            class="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 text-2xl mb-6 group-hover:scale-110 transition-transform">
+            <i class="fas fa-gem"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-3" data-i18n="landing.features.3.title">Experiencia VIP</h3>
+          <p class="text-slate-400 leading-relaxed" data-i18n="landing.features.3.desc">
+            Accede al modo Concierge para que organicemos tus citas o asiste a nuestros eventos exclusivos.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-24 px-6">
+    <div class="container mx-auto max-w-5xl glass-card rounded-3xl p-8 md:p-16 text-center relative overflow-hidden">
+      <!-- Decor elements -->
+      <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 z-0"></div>
+
+      <div class="relative z-10">
+        <h2 class="text-3xl md:text-5xl font-bold mb-6" data-i18n="landing.cta.title">¿Listo para conocer gente real?
+        </h2>
+        <p class="text-xl text-slate-200 mb-10 max-w-2xl mx-auto" data-i18n="landing.cta.subtitle">
+          Únete hoy a la comunidad más selecta. Tu primera cita segura está a solo unos clics.
+        </p>
+        <a href="register.html"
+          class="btn-primary inline-flex items-center gap-3 px-10 py-5 rounded-full text-xl font-bold shadow-2xl hover:shadow-blue-500/50 transition transform hover:-translate-y-1"
+          data-i18n="landing.cta.button">
+          Crear Cuenta Ahora
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/10 bg-slate-900/80 pt-16 pb-8">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div class="col-span-1 md:col-span-2">
+          <a href="/" class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <i class="fas fa-shield-heart text-white text-xs"></i>
+            </div>
+            <span class="text-xl font-bold">TuCita<span class="text-blue-400">Segura</span></span>
+          </a>
+          <p class="text-slate-400 max-w-sm">
+            Redefiniendo las citas online con seguridad, transparencia y exclusividad.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-4 text-white" data-i18n="landing.footer.platform">Plataforma</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="login.html" class="hover:text-blue-400 transition" data-i18n="nav.login">Iniciar Sesión</a>
+            </li>
+            <li><a href="register.html" class="hover:text-blue-400 transition" data-i18n="nav.register">Registrarse</a>
+            </li>
+            <li><a href="eventos-vip.html" class="hover:text-blue-400 transition" data-i18n="landing.footer.vip">Eventos
+                VIP</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-4 text-white" data-i18n="landing.footer.help">Ayuda</h4>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="ayuda.html" class="hover:text-blue-400 transition" data-i18n="landing.footer.center">Centro de
+                Ayuda</a></li>
+            <li><a href="seguridad.html" class="hover:text-blue-400 transition"
+                data-i18n="landing.footer.safety">Consejos de Seguridad</a></li>
+            <li><a href="contacto.html" class="hover:text-white transition" data-i18n="contact.title">Contacto</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div
+        class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+        <p>&copy; 2024 TuCitaSegura. Todos los derechos reservados.</p>
+        <div class="flex gap-6">
+          <a href="privacidad.html" class="hover:text-white transition"
+            data-i18n="landing.footer.privacy">Privacidad</a>
+          <a href="terminos.html" class="hover:text-white transition" data-i18n="landing.footer.terms">Términos</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- iOS Install Prompt -->
+  <div id="ios-install-prompt"
+    class="fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md border border-white/10 p-4 rounded-2xl shadow-2xl z-50 hidden transform transition-all duration-500 translate-y-full">
+    <div class="flex items-start gap-4">
+      <img src="/icon-192.png" class="w-12 h-12 rounded-xl shadow-lg" alt="App Icon">
+      <div class="flex-1">
+        <h3 class="font-bold text-white text-base mb-1">Instalar TuCitaSegura</h3>
+        <p class="text-slate-300 text-sm mb-3">
+          Para instalar en tu iPhone, toca <i class="fas fa-share-from-square mx-1 text-blue-400"></i> y selecciona <br>
+          <span class="font-semibold text-white">"Agregar a Inicio"</span> <i class="fas fa-plus-square ml-1"></i>
+        </p>
+        <button onclick="dismissIosPrompt()"
+          class="text-xs font-semibold text-blue-400 hover:text-blue-300 uppercase tracking-wide">Entendido</button>
+      </div>
+      <button onclick="dismissIosPrompt()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+    </div>
+    <!-- Simple arrow abstraction pointing down if needed, but text is usually enough -->
+  </div>
+
   <script>
-    window.location.replace('login.html');
+    function isIos() {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    }
+
+    function isInStandaloneMode() {
+      return ('standalone' in window.navigator) && (window.navigator.standalone);
+    }
+
+    function dismissIosPrompt() {
+      const prompt = document.getElementById('ios-install-prompt');
+      prompt.classList.add('translate-y-full');
+      setTimeout(() => prompt.classList.add('hidden'), 500);
+      localStorage.setItem('iosPromptDismissed', 'true');
+    }
+
+    // Show prompt if iOS, not standalone, and not dismissed
+    if (isIos() && !isInStandaloneMode() && !localStorage.getItem('iosPromptDismissed')) {
+      // Wait a bit before showing
+      setTimeout(() => {
+        const prompt = document.getElementById('ios-install-prompt');
+        prompt.classList.remove('hidden');
+        // Small delay to allow display block to apply before transition
+        setTimeout(() => {
+          prompt.classList.remove('translate-y-full');
+        }, 100);
+      }, 3000);
+    }
   </script>
-  <p>Si no eres redirigido, <a href="login.html">haz clic aquí</a>.</p>
+
+  <script>
+    // FORCE APP CHECK DEBUG TOKEN (User Provided)
+    // UUID: 91523BD2-1AA8-4EAF-A9DC-BC7D269C6448
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = "91523BD2-1AA8-4EAF-A9DC-BC7D269C6448";
+  </script>
+  <script type="module" src="./js/i18n.js"></script>
+  <script type="module" src="./js/language-selector.js"></script>
 </body>
 
 </html>

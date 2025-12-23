@@ -243,7 +243,7 @@
           <textarea id="messageInput" rows="1" placeholder="Escribe un mensaje..." data-i18n="chat.placeholder"
             class="w-full px-4 py-3 bg-white text-black placeholder-gray-500 focus:outline-none resize-none text-base rounded-2xl"
             maxlength="1000"
-            style="min-height: 48px; max-height: 120px; color: #000000 !important; -webkit-text-fill-color: #000000 !important; background-color: #ffffff !important; opacity: 1 !important;"></textarea>
+            style="height: 48px; min-height: 48px; max-height: 120px; color: #000000 !important; -webkit-text-fill-color: #000000 !important; background-color: #ffffff !important; opacity: 1 !important; overflow-y: hidden;"></textarea>
         </div>
         <button id="sendButton" onclick="sendMessage()"
           class="flex-none w-12 h-12 flex items-center justify-center bg-blue-600 hover:bg-blue-500 rounded-full shadow-lg transition disabled:bg-gray-600 disabled:cursor-not-allowed">
@@ -531,10 +531,10 @@
           <div id="modalInterests" class="flex flex-wrap gap-2"></div>
         </div>
 
-        <!-- Map in Modal -->
-        <div id="modalMapContainer" class="mb-8 hidden rounded-xl overflow-hidden border border-white/10">
+        <!-- Map in Modal REMOVED -->
+        <!-- <div id="modalMapContainer" class="mb-8 hidden rounded-xl overflow-hidden border border-white/10">
           <div id="userModalMap" class="h-48 w-full"></div>
-        </div>
+        </div> -->
 
       </div>
     </div>
@@ -583,9 +583,9 @@
       calculateAge,
       getReputationBadge,
       getAvailabilityStatus,
-      calculateCompatibility,
-      sanitizer
+      calculateCompatibility
     } from './js/utils.js';
+    import { sanitizer } from './js/sanitizer.js';
     import { loadTheme } from './js/theme.js';
     import { apiService } from './js/api-service.js';
 
@@ -695,9 +695,22 @@
       const gallerySection = document.getElementById('modalGallerySection');
       const galleryGrid = document.getElementById('modalGalleryGrid');
 
-      if (user.photos && user.photos.length > 1) {
+      // Merge photos and galleryPhotos to be safe, filter nulls
+      let displayPhotos = [];
+      if (user.photos && Array.isArray(user.photos)) {
+        displayPhotos = user.photos.filter(p => p);
+      } else if (user.galleryPhotos && Array.isArray(user.galleryPhotos)) {
+        displayPhotos = user.galleryPhotos.filter(p => p);
+      }
+
+      // Filter out main avatar if present (heuristic)
+      if (user.photoURL) {
+        displayPhotos = displayPhotos.filter(url => url !== user.photoURL);
+      }
+
+      if (displayPhotos.length > 0) {
         gallerySection.classList.remove('hidden');
-        galleryGrid.innerHTML = user.photos.slice(1).map(url => `
+        galleryGrid.innerHTML = displayPhotos.map(url => `
                   <div class="aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 group cursor-pointer" onclick="window.open('${sanitizer.url(url)}', '_blank')">
                       <img src="${sanitizer.url(url)}" class="w-full h-full object-cover transition transform group-hover:scale-110">
                   </div>

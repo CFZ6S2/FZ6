@@ -195,21 +195,13 @@ export class APIService {
         console.error(`API request failed: ${ep}`, error);
       }
 
+      /* SILENCED: Backend endpoint not implemented
       if (typeof window !== 'undefined') {
         try {
-          await fetch('/reportAppCheckFailure', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              errorCode: 'api_request_failed',
-              message: error.message || String(error),
-              hostname: location.hostname,
-              userAgent: navigator.userAgent,
-              path: endpoint
-            })
-          });
+          await fetch('/reportAppCheckFailure', { ... }); 
         } catch { }
       }
+      */
       throw error;
     }
   }
@@ -564,4 +556,5 @@ export function handleAPIError(error, onError = null) {
   }
 }
 
+// Instantiate and export
 export default apiService;

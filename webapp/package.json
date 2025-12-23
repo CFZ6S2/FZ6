@@ -14,9 +14,16 @@
   },
   "type": "commonjs",
   "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "tailwindcss": "^3.4.13",
     "vite": "^5.0.0"
   },
   "dependencies": {
-    "firebase": "^12.6.0"
-  }
+    "dompurify": "^3.3.1",
+    "firebase": "^12.6.0",
+    "firebase-admin": "^13.6.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

@@ -2,8 +2,14 @@
 // ============================================================================
 
 import { auth, db } from './firebase-config-env.js';
-import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { doc, getDoc } from 'firebase/firestore';
 import { logger } from './logger.js';
+
+/**
+ * Verifica si el perfil del usuario está completo
+ * @returns {Object} { isComplete: boolean, missingFields: string[], userData: Object }
+ */
+import { apiService } from './api-service.js';
 
 /**
  * Verifica si el perfil del usuario está completo
@@ -32,51 +38,50 @@ export async function checkProfileComplete() {
     };
   }
 
-  // 2. Obtener datos de Firestore
+  // 2. Obtener datos de Firestore usando API (Seguro vs Reglas Client-Side)
   try {
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    // CRITICAL FIX: Ensure SDK has token
+    const token = await user.getIdToken();
+    apiService.setToken(token);
 
-    if (!userDoc.exists()) {
-      logger.error('Usuario no encontrado en Firestore');
+    // Usamos API Service para evitar bloqueos por reglas de Firestore en el cliente
+    const response = await apiService.getUserProfile();
+
+    // Si la API no encuentra el usuario, devuelve 404/error manejado
+    if (!response || !response.success || !response.profile) {
+      logger.warn('Perfil no encontrado via API');
       return {
         isComplete: false,
         missingFields: ['userDocument'],
         userData: null,
-        redirectTo: '/login.html'
+        redirectTo: '/perfil.html?complete=true' // Redirect to create profile
       };
     }
 
-    const userData = userDoc.data();
+    const userData = response.profile;
     const missingFields = [];
 
     // 3. Verificar campos requeridos del perfil
-    // CAMPOS INMUTABLES (establecidos en registro):
-    // - birthDate (fecha de nacimiento)
+    if (!userData.alias || userData.alias.trim() === '') missingFields.push('alias');
+    if (!userData.gender || userData.gender === '') missingFields.push('gender');
+    // PhotoURL could come from auth or profile, the API merges them.
+    if (!userData.photoURL || userData.photoURL === '') missingFields.push('photo');
+    if (!userData.bio || userData.bio.trim() === '') missingFields.push('bio');
+    // Check for city OR municipio OR coordinates
+    const loc = userData.municipio || userData.city;
+    const hasCoords = (userData.latitude && userData.longitude) || (userData.location && userData.location.lat);
 
-    // CAMPOS QUE DEBEN COMPLETARSE EN EL PERFIL:
-    if (!userData.alias || userData.alias.trim() === '') {
-      missingFields.push('alias');
-    }
-
-    if (!userData.gender || userData.gender === '') {
-      missingFields.push('gender');
-    }
-
-    if (!userData.photoURL || userData.photoURL === '') {
-      missingFields.push('photo');
-    }
-
-    if (!userData.bio || userData.bio.trim() === '') {
-      missingFields.push('bio');
-    }
-
-    if (!userData.municipio || userData.municipio === '') {
+    if ((!loc || loc === '') && !hasCoords) {
       missingFields.push('location');
     }
 
-    // 4. Verificar que tenga al menos una foto
-    if (!userData.photos || userData.photos.length === 0) {
-      missingFields.push('photos');
+    // 4. Verificar que tenga al menos una foto (Gallery)
+    // The API maps 'photos' to user's gallery array
+    if (!userData.photos || !Array.isArray(userData.photos) || userData.photos.length === 0) {
+      // Fallback: check legacy field
+      if (!userData.galleryPhotos || userData.galleryPhotos.length === 0) {
+        missingFields.push('photos');
+      }
     }
 
     const isComplete = missingFields.length === 0;
@@ -89,12 +94,14 @@ export async function checkProfileComplete() {
     };
 
   } catch (error) {
-    logger.error('Error verificando perfil:', error);
+    logger.error('Error verificando perfil via API:', error);
+    // CRITICAL FIX: Stop infinite loop on error (e.g. Network error)
+    // Return incomplete but DO NOT loop redirect if error is severe
     return {
       isComplete: false,
       missingFields: ['error'],
       userData: null,
-      redirectTo: '/perfil.html'
+      redirectTo: null
     };
   }
 }
@@ -149,16 +156,29 @@ export async function guardPage(options = {}) {
     const profileCheck = await checkProfileComplete();
 
     if (!profileCheck.isComplete) {
+      const currentPath = window.location.pathname;
+      const isAlreadyOnProfile = currentPath.includes('perfil.html');
+
       if (!silent) {
-        logger.warn('Perfil incompleto - redirigiendo');
-        const message = getIncompleteProfileMessage(profileCheck.missingFields);
-        showBlockMessage(message, 'info');
+        // Only warn if NOT on profile page
+        if (!isAlreadyOnProfile) {
+          logger.warn('Perfil incompleto - redirigiendo');
+          const message = getIncompleteProfileMessage(profileCheck.missingFields);
+          showBlockMessage(message, 'info');
+        }
       }
 
       setTimeout(() => {
-        window.location.href = profileCheck.redirectTo;
+        if (profileCheck.redirectTo && !isAlreadyOnProfile) {
+          window.location.href = profileCheck.redirectTo;
+        } else if (isAlreadyOnProfile) {
+          // Si ya estamos en perfil, no hacer nada (permitir edición)
+          logger.info('Ya en página de perfil, permitiendo edición.');
+        } else {
+          logger.warn('🚫 Redirección cancelada (Destino nulo/error)');
+        }
       }, 2000);
-      return false;
+      return false; // Return false but stay on page if isAlreadyOnProfile
     }
   }
 

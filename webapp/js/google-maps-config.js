@@ -27,7 +27,7 @@
 // ⚠️ IMPORTANT: This API key should be restricted in Google Cloud Console
 // Restrict to these domains: tucitasegura.com, www.tucitasegura.com, *.firebaseapp.com
 // You can override by setting window.GOOGLE_MAPS_API_KEY before loading this module
-export const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.GOOGLE_MAPS_API_KEY) || 'AIzaSyB-1uKRCkjlTMxjyXgnFDDtmvHJ4Gedp5k';
+export const GOOGLE_MAPS_API_KEY = (typeof window !== 'undefined' && window.GOOGLE_MAPS_API_KEY) || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBvHTajBkXNlXnkFeN0zAVmfV00XjLT7cg';
 
 // Configuración del mapa
 export const MAP_CONFIG = {

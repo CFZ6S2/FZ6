@@ -158,6 +158,43 @@ if (birthDateInput) {
 
 // Registration form handler
 const registerForm = document.getElementById('registerForm');
+
+// Auto-fill referral code from URL
+// Auto-fill referral code helper
+function autoFillReferralCode() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+
+        console.log('[Referral] Checking URL for code...', window.location.search);
+
+        if (refCode) {
+            console.log('🔗 Detectado código de referido:', refCode);
+            const referralInput = document.getElementById('referralCode');
+            if (referralInput) {
+                referralInput.value = refCode;
+                referralInput.classList.add('border-green-500', 'bg-green-500/10'); // Visual cue
+                // Dispatch input event to ensure any listeners pick it up
+                referralInput.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+                console.warn('⚠️ Input referralCode no encontrado en el DOM');
+            }
+        } else {
+            console.log('[Referral] No referral code found in URL');
+        }
+    } catch (err) {
+        console.error('❌ Error procesando código de referido:', err);
+    }
+}
+
+// Execute auto-fill logic robustly
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoFillReferralCode);
+} else {
+    // DOM already ready (common with type="module")
+    autoFillReferralCode();
+}
+
 if (registerForm) {
     registerForm.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -167,6 +204,7 @@ if (registerForm) {
         const confirmPassword = document.getElementById('confirmPassword').value;
         const birthDate = document.getElementById('birthDate').value;
         const gender = document.getElementById('gender').value; // Capture Gender
+        const referralCode = document.getElementById('referralCode').value.trim().toUpperCase(); // Capture Referral Code
         const registerButton = document.getElementById('registerButton');
 
         // ✅ Email validation
@@ -267,7 +305,9 @@ if (registerForm) {
                 // Legacy fields support (optional, can be removed if strictly following new schema, but safer to keep some for transition)
                 email: email,
                 userRole: 'regular',
-                birthDate: birthDate // Required by Firestore Rules isAdult() check
+                birthDate: birthDate, // Required by Firestore Rules isAdult() check
+                referredBy: referralCode || null, // ✅ Save Referral Code
+                wallet: { balance: 0, currency: 'EUR' } // ✅ Initialize Wallet
             });
 
             // Success! Show clear feedback
@@ -278,15 +318,12 @@ if (registerForm) {
 
             showToast('✅ ¡Cuenta creada exitosamente!', 'success');
             showToast('📧 Revisa tu correo para verificar tu cuenta', 'info');
-            showToast('⏳ Redirigiendo en 5 segundos...', 'info');
+            showToast('⏳ Completemos tu perfil...', 'info');
 
-            // Sign out user (they must verify email first)
-            await auth.signOut();
-
-            // Redirect to login after 5 seconds
+            // Keep user logged in and redirect to profile completion
             setTimeout(() => {
-                window.location.href = '/login.html?registered=true';
-            }, 5000);
+                window.location.href = '/perfil.html?onboarding=true';
+            }, 2000);
 
         } catch (error) {
             logger.error('Registration error:', error);

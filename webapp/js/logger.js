@@ -484,19 +484,19 @@ export const logger = {
  * Override global console methods in PRODUCTION to silence noise
  * This prevents data leaks via console.log in user browsers
  */
-(function silencerConfig() {
-  if (typeof window !== 'undefined' && !isDevelopment()) {
-    const noop = () => { };
-    // Silence log, info, debug, time, timeEnd, table
-    window.console.log = noop;
-    window.console.info = noop;
-    window.console.debug = noop;
-    window.console.time = noop;
-    window.console.timeEnd = noop;
-    window.console.table = noop;
-    // Note: warn and error are preserved for critical diagnostics
-  }
-})();
+// (function silencerConfig() {
+//   if (typeof window !== 'undefined' && !isDevelopment()) {
+//     const noop = () => { };
+//     // Silence log, info, debug, time, timeEnd, table
+//     window.console.log = noop;
+//     window.console.info = noop;
+//     window.console.debug = noop;
+//     window.console.time = noop;
+//     window.console.timeEnd = noop;
+//     window.console.table = noop;
+//     // Note: warn and error are preserved for critical diagnostics
+//   }
+// })();
 
 // Default export
 export default logger;

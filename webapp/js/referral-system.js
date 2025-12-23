@@ -140,7 +140,7 @@ export function isValidReferralCode(code) {
  */
 export async function shareReferralCode(code, alias) {
   const shareText = `¡Únete a TuCitaSegura con mi código de invitación ${code} y comienza a encontrar relaciones serias! 💕`;
-  const shareUrl = `${window.location.origin}?ref=${code}`;
+  const shareUrl = `${window.location.origin}/register.html?ref=${code}`;
 
   if (navigator.share) {
     try {

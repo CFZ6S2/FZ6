@@ -25,7 +25,7 @@ const DANGEROUS_EXTENSIONS = new Set([
 ]);
 
 // Max file sizes
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 25 * 1024 * 1024; // 25MB (Pre-compression limit)
 const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
 
 /**
