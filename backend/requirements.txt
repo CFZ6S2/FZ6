@@ -12,6 +12,10 @@ bleach>=6.0.0
 firebase-admin==6.4.0
 google-cloud-recaptcha-enterprise==1.25.0
 
+# Data Science & ML (Required for Recommendations)
+numpy>=1.26.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
 
 
 # HTTP & Networking

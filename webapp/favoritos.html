@@ -2,166 +2,806 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Favoritos - TuCitaSegura</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Favoritos - TuCitaSegura</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="alternate icon" href="/favicon.ico">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
 
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="./css/output.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- iOS PWA Support -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+  <meta name="theme-color" content="#764ba2">
+  <link rel="stylesheet" href="./css/input.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <!-- Google Maps API - Loaded dynamically from config -->
 
-    <style>
-        body {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            min-height: 100vh;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
 
-        .user-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .user-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .user-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.15), transparent);
+      transition: left 0.6s;
+    }
+
+    .user-card:hover::before {
+      left: 100%;
+    }
+
+    .user-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 24px 48px rgba(14, 165, 233, 0.35);
+      border-color: rgba(14, 165, 233, 0.5);
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .user-card:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .user-card:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .user-card:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .user-card:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+
+    .user-card:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .user-card:nth-child(6) {
+      animation-delay: 0.3s;
+    }
+
+    .user-card:nth-child(7) {
+      animation-delay: 0.35s;
+    }
+
+    .user-card:nth-child(8) {
+      animation-delay: 0.4s;
+    }
+
+    .user-card:nth-child(9) {
+      animation-delay: 0.45s;
+    }
+
+    button {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    input,
+    select {
+      transition: all 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .quick-action-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .quick-action-btn:hover {
+      transform: scale(1.15) rotate(5deg);
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(14, 165, 233, 0.2);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .filter-chip:hover {
+      background: rgba(14, 165, 233, 0.3);
+      border-color: rgba(14, 165, 233, 0.6);
+    }
+
+    #loading i {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .skeleton {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .modal-backdrop {
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Google Maps Styles */
+    #map {
+      width: 100%;
+      height: 400px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      #map {
+        height: 600px;
+      }
+    }
+
+    #userModalMap {
+      width: 100%;
+      height: 300px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .map-info-window {
+      font-family: 'Inter', sans-serif;
+      max-width: 200px;
+    }
+
+    .view-toggle {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .view-toggle button {
+      padding: 10px 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .view-toggle button.active {
+      background: rgba(14, 165, 233, 0.5);
+    }
+
+    .distance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      color: #86efac;
+    }
+  </style>
+  <script>
+    if (!window.GOOGLE_MAPS_API_KEY) {
+      try { window.GOOGLE_MAPS_API_KEY = localStorage.getItem('GOOGLE_MAPS_API_KEY') || ''; } catch { }
+    }
+  </script>
 </head>
 
-<body class="text-white pb-20">
+<body class="text-white min-h-screen overflow-x-hidden">
 
-    <!-- Header -->
-    <nav class="glass sticky top-0 z-40 border-b border-white/10">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <a href="/dashboard.html" class="text-white/80 hover:text-white transition">
-                    <i class="fas fa-arrow-left text-xl"></i>
-                </a>
-                <h1 class="text-xl font-bold">Mis Favoritos</h1>
-            </div>
-        </div>
+  <!-- Header -->
+  <header class="glass fixed top-0 w-full z-50">
+    <nav class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 hover:opacity-80 transition shrink-0">
+        <i class="fas fa-heart-circle-check text-blue-400 text-2xl"></i>
+        <span class="font-bold text-xl hidden sm:inline">TuCitaSegura</span>
+      </a>
+      <div class="flex items-center gap-2 md:gap-4">
+        <a href="/dashboard.html" class="hover:text-blue-400 transition flex items-center gap-2 p-2" title="Mi Panel">
+          <i class="fas fa-th-large text-xl"></i>
+          <span class="hidden md:inline">Panel</span>
+        </a>
+        <a href="/conversaciones.html" class="hover:text-blue-400 transition flex items-center gap-2 relative p-2">
+          <i class="fas fa-comments text-xl"></i>
+          <span class="hidden md:inline">Mensajes</span>
+          <span id="unreadBadge"
+            class="invisible absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">0</span>
+        </a>
+        <a href="/citas.html" class="hover:text-blue-400 transition flex items-center gap-2 p-2">
+          <i class="fas fa-calendar-check text-xl"></i>
+          <span class="hidden md:inline">Mis Citas</span>
+        </a>
+        <a href="/eventos-vip.html" id="vipEventsBtn"
+          class="opacity-0 pointer-events-none hover:text-pink-400 transition flex items-center gap-2 relative p-2">
+          <i class="fas fa-gem text-pink-400 text-xl"></i>
+          <span
+            class="hidden md:inline font-semibold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Eventos
+            VIP</span>
+          <span
+            class="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] rounded-full px-1 py-0.5 font-bold">💎</span>
+        </a>
+        <a href="/perfil.html" class="hover:text-blue-400 transition flex items-center gap-2 p-2">
+          <i class="fas fa-user-circle text-xl"></i>
+          <span class="hidden md:inline">Mi Perfil</span>
+        </a>
+        <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 p-2 sm:px-4 sm:py-2 rounded-lg transition shrink-0">
+          <i class="fas fa-sign-out-alt"></i>
+          <span class="hidden sm:inline ml-2">Salir</span>
+        </button>
+      </div>
     </nav>
+  </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 max-w-6xl">
+  <main class="pt-20 pb-20 px-4 md:px-4">
+    <div class="max-w-7xl mx-auto">
 
-        <div class="text-center mb-8">
-            <div class="inline-block p-4 rounded-full bg-pink-500/20 mb-4">
-                <i class="fas fa-heart text-4xl text-pink-500"></i>
+      <!-- Payment Status Banner -->
+      <div id="paymentStatusBanner" class="hidden rounded-2xl p-4 mb-6">
+        <!-- Will be populated dynamically -->
+      </div>
+
+      <!-- Header Section with Stats -->
+      <div class="glass-strong rounded-2xl p-6 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">
+              <i class="fas fa-heart mr-2 text-pink-400"></i>
+              Mis Favoritos
+            </h1>
+            <p class="text-slate-300">
+              <i class="fas fa-users mr-2"></i>
+              <span id="userCount" class="font-semibold text-pink-400">0</span> personas que te gustan
+            </p>
+            <div class="mt-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+              <p class="text-xs text-blue-300">
+                <i class="fas fa-info-circle mr-1"></i>
+                <strong>Plataforma exclusivamente heterosexual:</strong> Solo verás personas del género opuesto
+              </p>
             </div>
-            <h2 class="text-3xl font-bold">Personas que te gustan</h2>
-            <p class="text-blue-100">Aquí están los perfiles que has marcado como favoritos.</p>
-        </div>
+          </div>
 
-        <!-- Grid -->
-        <div id="favoritesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Loading State -->
-            <div class="col-span-full text-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mx-auto">
-                </div>
-                <p class="mt-4 text-white/70">Cargando corazones...</p>
+          <!-- CONTROLS: Grid mobile, Flex dsk -->
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3">
+            <!-- View Toggle (Full width on tiny screens if needed, otherwise shared) -->
+            <div class="view-toggle glass flex col-span-2 sm:col-span-1 justify-center sm:justify-start">
+              <button id="viewList" class="active flex items-center gap-2 flex-1 sm:flex-none justify-center">
+                <i class="fas fa-th-large"></i>
+                <span class="hidden sm:inline">Lista</span>
+              </button>
+              <!-- Map Toggle Removed -->
             </div>
+
+            <button id="toggleFilters"
+              class="glass px-4 py-3 sm:py-2 rounded-lg hover:bg-white/10 transition flex items-center justify-center gap-2">
+              <i class="fas fa-sliders"></i> <span class="sm:hidden">Filtros</span> <span
+                class="hidden sm:inline">Filtros</span>
+            </button>
+
+            <select id="sortBy"
+              class="glass px-4 py-3 sm:py-2 rounded-lg border-0 cursor-pointer hover:bg-white/10 transition w-full sm:w-auto">
+              <option value="compatibility">✨ Compatibilidad</option>
+              <option value="distance">📍 Cercanos</option>
+              <option value="newest">🕒 Recientes</option>
+              <option value="age-asc">👶 Edad (Menor)</option>
+              <option value="age-desc">🧓 Edad (Mayor)</option>
+              <option value="reputation">⭐ Reputación</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Filters Display -->
+      <div id="activeFilters" class="mb-6 hidden">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sm text-slate-400">Filtros activos:</span>
+          <div id="filterChips" class="flex flex-wrap gap-2"></div>
+          <button id="clearAllFilters" class="text-sm text-red-400 hover:text-red-300 transition ml-2">
+            <i class="fas fa-times-circle mr-1"></i>Limpiar todo
+          </button>
+        </div>
+      </div>
+
+      <!-- Advanced Filters Panel (Collapsible) -->
+      <div id="filtersPanel"
+        class="hidden fixed inset-0 z-[60] bg-slate-900/95 p-6 overflow-y-auto md:relative md:inset-auto md:bg-transparent md:p-6 md:mb-8 md:glass md:rounded-2xl md:z-auto">
+        <div class="flex items-center justify-between mb-6 md:mb-4">
+          <h2 class="text-xl font-bold">
+            <i class="fas fa-filter mr-2 text-blue-400"></i>
+            Filtros Avanzados
+          </h2>
+          <button id="closeFilters" class="md:hidden text-slate-400 hover:text-white">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
         </div>
 
-        <!-- Empty State (Hidden by default) -->
-        <div id="emptyState" class="hidden text-center py-12">
-            <i class="far fa-heart text-6xl text-white/30 mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2">Aún no tienes favoritos</h3>
-            <p class="text-blue-100 mb-6">Explora perfiles y da "Like" a quien te interese.</p>
-            <a href="/buscar-usuarios.html"
-                class="px-6 py-3 bg-white text-purple-600 rounded-full font-bold hover:bg-purple-50 transition shadow-lg">
-                Explorar Ahora
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Search Bar -->
+          <div class="lg:col-span-3">
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-search mr-2"></i>Buscar por nombre o descripción
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="searchText"
+                class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 placeholder-slate-400 text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Escribe para buscar...">
+              <button id="quickSearchBtn"
+                class="bg-blue-600 hover:bg-blue-500 text-white px-6 rounded-lg font-bold transition">
+                ¡GO!
+              </button>
+            </div>
+          </div>
+
+          <!-- Location Search with Autocomplete -->
+          <div class="lg:col-span-2">
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-map-marker-alt mr-2"></i>Ubicación
+            </label>
+            <input type="text" id="locationSearch"
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3"
+              placeholder="Buscar ciudad o dirección...">
+          </div>
+
+          <!-- Distance Filter -->
+          <div>
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-route mr-2"></i>Radio de búsqueda
+            </label>
+            <select id="filterDistance"
+              class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer text-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="" class="bg-slate-800 text-white">Cualquier distancia</option>
+              <option value="5" class="bg-slate-800 text-white">5 km o menos</option>
+              <option value="10" class="bg-slate-800 text-white">10 km o menos</option>
+              <option value="25" class="bg-slate-800 text-white">25 km o menos</option>
+              <option value="50" class="bg-slate-800 text-white">50 km o menos</option>
+              <option value="100" class="bg-slate-800 text-white">100 km o menos</option>
+            </select>
+          </div>
+
+          <!-- Age Range -->
+          <div>
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-birthday-cake mr-2"></i>Edad mínima
+            </label>
+            <input type="number" id="filterAgeMin" min="18" max="100"
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3" placeholder="18">
+          </div>
+
+          <div>
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-birthday-cake mr-2"></i>Edad máxima
+            </label>
+            <input type="number" id="filterAgeMax" min="18" max="100"
+              class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3" placeholder="100">
+          </div>
+
+          <!-- Reputation Filter -->
+          <div>
+            <label class="block mb-2 text-sm font-semibold">
+              <i class="fas fa-star mr-2"></i>Reputación mínima
+            </label>
+            <select id="filterReputation"
+              class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 cursor-pointer text-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="" class="bg-slate-800 text-white">Todas</option>
+              <option value="BRONCE" class="bg-slate-800 text-white">Bronce o superior</option>
+              <option value="PLATA" class="bg-slate-800 text-white">Plata o superior</option>
+              <option value="ORO" class="bg-slate-800 text-white">Oro o superior</option>
+              <option value="PLATINO" class="bg-slate-800 text-white">Platino</option>
+            </select>
+          </div>
+
+          <!-- Verified Only -->
+          <div class="flex items-center">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="filterVerified"
+                class="w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-2 focus:ring-blue-500">
+              <span class="text-sm font-semibold">
+                <i class="fas fa-certificate text-blue-400 mr-2"></i>Solo verificados
+              </span>
+            </label>
+          </div>
+
+          <!-- Online Status -->
+          <div class="flex items-center">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="filterOnline"
+                class="w-5 h-5 rounded border-slate-600 text-green-500 focus:ring-2 focus:ring-green-500">
+              <span class="text-sm font-semibold">
+                <i class="fas fa-circle text-green-400 mr-2"></i>Solo en línea
+              </span>
+            </label>
+          </div>
+
+          <!-- Favorites Status -->
+          <div class="flex items-center">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="filterFavorites"
+                class="w-5 h-5 rounded border-slate-600 text-pink-500 focus:ring-2 focus:ring-pink-500">
+              <span class="text-sm font-semibold">
+                <i class="fas fa-heart text-pink-400 mr-2"></i>Solo mis favoritos
+              </span>
+            </label>
+          </div>
+
+          <!-- Use My Location -->
+          <div class="flex items-center">
+            <button id="useMyLocation"
+              class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-semibold text-sm">
+              <i class="fas fa-crosshairs"></i>
+              Usar mi ubicación
+            </button>
+          </div>
         </div>
 
-    </main>
+        <div class="mt-6 pt-4 border-t border-slate-600/50">
+          <p class="text-sm text-blue-300 mb-4">
+            <i class="fas fa-info-circle mr-2"></i>
+            Mostrando solo usuarios del género opuesto según tu perfil
+          </p>
 
-    <!-- Scripts -->
-    <script type="module">
-        import { auth, db } from './js/firebase-config-env.js';
-        import { onAuthStateChanged } from "firebase/auth";
-        import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+          <div class="flex gap-3">
+            <button id="applyFilters"
+              class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-3 rounded-lg font-semibold flex-1 md:flex-none">
+              <i class="fas fa-check mr-2"></i>Aplicar Filtros
+            </button>
+            <button id="clearFilters" class="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold">
+              <i class="fas fa-redo mr-2"></i>Restablecer
+            </button>
+          </div>
+        </div>
+      </div>
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                await loadFavorites(user);
-            } else {
-                window.location.href = '/login.html';
-            }
-        });
+      <!-- Map View REMOVED -->
+      <div id="mapContainer" class="hidden"></div>
 
-        async function loadFavorites(user) {
-            const grid = document.getElementById('favoritesGrid');
-            const empty = document.getElementById('emptyState');
+      <!-- User Grid -->
+      <div id="gridContainer" class="px-4 md:px-0">
+        <div id="userGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <!-- Users will be loaded here -->
+        </div>
+      </div>
 
-            try {
-                // 1. Get User's 'favorites' array or subcollection
-                // Assumption: User doc has a 'favorites' array of UIDs.
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
+      <!-- Loading Skeleton -->
+      <div id="loading" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="glass rounded-2xl p-6 skeleton" style="height: 280px;"></div>
+          <div class="glass rounded-2xl p-6 skeleton" style="height: 280px;"></div>
+          <div class="glass rounded-2xl p-6 skeleton" style="height: 280px;"></div>
+        </div>
+      </div>
 
-                if (!userDoc.exists()) return;
+      <!-- No Results -->
+      <div id="noResults" class="text-center py-16 hidden">
+        <div class="glass rounded-2xl p-12 inline-block">
+          <i class="fas fa-search text-6xl text-slate-600 mb-4"></i>
+          <h3 class="text-2xl font-bold mb-2">No se encontraron usuarios</h3>
+          <p class="text-slate-400 mb-6">Intenta ajustar tus filtros de búsqueda</p>
+          <button id="resetSearch" class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-semibold">
+            <i class="fas fa-redo mr-2"></i>Restablecer Búsqueda
+          </button>
+        </div>
+      </div>
 
-                const userData = userDoc.data();
-                const favoriteIds = userData.favorites || []; // Array of UIDs
+      <!-- Load More Button -->
+      <div id="loadMoreContainer" class="text-center mt-8 hidden">
+        <button id="loadMoreBtn" class="glass-strong px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
+          <i class="fas fa-chevron-down mr-2"></i>Cargar Más Usuarios
+        </button>
+      </div>
 
-                if (favoriteIds.length === 0) {
-                    grid.innerHTML = '';
-                    empty.classList.remove('hidden');
-                    return;
-                }
+    </div>
+  </main>
 
-                // 2. Fetch details for each favorite user
-                // Firestore 'in' query supports up to 10 items. If more, need to batch or fetch individually.
-                // For MVP, if list is small, fetch individually in parallel.
+  <!-- Payment Required Modal -->
+  <div id="paymentModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-[60] p-4">
+    <div class="glass-strong rounded-2xl max-w-md w-full modal-content">
+      <div class="p-8 text-center">
+        <div
+          class="w-20 h-20 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-lock text-4xl text-white"></i>
+        </div>
 
-                grid.innerHTML = ''; // Clear loading
+        <h3 id="paymentModalTitle" class="text-2xl font-bold mb-4">Membresía Requerida</h3>
+        <p id="paymentModalMessage" class="text-slate-300 mb-6"></p>
 
-                const promises = favoriteIds.map(uid => getDoc(doc(db, 'users', uid)));
-                const userSnapshots = await Promise.all(promises);
+        <div id="paymentDetails" class="glass rounded-xl p-6 mb-6 text-left">
+          <!-- Payment details will be inserted here -->
+        </div>
 
-                const validUsers = userSnapshots.filter(snap => snap.exists()).map(snap => ({ id: snap.id, ...snap.data() }));
+        <div class="flex gap-3">
+          <button id="goToPaymentBtn"
+            class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-6 py-4 rounded-lg font-semibold text-lg">
+            <i class="fas fa-credit-card mr-2"></i><span id="paymentBtnText">Contratar Ahora</span>
+          </button>
+          <button id="closePaymentModal" class="bg-slate-700 hover:bg-slate-600 px-6 py-4 rounded-lg font-semibold">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                if (validUsers.length === 0) {
-                    empty.classList.remove('hidden');
-                    return;
-                }
+  <!-- User Details Modal (PREMIUM REDESIGN) -->
+  <div id="userModal"
+    class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+    <div
+      class="glass-strong rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content shadow-2xl relative">
 
-                // 3. Render Cards
-                validUsers.forEach(u => {
-                    const card = document.createElement('div');
-                    card.className = 'user-card glass rounded-2xl overflow-hidden relative group cursor-pointer';
-                    card.onclick = () => window.location.href = `/perfil-usuario.html?uid=${u.id}`; // Assuming public profile view exists or reuse modal
+      <!-- Modal Header (Cover Image) -->
+      <div class="h-40 md:h-52 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/20"></div>
+        <!-- Decorative bubbles -->
+        <div
+          class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full mix-blend-overlay filter blur-3xl transform translate-x-1/2 -translate-y-1/2">
+        </div>
 
-                    const img = u.photoURL || `https://ui-avatars.com/api/?name=${u.alias}&background=random`;
+        <!-- Close Button (Floating) -->
+        <button id="closeModal"
+          class="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-sm z-10">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
-                    card.innerHTML = `
-                        <div class="h-64 overflow-hidden relative">
-                            <img src="${img}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="${u.alias}">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 text-left">
-                                <h3 class="text-xl font-bold text-white shadow-black drop-shadow-md">${u.alias}, ${u.age || '?'}</h3>
-                                <p class="text-sm text-white/80"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> ${u.city || 'Ubicación oculta'}</p>
-                            </div>
-                            <div class="absolute top-3 right-3 bg-pink-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg">
-                                <i class="fas fa-heart"></i>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+      <!-- Modal Content -->
+      <div class="px-6 md:px-8 pb-8 -mt-16 md:-mt-20 relative z-10">
 
+        <!-- User Avatar & Core Info (Centered) -->
+        <div class="flex flex-col items-center text-center mb-8">
+          <!-- Avatar -->
+          <div class="relative mb-4">
+            <div id="modalAvatarContainer"
+              class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 shadow-2xl overflow-hidden bg-slate-800 flex items-center justify-center relative">
+              <!-- Content injected by JS -->
+              <span class="text-4xl text-white font-bold">U</span>
+            </div>
+            <span id="modalOnlineIndicator"
+              class="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-900 rounded-full hidden z-20"></span>
+          </div>
 
-            } catch (error) {
-                console.error("Error loading favorites:", error);
-                grid.innerHTML = `<p class="col-span-full text-center text-red-300">Error al cargar favoritos. Inténtalo de nuevo.</p>`;
-            }
-        }
-    </script>
+          <!-- Name & Verification -->
+          <div class="flex items-center gap-2 mb-1 justify-center">
+            <h3 id="modalName" class="text-3xl md:text-4xl font-bold text-white drop-shadow-md">Usuario</h3>
+            <i id="modalVerifiedBadge"
+              class="fas fa-check-circle text-blue-400 text-xl hidden bg-white rounded-full box-content border-2 border-transparent"
+              title="Verificado"></i>
+          </div>
+
+          <!-- Meta Info (Age, Distance) -->
+          <p class="text-slate-200 text-sm md:text-base flex items-center gap-3 mb-4 font-medium opacity-90">
+            <span id="modalAge"><i class="fas fa-birthday-cake mr-1 text-pink-400"></i><span>25 años</span></span>
+            <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+            <span id="modalDistance" class="hidden"><i class="fas fa-location-dot mr-1 text-blue-400"></i><span>5
+                km</span></span>
+            <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+            <span id="modalReputationContainer"></span>
+          </p>
+        </div>
+
+        <!-- Stats Grid (Compact) -->
+        <div class="grid grid-cols-3 gap-2 md:gap-4 mb-8">
+          <div class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
+            <div class="text-xl md:text-2xl font-bold text-blue-400" id="modalCitasCompletadas">0</div>
+            <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">Citas</div>
+          </div>
+          <div class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
+            <div class="text-xl md:text-2xl font-bold text-green-400" id="modalCompatibilidad">--</div>
+            <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">Compatibilidad
+            </div>
+          </div>
+          <div class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
+            <div class="text-xl md:text-2xl font-bold text-purple-400" id="modalRespuesta">--</div>
+            <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">Respuesta</div>
+          </div>
+        </div>
+
+        <!-- Bio Section -->
+        <div class="mb-8 bg-white/5 rounded-2xl p-6 border border-white/5 relative">
+          <i class="fas fa-quote-left absolute top-4 left-4 text-white/10 text-4xl -z-10"></i>
+          <h4 class="font-bold mb-2 text-sm uppercase tracking-wider text-slate-400">Sobre mí</h4>
+          <p id="modalBio" class="text-slate-200 leading-relaxed italic text-lg text-center"></p>
+        </div>
+
+        <!-- Photos Gallery (Dynamic) -->
+        <div id="modalGallerySection" class="mb-8 hidden">
+          <h4 class="font-bold mb-3 text-sm uppercase tracking-wider text-slate-400">Galería</h4>
+          <div id="modalGalleryGrid" class="grid grid-cols-3 md:grid-cols-4 gap-2">
+            <!-- Photos injected here -->
+          </div>
+        </div>
+
+        <!-- Interests Section -->
+        <div id="modalInterestsSection" class="mb-8 hidden">
+          <h4 class="font-bold mb-3 text-sm uppercase tracking-wider text-slate-400">Intereses</h4>
+          <div id="modalInterests" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Map in Modal REMOVED for Cost Optimization -->
+        <!-- <div id="modalMapContainer" class="mb-8 hidden rounded-xl overflow-hidden border border-white/10">
+          <div id="userModalMap" class="h-48 w-full"></div>
+        </div> -->
+
+        <!-- Match Status & Actions -->
+        <div class="sticky bottom-0 bg-[#0f172a] pt-4 pb-2 border-t border-white/10 -mx-6 md:-mx-8 px-6 md:px-8">
+          <div id="alreadyMatchedMsg"
+            class="hidden bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-3 mb-4 flex items-center justify-center text-sm">
+            <i class="fas fa-paper-plane mr-2 text-yellow-400"></i>
+            <span class="text-yellow-100 font-medium">Solicitud enviada</span>
+          </div>
+
+          <div class="flex gap-3">
+            <button id="skipUserBtn"
+              class="bg-slate-800 hover:bg-slate-700 text-slate-300 w-14 h-14 rounded-2xl flex items-center justify-center transition border border-white/10">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <button id="sendMatchBtn"
+              class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-3 rounded-2xl transition shadow-lg shadow-purple-500/20 text-lg flex items-center justify-center gap-2">
+              <i class="fas fa-heart"></i>
+              <span>Conectar</span>
+            </button>
+
+            <button id="startChatBtn"
+              class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white w-14 h-14 rounded-2xl flex items-center justify-center transition shadow-lg shadow-blue-500/20">
+              <i class="fas fa-comment-dots text-xl"></i>
+            </button>
+          </div>
+          <p class="text-center text-xs text-slate-500 mt-4 pb-2">TuCitaSegura &copy; Perfil Verificado</p>
+        </div>
+
+      </div>
+    </div>
+
+    <script type="module" src="./js/favoritos.js"></script>
 </body>
 
 </html>

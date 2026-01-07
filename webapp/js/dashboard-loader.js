@@ -2,7 +2,7 @@
  * Dashboard Data Loader con retry logic y fallback
  */
 
-import { auth, db } from './firebase-config-env.js';
+import { auth } from './firebase-config-env.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { showToast } from './utils.js';
@@ -39,6 +39,10 @@ export async function loadDashboardData(user) {
     while (retries > 0 && !firestoreData) {
         try {
             console.log(`🔍 Attempting to load Firestore profile (attempt ${4 - retries}/3)...`);
+
+            // Lazy load Firestore instance
+            const { getDb } = await import('./firebase-config-env.js');
+            const db = await getDb();
 
             const userDoc = await getDoc(doc(db, 'users', user.uid));
 
@@ -230,19 +234,18 @@ function updateDashboardUI(user, firestoreData) {
     // -----------------------------------------------------------------------
     // ADMIN ACCESS CHECK
     // -----------------------------------------------------------------------
-    const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
-    const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
-
-    // Trust UID or Email
-    if (admins.includes(user.email) || adminUids.includes(user.uid) || (firestoreData && firestoreData.role === 'admin')) {
+    // -----------------------------------------------------------------------
+    // ADMIN ACCESS CHECK
+    // -----------------------------------------------------------------------
+    // Check role in Firestore data (UI Toggle only - Security is in Backend)
+    if (firestoreData && (firestoreData.role === 'admin' || firestoreData.userRole === 'admin')) {
         const adminCard = document.getElementById('adminPanelCard');
         if (adminCard) {
             adminCard.classList.remove('hidden');
             console.log('🛡️ Admin Panel button UNHIDDEN');
-        } else {
-            console.error('🛡️ Admin Panel Check Passed but Element #adminPanelCard NOT FOUND');
         }
     } else {
-        console.log('🛡️ User is NOT Admin');
+        // Double check claims if available via token result (not directly exposed in user object usually without forceRefresh)
+        // For UI purposes, Firestore role is sufficient.
     }
 }

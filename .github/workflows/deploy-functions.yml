@@ -1,0 +1,47 @@
+name: Deploy Functions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+      RECAPTCHA_PROJECT_ID: ${{ secrets.RECAPTCHA_PROJECT_ID }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      FIREBASE_FUNCTIONS_DISCOVERY_TIMEOUT: 30000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Firebase CLI
+        run: npm i -g firebase-tools
+
+      - name: Install functions deps
+        run: |
+          cd functions
+          npm ci
+
+      - name: Set secrets in Firebase
+        run: |
+          echo "$RECAPTCHA_SITE_KEY"   | firebase functions:secrets:set RECAPTCHA_SITE_KEY --project "$FIREBASE_PROJECT_ID"
+          echo "$RECAPTCHA_PROJECT_ID" | firebase functions:secrets:set RECAPTCHA_PROJECT_ID --project "$FIREBASE_PROJECT_ID"
+          if [ -n "$STRIPE_SECRET_KEY" ]; then
+            echo "$STRIPE_SECRET_KEY" | firebase functions:secrets:set STRIPE_SECRET_KEY --project "$FIREBASE_PROJECT_ID"
+          fi
+
+      - name: Deploy functions
+        run: |
+          firebase deploy --only functions --project "$FIREBASE_PROJECT_ID" --token "$FIREBASE_TOKEN"
+

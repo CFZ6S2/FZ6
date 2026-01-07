@@ -12,13 +12,17 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
     <!-- iOS PWA Support -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
 
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="./css/input.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </noscript>
 
     <style>
         body {
@@ -211,7 +215,7 @@
 
 
         <!-- Dashboard Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.2s">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in" style="animation-delay: 0.2s">
 
 
             <!-- Admin Panel (Hidden by default) -->
@@ -286,6 +290,17 @@
                 <h3 class="font-bold text-lg" data-i18n="profile.edit">Editar Perfil</h3>
             </a>
 
+            <!-- Ocultos (Hidden Users) -->
+            <a href="/ocultos.html"
+                class="glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-eye-slash text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg">Ocultos</h3>
+                <span class="text-xs text-slate-400 mt-1">Géstiona bloqueos</span>
+            </a>
+
         </div>
         </div>
     </main>
@@ -331,22 +346,27 @@
 
     <!-- Scripts -->
     <script type="module">
-        import { auth, db } from './js/firebase-config-env.js';
+        import { auth } from './js/firebase-config-env.js';
         import { onAuthStateChanged, signOut } from "firebase/auth";
-        import { loadDashboardData } from './js/dashboard-loader.js';
         import { loadTheme } from './js/theme.js';
 
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Initialize Dashboard
-                try {
-                    await loadDashboardData(user);
-                    document.getElementById('loadingOverlay').classList.add('hidden');
-                } catch (e) {
-                    console.error("Dashboard Load Error:", e);
-                }
-            } else {
+            if (!user) {
                 window.location.href = '/login.html';
+                return;
+            }
+
+            // Ultra-light Loader: Only import heavy logic if authenticated
+            try {
+                const { loadDashboardData } = await import('./js/dashboard-loader.js');
+                const { initInAppNotifications } = await import('./js/in-app-notifications.js');
+
+                await loadDashboardData(user);
+                initInAppNotifications(user);
+
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            } catch (e) {
+                console.error("Dashboard Load Error:", e);
             }
         });
 
@@ -370,7 +390,7 @@
         });
 
     </script>
-
+    <script type="module" src="./js/theme.js"></script>
     <script type="module" src="./js/i18n.js"></script>
     <script type="module" src="./js/language-selector.js"></script>
     <!-- Presence Heartbeat -->

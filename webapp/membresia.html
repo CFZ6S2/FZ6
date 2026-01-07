@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,12 +15,12 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-  
-  <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-      <meta name="theme-color" content="#764ba2">
+
+    <!-- iOS PWA Support -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
+    <meta name="theme-color" content="#764ba2">
     <link rel="stylesheet" href="./css/output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -131,15 +131,19 @@
 
 
     <script type="module">
-        import { auth, db } from './js/firebase-config-env.js';
+        import { auth } from './js/firebase-config-env.js';
         import { onAuthStateChanged } from "firebase/auth";
         import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
         let currentUser = null;
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+                const { getDb } = await import('./js/firebase-config-env.js');
+                const db = await getDb();
+
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
             } else {
                 alert('Debes iniciar sesión para ver membresías');
                 window.location.href = '/login.html';

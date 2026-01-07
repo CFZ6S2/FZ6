@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,12 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  
+
   <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-    <meta name="theme-color" content="#764ba2">
+  <meta name="theme-color" content="#764ba2">
   <link rel="stylesheet" href="./css/output.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -366,7 +366,7 @@
     import './js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from './js/firebase-config-env.js';
+    import { auth } from './js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'firebase/auth';
     import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
     import { loadTheme } from './js/theme.js';
@@ -390,6 +390,8 @@
     // Load user data
     async function loadUserData() {
       try {
+        const { getDb } = await import('./js/firebase-config-env.js');
+        const db = await getDb();
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
           currentUserData = { id: userDoc.id, ...userDoc.data() };
@@ -519,6 +521,9 @@
       try {
         const transactionsList = document.getElementById('transactionsList');
         const noTransactions = document.getElementById('noTransactions');
+
+        const { getDb } = await import('./js/firebase-config-env.js');
+        const db = await getDb();
 
         // Query payments collection for this user
         const paymentsQuery = query(

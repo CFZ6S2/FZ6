@@ -1,9 +1,15 @@
-import { auth, db, functions } from './firebase-config-env.js';
+import { auth, functions } from './firebase-config-env.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, getDocs, query, orderBy, limit, doc, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, getDoc, query, orderBy, limit, doc, updateDoc, where, startAfter } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
+import { calculateAge, getReputationBadge, getAvailabilityStatus, formatDate } from './utils.js';
+import { sanitizer } from './sanitizer.js';
 
 let currentUser = null;
+let allUsers = [];
+let currentPage = 0;
+const USERS_PER_PAGE = 50;
+let lastVisibleDoc = null;
 
 // Is Admin Check
 async function checkAdminAccess(user) {
@@ -26,15 +32,7 @@ async function checkAdminAccess(user) {
 }
 
 // Format Date
-const formatDate = (timestamp) => {
-    if (!timestamp) return 'N/A';
-    // Handle Firestore Timestamp or Date object
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('es-ES', {
-        year: 'numeric', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-    });
-};
+// Format Date (Imported from utils)
 
 // Logout
 window.logout = async () => {
@@ -56,30 +54,235 @@ const getStatusBadge = (user) => {
     return '<span class="text-green-400 flex items-center gap-1"><i class="fas fa-check-circle"></i> Activo</span>';
 };
 
-// Load Users
-window.loadUsers = async () => {
+// Load Users with Pagination
+window.loadUsers = async (loadMore = false) => {
     const tableBody = document.getElementById('usersTableBody');
-    tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center"><i class="fas fa-circle-notch fa-spin text-2xl text-blue-500"></i></td></tr>';
+
+    if (!loadMore) {
+        tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center"><i class="fas fa-circle-notch fa-spin text-2xl text-blue-500"></i></td></tr>';
+        allUsers = [];
+        currentPage = 0;
+        lastVisibleDoc = null;
+    }
 
     try {
+        const { getDb } = await import('./firebase-config-env.js');
+        const db = await getDb();
         const usersRef = collection(db, 'users');
-        // Simple query for now
-        const q = query(usersRef, orderBy('createdAt', 'desc'), limit(50));
+
+        // Build query with pagination
+        let q;
+        if (loadMore && lastVisibleDoc) {
+            // Removed orderBy('createdAt') to prevent hiding users without this field
+            q = query(usersRef, startAfter(lastVisibleDoc), limit(USERS_PER_PAGE));
+        } else {
+            // Removed orderBy('createdAt') to prevent hiding users without this field
+            q = query(usersRef, limit(USERS_PER_PAGE));
+        }
+
         const snapshot = await getDocs(q);
+
+        // Get last visible document for next page
+        if (snapshot.docs.length > 0) {
+            lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+        }
 
         const users = [];
         snapshot.forEach(doc => {
             users.push({ id: doc.id, ...doc.data() });
         });
 
-        renderTable(users);
-        updateStats(users);
+        if (loadMore) {
+            allUsers = [...allUsers, ...users];
+        } else {
+            allUsers = users;
+        }
+
+        renderTable(allUsers);
+        updateStats(allUsers);
+        updatePaginationControls(snapshot.docs.length);
 
     } catch (error) {
         console.error('Error loading users:', error);
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400">Error cargando usuarios: ${error.message}<br>¿Tienes permisos de admin?</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i>Error: ${error.message}</td></tr>`;
     }
 };
+
+// Load Zombie Users
+window.loadZombieUsers = async () => {
+    const tableBody = document.getElementById('usersTableBody');
+    tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center"><i class="fas fa-skull fa-spin text-2xl text-orange-500"></i><br><span class="text-sm mt-2">Cargando zombies...</span></td></tr>';
+
+    try {
+        const listZombies = httpsCallable(functions, 'listZombieUsers');
+        const result = await listZombies({});
+
+        if (result.data.success) {
+            const zombies = result.data.zombies;
+            allUsers = zombies; // Update global
+
+            document.getElementById('totalUsers').textContent = result.data.zombieCount;
+            document.getElementById('showingCount').textContent = result.data.zombieCount;
+
+            if (zombies.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-green-400"><i class="fas fa-check-circle mr-2"></i>¡No hay usuarios zombies!</td></tr>';
+                return;
+            }
+
+            renderTable(zombies);
+            updateStats(zombies);
+
+            // Show notification
+            alert(`🧟 Encontrados ${zombies.length} usuarios zombies de ${result.data.totalUsers} totales`);
+        } else {
+            throw new Error('Failed to load zombies');
+        }
+    } catch (error) {
+        console.error('Error loading zombie users:', error);
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i>Error: ${error.message}</td></tr>`;
+    }
+};
+
+// Cleanup Zombies
+window.cleanupZombies = async () => {
+    // Double confirmation for safety
+    if (!confirm('⚠️ ¿Estás SEGURO de querer eliminar los usuarios zombies?\n\nEsta acción:\n1. Enviará un email de aviso a cada usuario.\n2. Borrará permanentemente sus cuentas.\n3. Es irreversible.')) {
+        return;
+    }
+
+    const userInput = prompt('Para confirmar, escribe "ELIMINAR" en mayúsculas:');
+    if (userInput !== 'ELIMINAR') {
+        alert('Acción cancelada.');
+        return;
+    }
+
+    const tableBody = document.getElementById('usersTableBody');
+    tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center"><i class="fas fa-cog fa-spin text-3xl text-red-500"></i><br><span class="text-sm mt-3 block font-bold text-red-400">Procesando eliminación masiva...<br>Esto puede tardar unos momentos.</span></td></tr>';
+
+    try {
+        const cleanupFunction = httpsCallable(functions, 'cleanupZombieUsers');
+
+        // Execute with dryRun: false to actually delete
+        const result = await cleanupFunction({ dryRun: false });
+
+        if (result.data.success) {
+            const { processed, deleted, errors } = result.data;
+
+            let message = `✅ Proceso finalizado:\n\n- Procesados: ${processed}\n- Eliminados: ${deleted}`;
+
+            if (errors && errors.length > 0) {
+                message += `\n- Errores: ${errors.length}\n(Revisa la consola para detalles)`;
+                console.error('Cleanup Errors:', errors);
+            }
+
+            alert(message);
+            // Reload list to show empty
+            loadZombieUsers();
+        } else {
+            throw new Error('La operación no reportó éxito.');
+        }
+
+    } catch (error) {
+        console.error('Error cleanup:', error);
+        tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i>Error: ${error.message}</td></tr>`;
+        alert(`Error: ${error.message}`);
+    }
+};
+
+// Update pagination controls
+function updatePaginationControls(fetchedCount) {
+    const showingCount = document.getElementById('showingCount');
+    if (showingCount) {
+        showingCount.textContent = allUsers.length;
+    }
+}
+
+// RESET ALL USER STATS (Maintenance Tool)
+window.resetAllGlobalStats = async () => {
+    if (!confirm('⚠️ ¿RESET GLOBAL DE ESTADÍSTICAS?\n\nEsto pondrá a CERO las citas y respuesta de TODOS los usuarios.\n¿Continuar?')) return;
+
+    const userInput = prompt('Escribe "RESET" para confirmar:');
+    if (userInput !== 'RESET') { alert('Cancelado'); return; }
+
+    console.log('🔄 Iniciando Reset Global de Estadísticas...');
+    const tableBody = document.getElementById('usersTableBody');
+    tableBody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-blue-400"><i class="fas fa-sync fa-spin text-3xl mb-2"></i><br>Actualizando todos los usuarios...</td></tr>';
+
+    try {
+        const { getDb } = await import('./firebase-config-env.js');
+        const db = await getDb();
+        const usersRef = collection(db, 'users');
+
+        // 1. Get ALL users (In batches effectively, but here we just get all for simplicity or iterate pages)
+        // Warning: Small dataset optimization. For < 1000 users this is fine.
+        const snapshot = await getDocs(usersRef);
+        console.log(`📊 Encontrados ${snapshot.size} usuarios.`);
+
+        let updatedCount = 0;
+        const total = snapshot.size;
+
+        const BATCH_SIZE = 500;
+        const { writeBatch } = await import("firebase/firestore");
+
+        let batch = writeBatch(db);
+        let currentBatchCount = 0;
+
+        for (const userDoc of snapshot.docs) {
+            const userRef = doc(db, 'users', userDoc.id);
+
+            // Update logic:
+            // - completedDates: 0
+            // - responseRate: 100 (Default optimistic)
+            // - rating: 5.0 (Default optimistic) or keep existing if rating logic is separate
+            // User said: "compatibilidad lo quitamos y respuesta lo reseteamos" 
+            // "aprovechar el hueco" -> I chose Rating. So I initialize rating to 5.0
+
+            const updateData = {
+                'stats.completedDates': 0,
+                'stats.responseRate': 100,
+                'stats.rating': 5.0,
+                'updatedAt': serverTimestamp()
+            };
+
+            // Check if stats object exists to avoid overwrite? 
+            // set is safer with merge, but update is cleaner for partial.
+            // Using updateDoc. If 'stats' field doesn't exist, dot notation 'stats.x' works if map exists? 
+            // Safer to set stats object if missing.
+            // Let's use set with merge for safety
+
+            batch.set(userRef, {
+                stats: {
+                    completedDates: 0,
+                    responseRate: 100,
+                    rating: 5.0
+                }
+            }, { merge: true });
+
+            currentBatchCount++;
+            updatedCount++;
+
+            if (currentBatchCount >= BATCH_SIZE) {
+                await batch.commit();
+                console.log(`💾 Batch saved: ${updatedCount}/${total}`);
+                batch = writeBatch(db);
+                currentBatchCount = 0;
+            }
+        }
+
+        if (currentBatchCount > 0) {
+            await batch.commit();
+        }
+
+        console.log('✅ Reset Completado.');
+        alert(`Operación exitosa: ${updatedCount} usuarios actualizados.`);
+        loadUsers(); // Refresh
+
+    } catch (e) {
+        console.error('Reset Failed:', e);
+        alert('Error: ' + e.message);
+    }
+};
+
 
 function renderTable(users) {
     const tableBody = document.getElementById('usersTableBody');
@@ -100,7 +303,7 @@ function renderTable(users) {
         const lastLogin = formatRelativeTime(user.lastActivity || user.createdAt);
 
         return `
-        <tr class="hover:bg-slate-800/50 transition group">
+        <tr class="hover:bg-slate-800/50 transition group cursor-pointer" onclick="window.openUserModal('${user.id}')">
             <td class="p-3 sm:p-4">
                 <div class="flex items-center gap-2 sm:gap-3">
                     <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + user.alias + '&background=random'}" 
@@ -284,6 +487,8 @@ let growthChartInstance = null;
 async function loadDetailedStats() {
     console.log('📊 Loading detailed stats...');
     try {
+        const { getDb } = await import('./firebase-config-env.js');
+        const db = await getDb();
         const usersRef = collection(db, 'users');
         const q = query(usersRef, orderBy('createdAt', 'desc'), limit(1000)); // Get last 1000 users for stats
         const snapshot = await getDocs(q);
@@ -515,3 +720,183 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = '/buscar-usuarios.html';
     }
 });
+
+// --- ADMIN USER MODAL LOGIC ---
+let selectedModalUser = null;
+
+window.openUserModal = async (userId) => {
+    const overlay = document.getElementById('loadingOverlay'); // Re-use overlay if we want, or just show modal skeleton
+    // Better to fetch fresh data
+    try {
+        const { getDb } = await import('./firebase-config-env.js');
+        const db = await getDb();
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (!userDoc.exists()) {
+            alert('Usuario no encontrado');
+            return;
+        }
+        const user = { id: userDoc.id, ...userDoc.data() };
+        selectedModalUser = user;
+
+        const modal = document.getElementById('userModal');
+        const avatarLetter = (user.alias || user.email || 'U').charAt(0).toUpperCase();
+
+        // Populate Modal
+        // 1. Avatar
+        const modalAvatarContainer = document.getElementById('modalAvatarContainer');
+        const photoUrl = user.photoURL || (user.photos && user.photos.length > 0 ? user.photos[0] : null);
+
+        if (photoUrl) {
+            modalAvatarContainer.innerHTML = `<img src="${photoUrl}" class="w-full h-full object-cover">`;
+        } else {
+            modalAvatarContainer.innerHTML = `<span class="text-5xl font-bold text-white">${avatarLetter}</span>`;
+        }
+
+        // Online/Status
+        const onlineInd = document.getElementById('modalOnlineIndicator');
+        // We don't have real-time online status here easily unless we listen, but let's check basic field
+        if (user.isOnline) onlineInd.classList.remove('hidden');
+        else onlineInd.classList.add('hidden');
+
+        // 2. Info
+        document.getElementById('modalName').textContent = user.alias || 'Sin Alias';
+        document.getElementById('modalEmail').textContent = user.email || 'No Email';
+
+        const verBadge = document.getElementById('modalVerifiedBadge');
+        if (user.phoneVerified || user.emailVerified) verBadge.classList.remove('hidden');
+        else verBadge.classList.add('hidden');
+
+        // Age & Reputation
+        const age = user.birthDate ? calculateAge(user.birthDate) : '?';
+        document.getElementById('modalAge').innerHTML = `<i class="fas fa-birthday-cake mr-1 text-pink-400"></i><span>${age} años</span>`;
+
+        // Reputation / Status
+        let reputationHtml = '';
+        if (user.gender === 'femenino') {
+            const status = getAvailabilityStatus(user.availabilityStatus || 'available');
+            reputationHtml = `<span class="badge ${status.color} text-xs py-0.5 px-2"><i class="fas ${status.icon}"></i> ${status.label}</span>`;
+        } else {
+            const badge = getReputationBadge(user.reputation || 'ORO', user.completedDates || 0);
+            reputationHtml = `<span class="badge ${badge.color} text-xs py-0.5 px-2">${badge.icon} ${badge.label}</span>`;
+        }
+        document.getElementById('modalReputationContainer').innerHTML = reputationHtml;
+
+        // Stats
+        document.getElementById('modalCitasCompletadas').textContent = user.completedDates || 0;
+        document.getElementById('modalJoined').textContent = formatDate(user.createdAt);
+
+        // Bio
+        const bioEl = document.getElementById('modalBio');
+        bioEl.textContent = user.bio ? `"${user.bio}"` : "Sin biografía...";
+
+        // Gallery
+        const gallerySection = document.getElementById('modalGallerySection');
+        const galleryGrid = document.getElementById('modalGalleryGrid');
+
+        if (user.photos && user.photos.length > 1) {
+            gallerySection.classList.remove('hidden');
+            galleryGrid.innerHTML = user.photos.slice(1).map(url => `
+                    <div class="aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 group cursor-pointer" onclick="window.open('${url}', '_blank'); event.stopPropagation();">
+                       <img src="${url}" class="w-full h-full object-cover transition transform group-hover:scale-110">
+                    </div>
+                `).join('');
+        } else {
+            gallerySection.classList.add('hidden');
+        }
+
+        // Admin Buttons State
+        const banBtn = document.getElementById('modalAdminBanBtn');
+        const verBtn = document.getElementById('modalAdminVerifyBtn');
+
+        // Add "View Full Profile" Button
+        let viewProfileBtn = document.getElementById('modalViewProfileBtn');
+        if (!viewProfileBtn) {
+            viewProfileBtn = document.createElement('button');
+            viewProfileBtn.id = 'modalViewProfileBtn';
+            viewProfileBtn.className = 'bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 border border-blue-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+            viewProfileBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> <span>Ver Perfil</span>';
+            // Insert before other buttons or append to container
+            banBtn.parentElement.insertBefore(viewProfileBtn, banBtn);
+        }
+
+        viewProfileBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.open(`perfil.html?userId=${user.id}`, '_blank');
+        };
+
+        if (user.disabled) {
+            banBtn.innerHTML = '<i class="fas fa-unlock"></i> <span>Desbloquear</span>';
+            banBtn.className = 'bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+        } else {
+            banBtn.innerHTML = '<i class="fas fa-ban"></i> <span>Banear</span>';
+            banBtn.className = 'bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+        }
+
+        if (user.phoneVerified) {
+            verBtn.innerHTML = '<i class="fas fa-times"></i> <span>Quitar Verif.</span>';
+            verBtn.className = 'bg-slate-500/20 hover:bg-slate-500/40 text-slate-400 border border-slate-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+        } else {
+            verBtn.innerHTML = '<i class="fas fa-check"></i> <span>Verificar</span>';
+            verBtn.className = 'bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+        }
+
+        // Button Actions
+        banBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleBan(user.id, !user.disabled);
+            // Verify UI update manually or reload user? 
+            // Ideally we just update the button but toggleBan reloads the table. 
+            // Let's close modal or let table reload handle it? 
+            // Admin experience wise, we might want to keep modal open and update state.
+            // toggleBan calls loadUsers() which refreshes table. 
+            // We should update local state.
+            user.disabled = !user.disabled;
+            // Update button immediately
+            if (user.disabled) {
+                banBtn.innerHTML = '<i class="fas fa-unlock"></i> <span>Desbloquear</span>';
+                banBtn.className = 'bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+            } else {
+                banBtn.innerHTML = '<i class="fas fa-ban"></i> <span>Banear</span>';
+                banBtn.className = 'bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+            }
+        };
+
+        verBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleVerification(user.id, !user.phoneVerified);
+            user.phoneVerified = !user.phoneVerified;
+            if (user.phoneVerified) {
+                verBtn.innerHTML = '<i class="fas fa-times"></i> <span>Quitar Verif.</span>';
+                verBtn.className = 'bg-slate-500/20 hover:bg-slate-500/40 text-slate-400 border border-slate-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+            } else {
+                verBtn.innerHTML = '<i class="fas fa-check"></i> <span>Verificar</span>';
+                verBtn.className = 'bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2';
+            }
+        };
+
+        // Show Modal
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+
+    } catch (e) {
+        console.error('Error opening user modal:', e);
+        alert('Error cargando detalles del usuario');
+    }
+};
+
+// Close Modal
+const closeModal = document.getElementById('closeModal');
+const userModal = document.getElementById('userModal');
+
+if (closeModal) {
+    closeModal.addEventListener('click', () => {
+        userModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+}
+
+if (userModal) {
+    userModal.addEventListener('click', (e) => {
+        if (e.target === userModal) {
+            userModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+    });
+}

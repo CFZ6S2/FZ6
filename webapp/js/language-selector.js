@@ -57,7 +57,7 @@ class LanguageSelector {
     this.container = document.getElementById(this.containerId);
 
     if (!this.container) {
-      console.warn(`[LanguageSelector] Container #${this.containerId} not found`);
+      // Container not found on this page - this is fine, silent fail.
       return;
     }
 

@@ -611,6 +611,12 @@ export function validateProfileComplete(userData) {
     return { isComplete: false, missingFields: ['No user data'] };
   }
 
+  // ✅ ADMINS BYPASS PROFILE VALIDATION
+  const SUPER_USERS = ['cesar@tucitasegura.com', 'admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  if (userData.email && SUPER_USERS.includes(userData.email)) {
+    return { isComplete: true, missingFields: [] };
+  }
+
   const requiredFields = {
     alias: 'Nombre de usuario',
     gender: 'Género',
@@ -709,6 +715,7 @@ export function canAccessChat(userData) {
     };
   }
 
+  /* TEMPORARILY DISABLED: PAYMENTS SUSPENDED
   // For men, also check membership
   if (userData.gender === 'masculino') {
     if (!userData.hasActiveSubscription) {
@@ -719,6 +726,7 @@ export function canAccessChat(userData) {
       };
     }
   }
+  */
 
   // All validations passed
   return {

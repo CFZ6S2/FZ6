@@ -1,7 +1,16 @@
 // functions/index.js (Node 18)
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
-const stripeSecret = (functions.config().stripe?.secret_key) || process.env.STRIPE_SECRET_KEY;
+const fs = require('fs');
+
+// CRITICAL FIX: Prevent crash if credential file is missing
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS && !fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+  console.warn(`⚠️ Warning: GOOGLE_APPLICATION_CREDENTIALS points to missing file: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}. Unsetting it.`);
+  delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+}
+
+// Leer secrets solo de env vars en deploy
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
 const stripe = stripeSecret ? require('stripe')(stripeSecret) : null;
 const axios = require('axios');
 const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
@@ -9,6 +18,7 @@ const { verifyAppCheckHTTP } = require('./middleware/app-check');
 
 // Inicializar logger
 const logger = createLogger('functions-main');
+const { sendEmail } = require('./utils/email');
 
 admin.initializeApp();
 
@@ -37,6 +47,7 @@ exports.apiPublic = apiEndpoints.apiPublic;
 exports.apiProtected = apiEndpoints.apiProtected;
 exports.apiUserProfile = apiEndpoints.apiUserProfile;
 exports.apiUpload = apiEndpoints.apiUpload;
+exports.apiModerateMessage = apiEndpoints.apiModerateMessage;
 exports.apiOptional = apiEndpoints.apiOptional;
 
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
@@ -51,14 +62,7 @@ exports.apiProxy = functions.https.onRequest(async (req, res) => {
   });
 
   // Resolve conflict: prioritize functions.config or env var, fallback to Cloud Run
-  let base = process.env.API_BASE_URL || 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
-  try {
-    if (functions.config().api && functions.config().api.base_url) {
-      base = functions.config().api.base_url;
-    }
-  } catch (e) {
-    logger.warn('Failed to read functions.config', { error: e.message });
-  }
+  const base = process.env.API_BASE_URL || 'https://tucitasegura-backend-tlmpmnvyda-uc.a.run.app';
   const url = base + req.originalUrl;
 
   logger.debug('API proxy request', {
@@ -262,6 +266,183 @@ async function logFailedPayment(userId, paymentData) {
 }
 
 // ============================================================================
+// REFERRAL SYSTEM HELPERS
+// ============================================================================
+
+function generateReferralCode(alias, uid) {
+  const cleanAlias = (alias || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 6);
+  const uidPart = uid.substring(0, 6).toUpperCase();
+  return `${cleanAlias}${uidPart}`;
+}
+
+async function processReferralReward(userId, source = 'stripe') {
+  const db = admin.firestore();
+  const userRef = db.collection('users').doc(userId);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) return;
+  const userData = userDoc.data();
+
+  // Check if referred mechanism is used
+  if (!userData.referredBy) return;
+
+  logger.info('Processing referral for user', { userId, referredBy: userData.referredBy });
+
+  // Find referrer
+  const referrerQuery = await db.collection('users').where('referralCode', '==', userData.referredBy).limit(1).get();
+
+  if (referrerQuery.empty) {
+    logger.warn('Referrer not found for code', { code: userData.referredBy, refereeId: userId });
+    return;
+  }
+
+  const referrerDoc = referrerQuery.docs[0];
+  const referrerId = referrerDoc.id;
+  const referrerData = referrerDoc.data();
+
+  // Only reward if referrer is female? Plan says "Female users earn".
+  // But maybe we should just apply rule generally in backend and let frontend filter visibility?
+  // Plan: "Female users earn 10€". I'll check gender.
+  if (referrerData.gender !== 'femenino') {
+    logger.info('Referrer is not female, skipping reward', { referrerId, gender: referrerData.gender });
+    return;
+  }
+
+  // Credit reward (10 EUR)
+  const rewardAmount = 10;
+  const currentBalance = referrerData.wallet?.balance || 0;
+  const newBalance = currentBalance + rewardAmount;
+
+  await db.collection('users').doc(referrerId).set({
+    wallet: {
+      balance: newBalance,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    }
+  }, { merge: true });
+
+  // Log transaction
+  await db.collection('referral_transactions').add({
+    referrerId,
+    refereeId: userId,
+    amount: rewardAmount,
+    currency: 'EUR',
+    source,
+    code: userData.referredBy,
+    createdAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  logger.info('Referral reward processed', { referrerId, refereeId: userId, amount: rewardAmount });
+
+  // Send notification to referrer
+  await createUserNotification(referrerId, {
+    title: '¡Recompensa recibida!',
+    message: `Has ganado ${rewardAmount}€ gracias a una suscripción de tu referido.`,
+    type: 'success',
+    actionUrl: '/webapp/perfil.html',
+    actionLabel: 'Ver Monedero'
+  });
+}
+
+/**
+ * MIGRATION: Backfill referral codes for existing users
+ * Call: /backfillReferralCodes?secret=MIGRATION_SECRET_2024
+ */
+exports.backfillReferralCodes = functions.https.onRequest(async (req, res) => {
+  const secret = req.query.secret;
+  if (secret !== 'MIGRATION_SECRET_2024') return res.status(403).send('Forbidden');
+
+  const db = admin.firestore();
+  const usersSnap = await db.collection('users').get();
+  let updated = 0;
+  const batches = [];
+  let batch = db.batch();
+  let count = 0;
+
+  usersSnap.forEach(doc => {
+    const data = doc.data();
+    if (!data.referralCode) {
+      const code = generateReferralCode(data.alias || data.name || 'User', doc.id);
+      batch.update(doc.ref, { referralCode: code });
+      count++;
+      updated++;
+
+      if (count >= 490) { // Safety margin < 500
+        batches.push(batch);
+        batch = db.batch();
+        count = 0;
+      }
+    }
+  });
+
+  if (count > 0) batches.push(batch);
+
+  await Promise.all(batches.map(b => b.commit()));
+
+  logger.info(`Backfilled referral codes for ${updated} users`);
+  res.json({ success: true, updated });
+});
+
+/**
+ * ANNOUNCEMENT: Notify all female users about the new referral program
+ * Call: /announceReferralFeature?secret=MIGRATION_SECRET_2024
+ */
+exports.announceReferralFeature = functions.https.onRequest(async (req, res) => {
+  const secret = req.query.secret;
+  if (secret !== 'MIGRATION_SECRET_2024') return res.status(403).send('Forbidden');
+
+  const db = admin.firestore();
+  // Query users where gender is female
+  // Note: We need to handle potential different field names if schema wasn't strict before,
+  // but based on register.js it should be 'gender': 'femenino' or basicInfo.gender.
+  // Let's try to be broad or just iterate all and check.
+  // Iterating all is safer if the dataset isn't huge yet (which it isn't, based on backfill).
+
+  const usersSnap = await db.collection('users').get();
+  let notified = 0;
+  const batches = [];
+  let batch = db.batch();
+  let count = 0;
+
+  usersSnap.forEach(doc => {
+    const data = doc.data();
+    // Check gender (support flat 'gender' or nested 'basicInfo.gender')
+    const gender = data.gender || data.basicInfo?.gender;
+
+    if (gender === 'femenino') {
+      const userId = doc.id;
+      const notificationRef = db.collection('notifications').doc();
+
+      batch.set(notificationRef, {
+        userId,
+        title: '¡Nueva función: Invita y Gana! 🎁',
+        message: 'Ahora puedes ganar 10€ por cada amigo que invites y se suscriba. ¡Toca aquí para ver tu código!',
+        type: 'success',
+        read: false,
+        actionUrl: '/webapp/perfil.html',
+        actionLabel: 'Ver mi Código',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      count++;
+      notified++;
+
+      if (count >= 490) {
+        batches.push(batch);
+        batch = db.batch();
+        count = 0;
+      }
+    }
+  });
+
+  if (count > 0) batches.push(batch);
+
+  await Promise.all(batches.map(b => b.commit()));
+
+  logger.info(`Announced referral feature to ${notified} female users`);
+  res.json({ success: true, notified });
+});
+
+// ============================================================================
 // 1) CUSTOM CLAIMS: Al crear el doc de usuario, fijamos displayName y claims
 // ============================================================================
 exports.onUserDocCreate = functions.firestore
@@ -272,8 +453,16 @@ exports.onUserDocCreate = functions.firestore
     const name = (data.name || data.alias || '').toString().slice(0, 100);
     const gender = ['masculino', 'femenino'].includes(data.gender) ? data.gender : null;
     const userRole = data.userRole || 'regular';
+    const referralCode = generateReferralCode(data.alias || 'User', uid);
 
-    logger.info('Setting claims for new user', { uid, role: userRole, gender });
+    logger.info('Setting claims and referral code for new user', { uid, role: userRole, gender, referralCode });
+
+    // Save referral code
+    try {
+      await snap.ref.update({ referralCode });
+    } catch (e) {
+      logger.error('Error saving referral code', { uid, error: e.message });
+    }
 
     // Display name en Auth
     try {
@@ -311,8 +500,9 @@ exports.onUserDocUpdate = functions.firestore
     // Solo actualizar claims si role o gender cambiaron
     const roleChanged = before.userRole !== after.userRole;
     const genderChanged = before.gender !== after.gender;
+    const aliasChanged = before.alias !== after.alias;
 
-    if (!roleChanged && !genderChanged) {
+    if (!roleChanged && !genderChanged && !aliasChanged) {
       // No changes, skip
 
       return null;
@@ -334,6 +524,60 @@ exports.onUserDocUpdate = functions.firestore
       logger.info('Claims updated successfully', { uid, role: newRole, gender: newGender });
     } catch (e) {
       logger.error('Error updating claims on user update', { uid, error: e.message });
+    }
+
+    if (aliasChanged) {
+      const newReferralCode = generateReferralCode(after.alias || 'User', uid);
+      if (newReferralCode !== after.referralCode) {
+        try {
+          logger.info('Updating referral code due to alias change', { uid, newCode: newReferralCode });
+          await change.after.ref.update({ referralCode: newReferralCode });
+        } catch (e) {
+          logger.error('Error updating referral code', { uid, error: e.message });
+        }
+      }
+    }
+
+    // 4) CLEANUP TRIGGER: Si el usuario fue marcado como borrado, eliminar Auth y Storage
+    if (after.deleted === true && before.deleted !== true) {
+      logger.info('User marked as deleted, initiating cleanup', { uid });
+
+      try {
+        // 1. Delete from Auth (Admin SDK bypasses requires-recent-login)
+        await admin.auth().deleteUser(uid);
+        logger.info('Auth user deleted by backend', { uid });
+      } catch (e) {
+        if (e.code === 'auth/user-not-found') {
+          logger.info('Auth user already deleted', { uid });
+        } else {
+          logger.error('Error deleting Auth user', { uid, error: e.message });
+        }
+      }
+
+      // 2. Delete Storage (Avatar & Gallery)
+      // Note: We can only guess standard paths here. 
+      // Ideally run a recursive delete tool or better path tracking.
+      // Assuming paths: profile_photos/{gender}/{uid}/... + chat_attachments/...
+      const bucket = admin.storage().bucket();
+      const genders = ['masculino', 'femenino'];
+
+      // Attempt to delete common paths
+      for (const g of genders) {
+        try {
+          await bucket.deleteFiles({ prefix: `profile_photos/${g}/${uid}/` });
+        } catch (e) { /* ignore */ }
+      }
+
+      // Delete ID Verification photos
+      try {
+        await bucket.deleteFiles({ prefix: `id_verification/${uid}/` });
+      } catch (e) { /* ignore */ }
+
+      logger.info('Cleanup tasks completed', { uid });
+
+      // Optionally delete the Firestore doc entirely?
+      // Keeping it as "deleted: true" is good for audit, but ensure it's filtered everywhere.
+      return null;
     }
 
     return null;
@@ -485,7 +729,13 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
   const { email, adminSecret, gender } = req.body;
 
   // Verificar secreto de admin (configura esto en Firebase Config o .env)
-  const expectedSecret = functions.config().admin?.bootstrap_secret || process.env.ADMIN_BOOTSTRAP_SECRET || 'CHANGE_ME_IMMEDIATELY';
+  // Verificar secreto de admin (configura esto en Firebase Config o .env)
+  const expectedSecret = functions.config().admin?.bootstrap_secret || process.env.ADMIN_BOOTSTRAP_SECRET;
+
+  if (!expectedSecret) {
+    logger.error('createFirstAdmin: Admin secret not configured in backend');
+    return res.status(500).json({ error: 'Configuración de servidor incompleta' });
+  }
 
   if (!adminSecret || adminSecret !== expectedSecret) {
     logger.warn('createFirstAdmin: Invalid admin secret attempt', { email });
@@ -584,11 +834,11 @@ exports.createFirstAdmin = functions.https.onRequest(async (req, res) => {
 // 7) STRIPE WEBHOOK: Manejar eventos de Stripe (subscriptions y payments)
 // ============================================================================
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
-  if (!stripe || !(functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET)) {
+  if (!stripe || !(functionsConfig?.stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET)) {
     return res.status(503).json({ error: 'payments_disabled', provider: 'stripe' });
   }
   const sig = req.headers['stripe-signature'];
-  const webhookSecret = functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = functionsConfig?.stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
 
@@ -716,6 +966,15 @@ async function handleSubscriptionUpdate(subscription) {
   await logSubscription(userId, subscriptionData);
 
   logger.info('Subscription updated', { subscriptionId: subscription.id, userId, status });
+
+  // Process referral reward if active
+  if (status === 'active') {
+    try {
+      await processReferralReward(userId, 'stripe');
+    } catch (e) {
+      logger.error('Error processing referral reward (Stripe)', { userId, error: e.message });
+    }
+  }
 }
 
 /**
@@ -908,7 +1167,7 @@ async function verifyPayPalWebhookSignature(req) {
     const authAlgo = req.headers['paypal-auth-algo'];
 
     // PayPal webhook ID (debe configurarse en Firebase config)
-    const webhookId = functions.config().paypal?.webhook_id || process.env.PAYPAL_WEBHOOK_ID;
+    const webhookId = functionsConfig?.paypal?.webhook_id || process.env.PAYPAL_WEBHOOK_ID;
 
     if (!webhookId) {
       logger.error('PayPal webhook ID not configured');
@@ -934,9 +1193,9 @@ async function verifyPayPalWebhookSignature(req) {
     };
 
     // PayPal API credentials
-    const paypalMode = functions.config().paypal?.mode || process.env.PAYPAL_MODE || 'sandbox';
-    const paypalClientId = functions.config().paypal?.client_id || process.env.PAYPAL_CLIENT_ID;
-    const paypalSecret = functions.config().paypal?.secret || process.env.PAYPAL_SECRET;
+    const paypalMode = functionsConfig?.paypal?.mode || process.env.PAYPAL_MODE || 'sandbox';
+    const paypalClientId = functionsConfig?.paypal?.client_id || process.env.PAYPAL_CLIENT_ID;
+    const paypalSecret = functionsConfig?.paypal?.secret || process.env.PAYPAL_SECRET;
 
     if (!paypalClientId || !paypalSecret) {
       logger.error('PayPal credentials not configured');
@@ -1136,6 +1395,13 @@ async function handlePayPalSubscriptionActivated(subscription) {
   await logSubscription(userId, subscriptionData);
 
   logger.info('PayPal subscription activated', { subscriptionId: subscription.id, userId });
+
+  // Process referral reward
+  try {
+    await processReferralReward(userId, 'paypal');
+  } catch (e) {
+    logger.error('Error processing referral reward (PayPal)', { userId, error: e.message });
+  }
 }
 
 /**
@@ -1265,9 +1531,9 @@ async function getPayPalAccessToken() {
 
   logger.info('Fetching new PayPal access token');
 
-  const paypalMode = functions.config().paypal?.mode || process.env.PAYPAL_MODE || 'sandbox';
-  const paypalClientId = functions.config().paypal?.client_id || process.env.PAYPAL_CLIENT_ID;
-  const paypalSecret = functions.config().paypal?.secret || process.env.PAYPAL_SECRET;
+  const paypalMode = functionsConfig?.paypal?.mode || process.env.PAYPAL_MODE || 'sandbox';
+  const paypalClientId = functionsConfig?.paypal?.client_id || process.env.PAYPAL_CLIENT_ID;
+  const paypalSecret = functionsConfig?.paypal?.secret || process.env.PAYPAL_SECRET;
 
   if (!paypalClientId || !paypalSecret) {
     throw new Error('PayPal credentials not configured');
@@ -1693,6 +1959,7 @@ exports.getInsuranceAuthorizationStatus = functions.https.onCall(async (data, co
 // Import notification functions from notifications.js
 
 const notifications = require('./notifications');
+const freeMembershipAnnouncement = require('./send-free-membership-announcement');
 
 // Export notification functions
 exports.onMatchCreated = notifications.onMatchCreated;
@@ -1703,6 +1970,12 @@ exports.sendAppointmentReminders = notifications.sendAppointmentReminders;
 exports.onVIPEventPublished = notifications.onVIPEventPublished;
 exports.onSOSAlert = notifications.onSOSAlert;
 exports.sendTestNotification = notifications.sendTestNotification;
+exports.sendFreeMembershipAnnouncement = freeMembershipAnnouncement.sendFreeMembershipAnnouncement;
+
+// Admin functions
+const zombieUsers = require('./zombie-users');
+exports.listZombieUsers = zombieUsers.listZombieUsers;
+exports.cleanupZombieUsers = zombieUsers.cleanupZombieUsers;
 
 // ============================================================================
 // FRAUD DETECTION
@@ -1730,6 +2003,7 @@ const recaptchaEnterprise = require('./recaptcha-enterprise');
 
 exports.verifyRecaptcha = recaptchaEnterprise.verifyRecaptcha;
 exports.verifyRecaptchaCallable = recaptchaEnterprise.verifyRecaptchaCallable;
+exports.verifyRecaptchaV1 = recaptchaEnterprise.verifyRecaptchaV1;
 
 // ============================================================================
 // APPCHECK MONITORING: Recibir reportes de fallos desde frontend
@@ -1765,3 +2039,840 @@ exports.reportAppCheckFailure = functions.https.onRequest(async (req, res) => {
     return res.status(500).json({ error: 'internal_error' });
   }
 });
+
+// ============================================================================
+// 8) ADMIN ACTIONS: Toggle User Status (Ban/Unban)
+// ============================================================================
+exports.toggleUserStatus = functions.https.onCall(async (data, context) => {
+  // 1. Verify Authentication & Admin Role
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Debes estar autenticado para realizar esta acción.'
+    );
+  }
+
+  if (context.auth.token.role !== 'admin' && context.auth.uid !== 'Y1rNgj4KYpWSFlPqgrpAaGuAk033') {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Acceso denegado: Solo administradores pueden realizar esta acción.'
+    );
+  }
+
+  const { userId, disable } = data;
+
+  if (!userId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Falta el userId.');
+  }
+
+  // 2. Perform Actions
+  try {
+    // A. Toggle Auth Status (Prevents login)
+    await admin.auth().updateUser(userId, {
+      disabled: disable
+    });
+
+    // B. Update Firestore (For UI reflection)
+    // We update 'disabled' field and also 'status' for redundancy/clarity
+    const userRef = admin.firestore().collection('users').doc(userId);
+    await userRef.update({
+      disabled: disable,
+      accountStatus: disable ? 'suspended' : 'active',
+      lastAdminUpdate: admin.firestore.FieldValue.serverTimestamp(),
+      adminUpdateBy: context.auth.uid
+    });
+
+    // C. Log Action
+    logger.info(`User ${userId} ${disable ? 'BANNED' : 'UNBANNED'} by ${context.auth.uid}`);
+
+    return {
+      success: true,
+      message: `Usuario ${disable ? 'bloqueado' : 'desbloqueado'} exitosamente.`,
+      userId: userId,
+      disabled: disable
+    };
+
+  } catch (error) {
+    logger.error('Error toggling user status:', error);
+    throw new functions.https.HttpsError('internal', 'Error interno al actualizar estado del usuario.');
+  }
+});
+
+// ============================================================================
+// 9) REFERRAL ANNOUNCEMENT (Email + Notification)
+// ============================================================================
+exports.announceReferralFeature = functions.https.onRequest(async (req, res) => {
+  // Check migration secret (Hardcoded for reliability if env missing)
+  const secret = req.query.secret;
+  // Previously process.env.MIGRATION_SECRET_2024
+  if (secret !== 'MIGRATION_SECRET_2024') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const dryRun = req.query.dryRun === 'false' ? false : true;
+  const db = admin.firestore();
+
+  try {
+    // Query users (Female only or all? User said females earn money, but usually everyone can refer.
+    // However, the feature "Invita y Gana" is specifically for girls in the dashboard.
+    // Let's target females as per previous context.)
+    const snapshot = await db.collection('users')
+      .where('gender', '==', 'femenino')
+      // .limit(50) // Batching if needed
+      .get();
+
+    logger.info(`Found ${snapshot.size} female users for announcement. DryRun: ${dryRun}`);
+
+    let emailsSent = 0;
+    let notifsSent = 0;
+    let missingEmail = 0;
+    let smtpErrors = 0;
+    let lastError = null;
+
+    // Debug Config (Safe)
+    const config = functions.config().smtp || {};
+    const hasConfig = !!(config.host && config.user && config.pass);
+
+    for (const doc of snapshot.docs) {
+      const user = doc.data();
+      const userId = doc.id;
+      const email = user.email;
+
+      if (!dryRun) {
+        // 1. In-App Notification
+        await createUserNotification(userId, {
+          title: '¡Nueva función: Invita y Gana!',
+          message: 'Gana 10€ por cada amigo que se suscriba con tu código. Toca para ver tu enlace.',
+          type: 'success', // shows mostly green/happy
+          actionUrl: '/webapp/dashboard.html',
+          actionLabel: 'Ver mi código',
+          metadata: { feature: 'referral_launch' }
+        });
+        notifsSent++;
+
+        // 2. Email Notification
+        if (email) {
+          const emailHtml = `
+            <h2>¡Hola ${user.alias || 'Usuaria'}! 🎁</h2>
+            <p>Tenemos una gran noticia: acabamos de lanzar nuestro programa <strong>Invita y Gana</strong>.</p>
+            <p>Ahora puedes ganar <strong>10€</strong> por cada amigo que se suscriba a TuCitaSegura usando tu código personal.</p>
+            
+            <div style="background-color: #fce4ec; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+                <h3 style="color: #e91e63; margin: 0;">Tu Código: <strong>${user.referralCode || 'Entra para verlo'}</strong></h3>
+            </div>
+
+            <p>Entra en tu panel para copiar tu código y empezar a compartir.</p>
+            
+            <a href="https://tucitasegura-129cc.web.app/webapp/dashboard.html" style="background-color: #e91e63; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Ir a mi Dashboard</a>
+            
+            <p><small>Si no ves tu código, entra en el dashboard y se generará automáticamente.</small></p>
+            `;
+
+          const emailResult = await sendEmail({
+            to: email,
+            subject: '🎁 Nuevo: Gana 10€ invitando amigos',
+            html: emailHtml,
+            text: 'Nuevo programa Invita y Gana: Gana 10€ por cada amigo. Entra en tu dashboard para ver tu código.'
+          });
+
+          if (emailResult.success) {
+            emailsSent++;
+          } else {
+            smtpErrors++;
+            lastError = emailResult.error;
+          }
+        } else {
+          missingEmail++;
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      usersFound: snapshot.size,
+      notificationsCreated: notifsSent,
+      emailsSent: emailsSent,
+      missingEmail: missingEmail,
+      smtpErrors: smtpErrors,
+      configLoaded: hasConfig,
+      lastError: lastError,
+      mode: dryRun ? 'DRY RUN (no actions taken)' : 'LIVE'
+    });
+
+  } catch (error) {
+    logger.error('Error announcing feature:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// 10) SEND MARKETING EMAIL (Admin Only)
+// ============================================================================
+exports.sendMarketingEmail = functions.https.onCall(async (data, context) => {
+  // 1. Verify Authentication & Admin Role
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+  }
+
+  const callerUid = context.auth.uid;
+  const callerToken = context.auth.token;
+
+  const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
+
+  if (callerToken.role !== 'admin' && !admins.includes(callerToken.email) && !adminUids.includes(callerUid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can send campaigns.');
+  }
+
+  const { target, subject, body, dryRun } = data;
+
+  if (!subject || !body) {
+    throw new functions.https.HttpsError('invalid-argument', 'Subject and Body are required.');
+  }
+
+  const db = admin.firestore();
+  let usersSnapshot;
+
+  try {
+    // 2. Query Target Users
+    if (target === 'test_me') {
+      // Send only to the caller (Admin)
+      const userDoc = await db.collection('users').doc(callerUid).get();
+      if (!userDoc.exists) throw new Error('Admin profile not found');
+      // Create a fake snapshot structure with one doc
+      usersSnapshot = { docs: [userDoc], size: 1 };
+      logger.info(`Campaign Target: TEST (Admin: ${callerUid})`);
+    } else if (target === 'all') {
+      usersSnapshot = await db.collection('users').get();
+      logger.info(`Campaign Target: ALL (${usersSnapshot.size} users)`);
+    } else if (target === 'femenino' || target === 'masculino') {
+      usersSnapshot = await db.collection('users').where('gender', '==', target).get();
+      logger.info(`Campaign Target: ${target} (${usersSnapshot.size} users)`);
+    } else {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid target.');
+    }
+
+    // 3. Send Emails
+    let emailsSent = 0;
+    let errors = 0;
+
+    // Use a loop (for now sequential/simple parallel is fine for <100 users)
+    // For production scaling, consider chunking or task queue.
+    const promises = usersSnapshot.docs.map(async (doc) => {
+      const user = doc.data();
+      const email = user.email;
+
+      if (!email) return; // Skip no email
+
+      if (dryRun) {
+        // Just simulate
+        logger.info(`[DryRun] Would send to: ${email}`);
+        emailsSent++;
+        return;
+      }
+
+      // Construct HTML with simple template
+      const fullHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333;">${subject}</h2>
+          <div style="color: #555; line-height: 1.6;">
+            ${body.replace(/\n/g, '<br>')}
+          </div>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            Enviado por el equipo de TuCitaSegura.<br>
+            <a href="https://tucitasegura.com" style="color: #666;">Visitar web</a>
+          </p>
+        </div>
+      `;
+
+      const result = await sendEmail({
+        to: email,
+        subject: subject,
+        html: fullHtml,
+        text: body // Fallback text
+      });
+
+      if (result.success) {
+        emailsSent++;
+      } else {
+        errors++;
+        logger.error(`Failed to send to ${email}:`, result.error);
+      }
+    });
+
+    await Promise.all(promises);
+
+    return {
+      success: true,
+      usersFound: usersSnapshot.size,
+      emailsSent: emailsSent,
+      errors: errors,
+      dryRun: dryRun
+    };
+
+  } catch (error) {
+    logger.error('Campaign Error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// 11) DELETE USER (Admin - Auth + Firestore)
+// ============================================================================
+exports.deleteUserComplete = functions.https.onCall(async (data, context) => {
+  // 1. Verify Authentication & Admin Role
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be logged in.');
+  }
+
+  const callerUid = context.auth.uid;
+  const callerToken = context.auth.token;
+  const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
+
+  if (callerToken.role !== 'admin' && !admins.includes(callerToken.email) && !adminUids.includes(callerUid)) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can delete users.');
+  }
+
+  const { targetUserId } = data;
+  if (!targetUserId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Target User ID is required.');
+  }
+
+  try {
+    const db = admin.firestore();
+
+    // 2. Delete from Auth
+    try {
+      await admin.auth().deleteUser(targetUserId);
+      logger.info(`✅ Auth user ${targetUserId} deleted.`);
+    } catch (authError) {
+      if (authError.code === 'auth/user-not-found') {
+        logger.warn(`⚠️ Auth user ${targetUserId} not found (might assume already deleted).`);
+      } else {
+        throw authError;
+      }
+    }
+
+    // 3. Delete from Firestore (User Document)
+    // We also set a 'deleted' flag in case we want soft-delete later or sync issues
+    await db.collection('users').doc(targetUserId).delete();
+    logger.info(`✅ Firestore doc ${targetUserId} deleted.`);
+
+    return { success: true, message: `User ${targetUserId} fully deleted.` };
+  } catch (error) {
+    logger.error('Delete User Error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ------------------------------------------------------------------
+// 8. Admin: Toggle User Verification (Manual)
+// ------------------------------------------------------------------
+exports.adminToggleVerification = functions.https.onCall(async (data, context) => {
+  const callerUid = context.auth ? context.auth.uid : null;
+  const callerToken = context.auth ? context.auth.token : null;
+
+  // 1. Verify Admin Access
+  const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
+
+  if (!callerUid || !callerToken || (callerToken.role !== 'admin' && !admins.includes(callerToken.email) && !adminUids.includes(callerUid))) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can perform this action.');
+  }
+
+  const { userId, status } = data; // status: true/false
+  if (!userId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing userId.');
+  }
+
+  try {
+    // Update Firestore
+    await admin.firestore().collection('users').doc(userId).update({
+      phoneVerified: status,
+      manualVerification: status // Optional flag to track manual overrides
+    });
+
+    logger.info(`✅ Admin toggled verification for ${userId} to ${status}`);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error toggling verification:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ------------------------------------------------------------------
+// 9. Admin: Manage Membership (Manual VIP)
+// ------------------------------------------------------------------
+exports.adminManageMembership = functions.https.onCall(async (data, context) => {
+  const callerUid = context.auth ? context.auth.uid : null;
+  const callerToken = context.auth ? context.auth.token : null;
+
+  // 1. Verify Admin Access
+  const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
+
+  if (!callerUid || !callerToken || (callerToken.role !== 'admin' && !admins.includes(callerToken.email) && !adminUids.includes(callerUid))) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can perform this action.');
+  }
+
+  const { userId, status } = data; // status: true/false (Grant VIP / Revoke)
+  if (!userId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing userId.');
+  }
+
+  try {
+    const updates = {};
+    if (status) {
+      // GRANT VIP
+      updates.subscriptionStatus = 'active';
+      updates.plan = 'manual_vip'; // Distinct from 'premium' or 'basic'
+      updates.subscriptionEndDate = admin.firestore.Timestamp.fromDate(new Date('2099-12-31')); // Forever until revoked
+    } else {
+      // REVOKE
+      updates.subscriptionStatus = 'inactive';
+      updates.plan = 'free';
+      updates.subscriptionEndDate = admin.firestore.FieldValue.delete();
+    }
+
+    await admin.firestore().collection('users').doc(userId).update(updates);
+
+    logger.info(`✅ Admin managed membership for ${userId}. VIP: ${status}`);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error managing membership:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ------------------------------------------------------------------
+// 10. Admin: Send Warning to Incomplete Registrations
+// ------------------------------------------------------------------
+exports.sendIncompleteRegistrationWarning = functions.https.onCall(async (data, context) => {
+  const callerUid = context.auth ? context.auth.uid : null;
+  const callerToken = context.auth ? context.auth.token : null;
+
+  // 1. Verify Admin Access
+  const admins = ['admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
+  const adminUids = ['Y1rNgj4KYpWSFlPqgrpAaGuAk033'];
+
+  if (!callerUid || !callerToken || (callerToken.role !== 'admin' && !admins.includes(callerToken.email) && !adminUids.includes(callerUid))) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can perform this action.');
+  }
+
+  const { dryRun = true } = data;
+
+  try {
+    const db = admin.firestore();
+
+    // Query users without alias (alias is empty, null, or "Sin Alias")
+    const usersSnapshot = await db.collection('users')
+      .where('alias', 'in', ['', 'Sin Alias'])
+      .get();
+
+    const recipients = [];
+    usersSnapshot.forEach(doc => {
+      const user = doc.data();
+      if (user.email) {
+        recipients.push({
+          email: user.email,
+          alias: user.alias || 'Sin Alias'
+        });
+      }
+    });
+
+    logger.info(`Found ${recipients.length} users without alias`);
+
+    if (dryRun) {
+      return {
+        success: true,
+        dryRun: true,
+        recipientsCount: recipients.length,
+        recipients: recipients.map(r => r.email)
+      };
+    }
+
+    // Send emails
+    const subject = '⚠️ Acción requerida: Completa tu registro en TuCitaSegura';
+    const htmlBody = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #ef4444;">⚠️ Acción requerida</h2>
+        <p style="color: #333; line-height: 1.6;">
+          Hola,
+        </p>
+        <p style="color: #333; line-height: 1.6;">
+          Hemos detectado que tu cuenta en <strong>TuCitaSegura</strong> no se ha completado correctamente (falta el alias/nombre de usuario).
+        </p>
+        <p style="color: #ef4444; font-weight: bold; line-height: 1.6;">
+          Tu cuenta será eliminada en las próximas horas si no completas el registro.
+        </p>
+        <p style="color: #333; line-height: 1.6;">
+          Si tienes problemas para registrarte, contacta con:
+        </p>
+        <ul style="color: #333; line-height: 1.6;">
+          <li>Email: <a href="mailto:admin@tucitasegura.com">admin@tucitasegura.com</a></li>
+          <li>Telegram: <a href="https://t.me/pk13L4">@pk13L4</a></li>
+        </ul>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          Enviado por el equipo de TuCitaSegura.<br>
+          <a href="https://tucitasegura.com" style="color: #666;">Visitar web</a>
+        </p>
+      </div>
+    `;
+
+    const textBody = `
+Hola,
+
+Hemos detectado que tu cuenta en TuCitaSegura no se ha completado correctamente (falta el alias/nombre de usuario).
+
+Tu cuenta será eliminada en las próximas horas si no completas el registro.
+
+Si tienes problemas para registrarte, contacta con:
+- Email: admin@tucitasegura.com
+- Telegram: @pk13L4
+
+Saludos,
+El equipo de TuCitaSegura
+    `;
+
+    let emailsSent = 0;
+    let errors = 0;
+
+    const promises = recipients.map(async (recipient) => {
+      const result = await sendEmail({
+        to: recipient.email,
+        subject: subject,
+        html: htmlBody,
+        text: textBody
+      });
+
+      if (result.success) {
+        emailsSent++;
+      } else {
+        errors++;
+        logger.error(`Failed to send to ${recipient.email}:`, result.error);
+      }
+    });
+
+    await Promise.all(promises);
+
+    return {
+      success: true,
+      dryRun: false,
+      recipientsCount: recipients.length,
+      emailsSent: emailsSent,
+      errors: errors
+    };
+
+  } catch (error) {
+    logger.error('Incomplete Registration Warning Error:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+
+// Reminder Email Functions - Append to end of functions/index.js
+
+// ------------------------------------------------------------------
+// 13. Scheduled: 1 Hour Profile Reminder
+// ------------------------------------------------------------------
+exports.scheduledProfileReminder1h = functions.pubsub
+  .schedule('every 1 hours')
+  .timeZone('Europe/Madrid')
+  .onRun(async (context) => {
+    logger.info('⏰ Running 1-hour profile reminder...');
+
+    try {
+      const db = admin.firestore();
+      const oneHourAgo = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 60 * 60 * 1000));
+
+      // Query users created ~1 hour ago without alias
+      const usersSnapshot = await db.collection('users')
+        .where('createdAt', '>=', oneHourAgo)
+        .where('alias', 'in', ['', 'Sin Alias'])
+        .get();
+
+      if (usersSnapshot.empty) {
+        logger.info('No users to remind (1h)');
+        return null;
+      }
+
+      const recipients = [];
+      usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        if (user.email && !user.reminderSent1h) {
+          recipients.push({ email: user.email, uid: doc.id });
+        }
+      });
+
+      logger.info(`Sending 1h reminder to ${recipients.length} users`);
+
+      const subject = '¡Completa tu perfil en TuCitaSegura! 🎯';
+      const htmlBody = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #3b82f6;">¡Hola! 👋</h2>
+          <p style="color: #333; line-height: 1.6;">
+            Vemos que te registraste hace poco en <strong>TuCitaSegura</strong>, pero aún no has completado tu perfil.
+          </p>
+          <p style="color: #333; line-height: 1.6;">
+            <strong>¡Completa tu perfil ahora para empezar a hacer matches!</strong>
+          </p>
+          <a href="https://tucitasegura.com/perfil.html" style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0;">
+            Completar Mi Perfil
+          </a>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">
+            Solo te tomará 2 minutos y podrás empezar a conocer gente increíble.
+          </p>
+        </div>
+      `;
+
+      for (const recipient of recipients) {
+        await sendEmail({
+          to: recipient.email,
+          subject: subject,
+          html: htmlBody,
+          text: 'Completa tu perfil en TuCitaSegura para empezar a hacer matches. Visita: https://tucitasegura.com/perfil.html'
+        });
+
+        // Mark as sent
+        await db.collection('users').doc(recipient.uid).update({
+          reminderSent1h: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      logger.info(`✅ 1h reminders sent: ${recipients.length}`);
+      return null;
+    } catch (error) {
+      logger.error('1h reminder error:', error);
+      throw error;
+    }
+  });
+
+// ------------------------------------------------------------------
+// 14. Scheduled: 24 Hour Profile Reminder
+// ------------------------------------------------------------------
+exports.scheduledProfileReminder24h = functions.pubsub
+  .schedule('every 6 hours')
+  .timeZone('Europe/Madrid')
+  .onRun(async (context) => {
+    logger.info('⏰ Running 24-hour profile reminder...');
+
+    try {
+      const db = admin.firestore();
+      const twentyFourHoursAgo = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+      const twentyFiveHoursAgo = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 25 * 60 * 60 * 1000));
+
+      // Query users created ~24 hours ago without alias
+      const usersSnapshot = await db.collection('users')
+        .where('createdAt', '>=', twentyFiveHoursAgo)
+        .where('createdAt', '<=', twentyFourHoursAgo)
+        .where('alias', 'in', ['', 'Sin Alias'])
+        .get();
+
+      if (usersSnapshot.empty) {
+        logger.info('No users to remind (24h)');
+        return null;
+      }
+
+      const recipients = [];
+      usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        if (user.email && !user.reminderSent24h) {
+          recipients.push({ email: user.email, uid: doc.id });
+        }
+      });
+
+      logger.info(`Sending 24h reminder to ${recipients.length} users`);
+
+      const subject = '⏰ Te estás perdiendo conexiones increíbles';
+      const htmlBody = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #f59e0b;">¡No te quedes fuera! ⏰</h2>
+          <p style="color: #333; line-height: 1.6;">
+            Han pasado 24 horas desde que te registraste en <strong>TuCitaSegura</strong> y aún no has completado tu perfil.
+          </p>
+          <p style="color: #333; line-height: 1.6;">
+            <strong>Mientras tanto, otros usuarios están conociendo gente nueva cada día.</strong>
+          </p>
+          <a href="https://tucitasegura.com/perfil.html" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0;">
+            Completar Ahora
+          </a>
+          <p style="color: #666; font-size: 14px; line-height: 1.6;">
+            ¿Necesitas ayuda? Contáctanos: <a href="mailto:n8659033@gmail.com">n8659033@gmail.com</a>
+          </p>
+        </div>
+      `;
+
+      for (const recipient of recipients) {
+        await sendEmail({
+          to: recipient.email,
+          subject: subject,
+          html: htmlBody,
+          text: 'Te estás perdiendo conexiones increíbles. Completa tu perfil en TuCitaSegura: https://tucitasegura.com/perfil.html'
+        });
+
+        // Mark as sent
+        await db.collection('users').doc(recipient.uid).update({
+          reminderSent24h: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      logger.info(`✅ 24h reminders sent: ${recipients.length}`);
+      return null;
+    } catch (error) {
+      logger.error('24h reminder error:', error);
+      throw error;
+    }
+  });
+
+// ------------------------------------------------------------------
+// 15. Scheduled: Weekly Cleanup Warning (Tuesday 12:00)
+// ------------------------------------------------------------------
+exports.scheduledCleanupWarning = functions.pubsub
+  .schedule('every tuesday 12:00')
+  .timeZone('Europe/Madrid')
+  .onRun(async (context) => {
+    logger.info('⏰ Running weekly cleanup warning (Tuesday)...');
+
+    try {
+      const db = admin.firestore();
+      // Buscar usuarios con más de 24h de antigüedad para evitar avisar a recién registrados hoy
+      const oneDayAgo = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+      const usersSnapshot = await db.collection('users')
+        .where('createdAt', '<=', oneDayAgo)
+        .where('alias', 'in', ['', 'Sin Alias'])
+        .get();
+
+      if (usersSnapshot.empty) {
+        logger.info('No users to warn for cleanup');
+        return null;
+      }
+
+      const recipients = [];
+      usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        if (user.email && !user.cleanupWarningSentAt) {
+          recipients.push({ email: user.email, uid: doc.id });
+        }
+      });
+
+      logger.info(`Sending cleanup warning to ${recipients.length} users`);
+
+      const subject = '🚨 IMPORTANTE: Tu cuenta será eliminada mañana';
+      const htmlBody = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #ef4444;">🚨 Aviso Final de Eliminación</h2>
+          <p style="color: #333; line-height: 1.6;">
+            Tu perfil en <strong>TuCitaSegura</strong> sigue incompleto.
+          </p>
+          <p style="color: #ef4444; font-weight: bold; line-height: 1.6;">
+            ⚠️ Tu cuenta y todos tus datos serán eliminados permanentemente mañana Miércoles a las 06:00 AM.
+          </p>
+          <p style="color: #333; line-height: 1.6;">
+            Para evitarlo, simplemente completa tu Alias en tu perfil ahora mismo.
+          </p>
+          <a href="https://tucitasegura.com/perfil.html" style="display: inline-block; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0;">
+            Salvar Mi Cuenta
+          </a>
+        </div>
+      `;
+
+      for (const recipient of recipients) {
+        await sendEmail({
+          to: recipient.email,
+          subject: subject,
+          html: htmlBody,
+          text: 'AVISO FINAL: Tu cuenta será eliminada mañana miércoles a las 06:00 si no completas tu perfil. Entra en https://tucitasegura.com/perfil.html'
+        });
+
+        await db.collection('users').doc(recipient.uid).update({
+          cleanupWarningSentAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
+
+      logger.info(`✅ Cleanup warnings sent: ${recipients.length}`);
+      return null;
+    } catch (error) {
+      logger.error('Cleanup warning error:', error);
+      throw error;
+    }
+  });
+
+// ------------------------------------------------------------------
+// 16. Scheduled: Weekly Cleanup Execution (Wednesday 06:00)
+// ------------------------------------------------------------------
+exports.scheduledCleanupExecution = functions.pubsub
+  .schedule('every wednesday 06:00')
+  .timeZone('Europe/Madrid')
+  .onRun(async (context) => {
+    logger.info('🗑️ Running weekly user cleanup (Wednesday)...');
+
+    try {
+      const db = admin.firestore();
+      const storage = admin.storage();
+      const auth = admin.auth();
+
+      // Safety check: Only delete users created more than 48 hours ago
+      // This prevents deleting someone who registered on Tuesday late afternoon
+      const safetyThreshold = admin.firestore.Timestamp.fromDate(new Date(Date.now() - 48 * 60 * 60 * 1000));
+
+      const usersSnapshot = await db.collection('users')
+        .where('alias', 'in', ['', 'Sin Alias'])
+        .where('createdAt', '<=', safetyThreshold)
+        .get();
+
+      if (usersSnapshot.empty) {
+        logger.info('No users found for cleanup');
+        return null;
+      }
+
+      let deletedCount = 0;
+      const errors = [];
+
+      const deletePromises = usersSnapshot.docs.map(async (doc) => {
+        const uid = doc.id;
+        const userData = doc.data();
+
+        logger.info(`Deleting inactive user: ${uid} (${userData.email})`);
+
+        try {
+          // 1. Delete from Auth
+          try {
+            await auth.deleteUser(uid);
+          } catch (e) {
+            if (e.code !== 'auth/user-not-found') throw e;
+          }
+
+          // 2. Delete Profile Photos from Storage
+          try {
+            const bucket = storage.bucket();
+            await bucket.deleteFiles({ prefix: `profile_photos/${uid}/` });
+          } catch (e) {
+            logger.warn(`Storage delete failed for ${uid}: ${e.message}`);
+            // Continue, not fatal
+          }
+
+          // 3. Delete from Firestore (User Doc)
+          // Note: Subcollections might remain unless we use recursive delete, 
+          // but for "incomplete profiles" these are usually empty.
+          await db.collection('users').doc(uid).delete();
+
+          deletedCount++;
+
+        } catch (error) {
+          logger.error(`Failed to delete user ${uid}`, error);
+          errors.push({ uid, error: error.message });
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      logger.info(`✅ Cleanup complete. Deleted: ${deletedCount}. Errors: ${errors.length}`);
+      return null;
+
+    } catch (error) {
+      logger.error('Cleanup execution fatal error:', error);
+      throw error;
+    }
+  });

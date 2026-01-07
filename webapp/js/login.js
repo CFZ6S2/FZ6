@@ -1,7 +1,8 @@
 
 // Firebase configuration
-import './firebase-appcheck.js';
-import { auth, db } from './firebase-config-env.js';
+// Firebase configuration (AppCheck lazy loaded below)
+// import './firebase-appcheck.js';
+import { auth } from './firebase-config-env.js';
 import { sanitizer } from './sanitizer.js';
 import { RateLimiters, showRateLimitError } from './rate-limiter.js';
 import { validators } from './input-validator.js';
@@ -37,6 +38,33 @@ auth.onAuthStateChanged((user) => {
         console.log('👤 No authenticated user. Login page ready.');
     }
 });
+
+// Lazy Load AppCheck (Performance Optimization)
+let appCheckLoaded = false;
+const loadAppCheck = async () => {
+    if (appCheckLoaded) return;
+    appCheckLoaded = true;
+    console.log('[Login] 🚀 Starting Lazy AppCheck Load...');
+
+    try {
+        console.log('🛡️ Lazy Loading AppCheck...');
+        await import('./firebase-appcheck.js');
+        console.log('[Login] ✅ AppCheck module loaded');
+    } catch (e) {
+        console.error('[Login] ❌ Failed to load AppCheck:', e);
+    }
+};
+
+// Trigger AppCheck on interaction or timeout
+const interactionEvents = ['click', 'keydown', 'touchstart', 'focusin'];
+const triggerLazyLoad = () => {
+    loadAppCheck();
+    interactionEvents.forEach(e => window.removeEventListener(e, triggerLazyLoad));
+};
+
+interactionEvents.forEach(e => window.addEventListener(e, triggerLazyLoad, { once: true, passive: true }));
+// Also triggers after 4s just in case
+setTimeout(loadAppCheck, 4000);
 
 // Toast notification function
 function showToast(message, type = 'info') {
@@ -182,6 +210,10 @@ if (loginForm) {
 
                 console.log('📄 Fetching user profile from Firestore...');
                 try {
+                    // Lazy load Firestore
+                    const { getDb } = await import('./firebase-config-env.js');
+                    const db = await getDb();
+
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (!userDoc.exists()) {
                         throw new Error('PROFILE_NOT_FOUND');

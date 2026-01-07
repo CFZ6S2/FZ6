@@ -50,7 +50,8 @@
             try {
                 log('1️⃣ Importing Firebase config...', 'info');
 
-                const { auth, db } = await import('./js/firebase-config-env.js');
+                const { auth, getDb } = await import('./js/firebase-config-env.js');
+                const db = await getDb();
                 const { onAuthStateChanged } = await import('firebase/auth');
                 const { doc, getDoc } = await import('firebase/firestore');
 

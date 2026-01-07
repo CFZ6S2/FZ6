@@ -63,8 +63,9 @@
         <h3>🔑 Autenticación (Requerido para Auto-Complete)</h3>
         <div id="authStatus">Esperando estado...</div>
         <div id="loginForm" style="display:none; margin-top:10px;">
-            <input type="email" id="email" placeholder="Email" style="padding:5px; margin-right:5px; color:black;">
-            <input type="password" id="password" placeholder="Contraseña"
+            <input type="email" id="email" placeholder="Email" autocomplete="email"
+                style="padding:5px; margin-right:5px; color:black;">
+            <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password"
                 style="padding:5px; margin-right:5px; color:black;">
             <button onclick="loginDiagnostics()">Iniciar Sesión</button>
         </div>
@@ -98,7 +99,7 @@
     </div>
 
     <script type="module">
-        import { app, auth, db } from './js/firebase-config-env.js';
+        import { app, auth } from './js/firebase-config-env.js';
         import { appCheck } from './js/firebase-appcheck.js';
         import { getToken } from "firebase/app-check";
         import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
@@ -238,6 +239,8 @@
 
             try {
                 const uid = auth.currentUser.uid;
+                const { getDb } = await import('./js/firebase-config-env.js');
+                const db = await getDb();
                 const userRef = doc(db, 'users', uid);
 
                 // 1. CHECK IF USER EXISTS
@@ -311,6 +314,8 @@
 
             try {
                 const uid = auth.currentUser.uid;
+                const { getDb } = await import('./js/firebase-config-env.js');
+                const db = await getDb();
                 const userRef = doc(db, 'users', uid);
 
                 // Set future date (30 days)

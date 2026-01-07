@@ -1,9 +1,13 @@
 // functions/middleware/app-check.js
 // Middleware para verificar Firebase App Check en Cloud Functions
 
-const functions = require('firebase-functions/v1');
 const { createLogger } = require('../utils/structured-logger');
 const logger = createLogger('app-check-middleware');
+
+// Lazy require to avoid heavyweight import at module load
+function getFunctions() {
+  return require('firebase-functions/v1');
+}
 
 /**
  * Extraer información de versión del cliente desde headers
@@ -92,7 +96,7 @@ function requireAppCheck(required = true) {
       });
 
       if (required) {
-        throw new functions.https.HttpsError(
+        throw new getFunctions().https.HttpsError(
           'failed-precondition',
           'App Check verification failed. Please update your app.'
         );

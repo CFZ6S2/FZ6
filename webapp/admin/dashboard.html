@@ -570,19 +570,22 @@
     import '../js/firebase-appcheck.js';
 
     // Then import Firebase services
-    import { auth, db } from '../js/firebase-config-env.js';
+    import { auth } from '../js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'firebase/auth';
     import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'firebase/firestore';
     import { loadTheme } from '../js/theme.js';
 
     let currentUser = null;
     let currentUserData = null;
+    let db = null; // Declare db globally or pass it
 
     // Check authentication and admin role
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        await loadUserData();
+        const { getDb } = await import('../js/firebase-config-env.js');
+        db = await getDb(); // Initialize global db
+        await loadUserData(); // This sets currentUserData
 
         // Check if user is admin
         // TODO: Replace with actual admin role check from Firestore
@@ -629,6 +632,11 @@
     // Load user data
     async function loadUserData() {
       try {
+        // Ensure db is initialized before use
+        if (!db) {
+          const { getDb } = await import('../js/firebase-config-env.js');
+          db = await getDb();
+        }
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
           currentUserData = { id: userDoc.id, ...userDoc.data() };

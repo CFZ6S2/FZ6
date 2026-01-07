@@ -15,12 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  
+
   <!-- iOS PWA Support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-    <meta name="theme-color" content="#764ba2">
+  <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
@@ -356,7 +356,7 @@
 
 
   <script type="module">
-    import { auth, db, storage } from './js/firebase-config-env.js';
+    import { auth, storage } from './js/firebase-config-env.js';
     import {
       doc,
       getDoc,
@@ -375,6 +375,7 @@
     let frontFile = null;
     let backFile = null;
     let selfieFile = null;
+    let db = null;
 
     // ==========================================================================
     // INICIALIZACIÓN
@@ -386,6 +387,10 @@
         window.location.href = 'login.html';
         return;
       }
+
+      // Initialize db
+      const { getDb } = await import('./js/firebase-config-env.js');
+      db = await getDb();
 
       // Cargar datos del usuario
       try {

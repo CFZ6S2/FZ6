@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,12 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  
+
   <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-    <meta name="theme-color" content="#764ba2">
+  <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
@@ -229,16 +229,18 @@
 
 
   <script type="module">
-    import { auth, db } from './js/firebase-config-env.js';
+    import { auth } from './js/firebase-config-env.js';
     import { doc, getDoc } from 'firebase/firestore';
     import VideoChat, { listenForIncomingCall } from './js/video-chat.js';
     import { showToast } from './js/utils.js';
+    import { loadTheme } from './js/theme.js';
 
     let videoChat = null;
     let currentUser = null;
     let conversationId = null;
     let remoteUserId = null;
     let incomingCallListener = null;
+    let db = null;
 
     // ==========================================================================
     // INICIALIZACIÓN
@@ -251,6 +253,16 @@
         window.location.href = 'login.html';
         return;
       }
+      const { getDb } = await import('./js/firebase-config-env.js');
+      db = await getDb();
+
+      // Load Theme
+      try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          loadTheme({ id: userDoc.id, ...userDoc.data() });
+        }
+      } catch (e) { console.error("Theme load error", e); }
 
       // Verificar soporte de WebRTC
       if (!VideoChat.isSupported()) {
@@ -346,8 +358,8 @@
     // ESCUCHAR LLAMADAS ENTRANTES
     // ==========================================================================
 
-    function listenForCalls() {
-      incomingCallListener = listenForIncomingCall(
+    async function listenForCalls() {
+      incomingCallListener = await listenForIncomingCall(
         conversationId,
         currentUser.uid,
         (callData) => {

@@ -1,17 +1,17 @@
-"""
-Servicio de logging de eventos de seguridad.
-Registra eventos críticos de seguridad en Firestore para auditoría.
-"""
 import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
-import firebase_admin
-from firebase_admin import firestore
+try:
+    import firebase_admin  # type: ignore
+    from firebase_admin import firestore  # type: ignore
+    db = firestore.client()  # type: ignore
+except Exception:
+    firebase_admin = None  # type: ignore
+    firestore = None  # type: ignore
+    db = None  # type: ignore
 
 logger = logging.getLogger(__name__)
-
-db = firestore.client()
 
 
 class SecurityEventType(str, Enum):
@@ -56,8 +56,6 @@ class SecuritySeverity(str, Enum):
 
 
 class SecurityLogger:
-    """Servicio para registrar eventos de seguridad en Firestore."""
-
     def __init__(self):
         self.collection_name = "security_logs"
 
@@ -424,3 +422,35 @@ class SecurityLogger:
 
 # Instancia global del servicio
 security_logger = SecurityLogger()
+
+
+class AuditLogger:
+    def __init__(self):
+        self.collection_name = "audit_logs"
+
+    async def log_action(
+        self,
+        action: str,
+        user_id: Optional[str] = None,
+        resource_id: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+        success: bool = True
+    ) -> str:
+        try:
+            event_data = {
+                "action": action,
+                "timestamp": datetime.now(),
+                "success": success,
+                "user_id": user_id,
+                "resource_id": resource_id,
+                "context": context or {}
+            }
+            doc_ref = db.collection(self.collection_name).document()  # type: ignore
+            await doc_ref.set(event_data)  # type: ignore
+            return doc_ref.id  # type: ignore
+        except Exception as e:
+            logger.error(f"Error logging audit action {action}: {e}")
+            return ""
+
+
+audit_logger = AuditLogger()

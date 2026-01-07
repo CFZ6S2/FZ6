@@ -185,10 +185,6 @@ exports.apiUserProfile = functions.https.onRequest(async (req, res) => {
         return res.status(204).send('');
     }
 
-    if (req.method !== 'GET') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
     // Verify authentication
     try {
         await new Promise((resolve, reject) => {
@@ -201,46 +197,100 @@ exports.apiUserProfile = functions.https.onRequest(async (req, res) => {
         return; // verifyAuth already sent response
     }
 
-    try {
-        const userDoc = await admin.firestore()
-            .collection('users')
-            .doc(req.user.uid)
-            .get();
+    const { uid } = req.user;
+    const db = admin.firestore();
 
-        if (!userDoc.exists) {
-            return res.status(404).json({
+    // GET: Retrieve Profile
+    if (req.method === 'GET') {
+        try {
+            const userDoc = await db.collection('users').doc(uid).get();
+
+            if (!userDoc.exists) {
+                // If not found, return basic auth info (graceful degradation) instead of 404
+                // enabling frontend to fill the form for new users
+                return res.status(200).json({
+                    success: true,
+                    profile: {
+                        uid: uid,
+                        email: req.user.email,
+                        email_verified: req.user.email_verified || false,
+                        auth_time: req.user.auth_time,
+                        provider: req.user.firebase?.sign_in_provider || 'unknown'
+                    }
+                });
+            }
+
+            const userData = userDoc.data();
+            res.status(200).json({
+                success: true,
+                profile: {
+                    ...userData,
+                    uid: uid,
+                    email: req.user.email, // Ensure email from auth is always present
+                    email_verified: req.user.email_verified || false
+                }
+            });
+
+        } catch (error) {
+            logger.error('Error getting user profile', error, { uid });
+            res.status(500).json({
                 error: true,
-                status_code: 404,
-                message: 'User profile not found'
+                status_code: 500,
+                message: 'Error al obtener el perfil de usuario'
             });
         }
-
-        const userData = userDoc.data();
-
-        res.status(200).json({
-            success: true,
-            profile: {
-                uid: req.user.uid,
-                email: req.user.email,
-                email_verified: req.user.email_verified || false,
-                name: userData.name || userData.alias || 'Usuario',
-                photoURL: userData.photoURL || null,
-                gender: userData.gender || null,
-                userRole: userData.userRole || 'regular',
-                hasActiveSubscription: userData.hasActiveSubscription || false,
-                auth_time: req.user.auth_time,
-                provider: req.user.firebase?.sign_in_provider || 'unknown'
-            }
-        });
-
-    } catch (error) {
-        logger.error('Error getting user profile', error, { uid: req.user?.uid });
-        res.status(500).json({
-            error: true,
-            status_code: 500,
-            message: 'Error al obtener el perfil de usuario'
-        });
+        return;
     }
+
+    // PUT: Update Profile
+    if (req.method === 'PUT') {
+        try {
+            const updates = req.body;
+
+            // Security: Whitelist allowed fields to prevent overwriting critical data (like subscription)
+            const allowedFields = [
+                'alias', 'birthDate', 'gender', 'city', 'bio', 'interests', 'profession',
+                'photoURL', 'municipio', 'photos', 'relationshipStatus', 'lookingFor',
+                'ageRangeMin', 'ageRangeMax', 'location', 'latitude', 'longitude', 'theme', 'email',
+                'availabilityStatus', 'isProfileHidden'
+            ];
+            const safeUpdates = {};
+
+            Object.keys(updates).forEach(key => {
+                if (allowedFields.includes(key)) {
+                    safeUpdates[key] = updates[key];
+                }
+            });
+
+            // Always update updatedAt
+            safeUpdates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+            // Update or Set (merge)
+            await db.collection('users').doc(uid).set(safeUpdates, { merge: true });
+
+            // Return updated data
+            const updatedDoc = await db.collection('users').doc(uid).get();
+            res.status(200).json({
+                success: true,
+                message: 'Perfil actualizado correctamente',
+                profile: {
+                    ...updatedDoc.data(),
+                    uid: uid
+                }
+            });
+
+        } catch (error) {
+            logger.error('Error updating user profile', error, { uid });
+            res.status(500).json({
+                error: true,
+                status_code: 500,
+                message: 'Error al actualizar el perfil'
+            });
+        }
+        return;
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
 });
 
 /**
@@ -309,5 +359,49 @@ exports.apiOptional = functions.https.onRequest(async (req, res) => {
             authenticated: false,
             access: 'public'
         });
+    }
+});
+/**
+ * Moderate message content
+ */
+exports.apiModerateMessage = functions.https.onRequest(async (req, res) => {
+    setCORS(res);
+
+    if (req.method === 'OPTIONS') {
+        return res.status(204).send('');
+    }
+
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // Verify authentication
+    try {
+        await new Promise((resolve, reject) => {
+            verifyAuth(req, res, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    } catch (error) {
+        return; // verifyAuth already sent response
+    }
+
+    try {
+        const { text } = req.body;
+
+        // Simple mock moderation for now
+        // In real world, call OpenAI or Google Cloud NLP
+        const flagged = false;
+
+        return res.status(200).json({
+            success: true,
+            flagged: flagged,
+            reason: null
+        });
+
+    } catch (error) {
+        logger.error('Moderation error', error);
+        res.status(500).json({ error: 'Moderation failed' });
     }
 });

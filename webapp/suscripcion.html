@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,12 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  
+
   <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-    <meta name="theme-color" content="#764ba2">
+  <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
@@ -288,121 +288,7 @@
   <script type="module" src="./js/error-fixes.js"></script>
 
   <!-- Firebase SDK -->
-  <script type="module">
-    // Import App Check FIRST (must be before firebase-config.js)
-    import './js/firebase-appcheck.js';
-
-    // Then import Firebase services
-    import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged } from "firebase/auth";
-    import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
-    import { showToast } from './js/utils.js';
-    import { loadTheme } from './js/theme.js';
-
-    let currentUser = null;
-
-    // Check authentication
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('loadingOverlay').classList.add('hidden');
-        initPayPalButton();
-      } else {
-        // Redirect to login if not authenticated
-        window.location.href = '/login.html';
-      }
-    });
-
-    // Initialize PayPal Button
-    function initPayPalButton() {
-      // NOTA: Necesitarás crear un plan de suscripción en tu cuenta de PayPal
-      // y reemplazar 'YOUR_SUBSCRIPTION_PLAN_ID' con el ID real del plan
-
-      paypal.Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe',
-          height: 50
-        },
-
-        createSubscription: function (data, actions) {
-          return actions.subscription.create({
-            'plan_id': 'P-43X73253LN792734JNEMEYLA',
-            'custom_id': currentUser.uid // Vincula la suscripción al usuario
-          });
-        },
-
-        onApprove: async function (data, actions) {
-          console.log('Subscription approved:', data);
-
-          // Mostrar overlay de carga
-          document.getElementById('loadingOverlay').classList.remove('hidden');
-
-          try {
-            // Actualizar Firestore con los datos de la suscripción
-            const userRef = doc(db, 'users', currentUser.uid);
-
-            const subscriptionEndDate = new Date();
-            subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
-
-            await updateDoc(userRef, {
-              hasActiveSubscription: true,
-              subscriptionId: data.subscriptionID,
-              subscriptionStartDate: serverTimestamp(),
-              subscriptionEndDate: subscriptionEndDate,
-              subscriptionStatus: 'active',
-              updatedAt: serverTimestamp()
-            });
-
-            console.log('Firestore updated successfully');
-
-            // Ocultar overlay de carga
-            document.getElementById('loadingOverlay').classList.add('hidden');
-
-            // Mostrar modal de éxito
-            document.getElementById('successModal').classList.remove('opacity-0', 'pointer-events-none');
-
-          } catch (error) {
-            console.error('Error updating Firestore:', error);
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            showError('Error al activar tu membresía. Por favor contacta soporte.');
-          }
-        },
-
-        onError: function (err) {
-          console.error('PayPal error:', err);
-          document.getElementById('loadingOverlay').classList.add('hidden');
-          showError('Hubo un error al procesar el pago. Por favor intenta nuevamente.');
-        },
-
-        onCancel: function (data) {
-          console.log('Subscription cancelled:', data);
-          document.getElementById('loadingOverlay').classList.add('hidden');
-          showError('Cancelaste el proceso de pago. Tu membresía no fue activada.');
-        }
-
-      }).render('#paypal-button-container');
-    }
-
-    // Show error modal
-    function showError(message) {
-      document.getElementById('errorMessage').textContent = message;
-      document.getElementById('errorModal').classList.remove('opacity-0', 'pointer-events-none');
-    }
-
-    // Close error modal
-    window.closeErrorModal = function () {
-      document.getElementById('errorModal').classList.add('opacity-0', 'pointer-events-none');
-    };
-
-    // Redirect to search page
-    window.redirectToSearch = function () {
-      window.location.href = '/buscar-usuarios.html';
-    };
-
-  </script>
+  <script type="module" src="./js/suscripcion.js"></script>
 
 </body>
 

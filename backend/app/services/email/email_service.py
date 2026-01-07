@@ -8,6 +8,10 @@ from email.mime.multipart import MIMEMultipart
 from typing import Optional, Dict, Any
 from datetime import datetime
 import os
+try:
+    from firebase_admin import auth as firebase_auth  # type: ignore
+except Exception:
+    firebase_auth = None  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +310,90 @@ Si tienes alguna pregunta, contacta a soporte@tucitasegura.com
 """
 
         return await self.send_email(user_email, subject, html_content, text_content)
+
+    async def send_email_verification(
+        self,
+        user_email: str,
+        display_name: Optional[str] = None,
+        continue_url: Optional[str] = None,
+        dynamic_link_domain: Optional[str] = None
+    ) -> bool:
+        try:
+            verification_url = None
+            if firebase_auth:
+                action_settings: Dict[str, Any] = {
+                    "url": continue_url or os.getenv("VERIFICATION_CONTINUE_URL", "https://tucitasegura-129cc.web.app/verify-email.html"),
+                    "handle_code_in_app": True
+                }
+                if dynamic_link_domain or os.getenv("DYNAMIC_LINK_DOMAIN"):
+                    action_settings["dynamic_link_domain"] = dynamic_link_domain or os.getenv("DYNAMIC_LINK_DOMAIN")
+                verification_url = firebase_auth.generate_email_verification_link(user_email, action_settings)  # type: ignore
+            else:
+                verification_url = (continue_url or os.getenv("VERIFICATION_CONTINUE_URL", "https://tucitasegura-129cc.web.app/verify-email.html")) + "?pending=verifyEmail"
+
+            subject = "Verifica tu email en TuCitaSegura"
+
+            safe_name = (display_name or user_email.split("@")[0]).strip()
+            html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+    .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; text-align: center; border-radius: 10px 10px 0 0; }}
+    .content {{ background: #f9f9f9; padding: 24px; border-radius: 0 0 10px 10px; }}
+    .button {{ display: inline-block; background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 16px 0; }}
+    .tips {{ font-size: 14px; color: #555; }}
+    .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
+  </style>
+  <title>Verificación de Email</title>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Verifica tu email</h1>
+      <p>Hola {safe_name}, completa este paso para activar tu cuenta</p>
+    </div>
+    <div class="content">
+      <p>Para garantizar tu seguridad y activar todas las funciones, verifica tu dirección de email:</p>
+      <p style="text-align:center;">
+        <a href="{verification_url}" class="button">Verificar mi email</a>
+      </p>
+      <p class="tips">
+        Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+        <a href="{verification_url}">{verification_url}</a>
+      </p>
+      <p class="tips">
+        Sugerencias:
+        <ul>
+          <li>Revisa tu carpeta de spam si no ves este mensaje en tu bandeja de entrada</li>
+          <li>El enlace expira; si necesitas uno nuevo, solicita reenvío desde la app</li>
+        </ul>
+      </p>
+      <div class="footer">
+        <p>Este es un email automático, por favor no respondas.</p>
+        <p>&copy; 2025 TuCitaSegura</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+"""
+            text_content = f"""Hola {safe_name},
+
+Sigue este enlace para verificar tu email:
+{verification_url}
+
+Si no solicitaste esta verificación, puedes ignorar este email.
+
+TuCitaSegura"""
+
+            return await self.send_email(user_email, subject, html_content, text_content)
+        except Exception as e:
+            logger.error(f"Error preparando/verificando email para {user_email}: {e}")
+            return False
 
 # Instancia global del servicio
 email_service = EmailService()

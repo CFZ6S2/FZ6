@@ -1,0 +1,27 @@
+🔍 DIAGNÓSTICO COMPLETO DE FIRESTORE
+
+1️⃣ Verificando usuario: Y1rNgj4KYpWSFlPqgrpAaGuAk033
+   ✅ DOCUMENTO EXISTE
+   📧 Email: cesar.herrera.rojo@gmail.com
+   👤 Alias: cesarfz6
+   ⚧ Gender: masculino
+   🎭 Role: regular
+
+2️⃣ Contando usuarios totales...
+   📊 Total usuarios en Firestore: 21
+   👥 Primeros 5 usuarios:
+      - Tester 1vF7 (1vF773vs...)
+      - Gonorreo (2sKaK2gW...)
+      - Pasionaria (AuQaSwPp...)
+      - ROKERA (IPfwgIej...)
+      - saiph79@proton.me (KJWlWTSr...)
+
+3️⃣ Verificando usuarios por género...
+   👨 Hombres: 6
+   👩 Mujeres: 5
+
+4️⃣ Estado de las reglas:
+   📜 Las reglas actuales deberían permitir:
+      - Leer tu propio perfil: isAuthed() && userId == uid()
+      - Ver perfiles del género opuesto (con custom claims)
+

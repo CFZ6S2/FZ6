@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net https://cdn.jsdelivr.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;">
+        content="default-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net https://cdn.jsdelivr.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com;">
     <title>Admin Dashboard - TuCitaSegura</title>
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="./css/output.css">
@@ -195,8 +195,19 @@
                     <div class="p-4 border-t border-slate-700 flex justify-between items-center text-sm text-slate-400">
                         <span>Mostrando <span id="showingCount">0</span> usuarios</span>
                         <div class="flex gap-2">
-                            <button class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Anterior</button>
-                            <button class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Siguiente</button>
+                            <button onclick="loadUsers()"
+                                class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Recargar</button>
+                            <button onclick="loadZombieUsers()"
+                                class="px-3 py-1 bg-orange-800 rounded hover:bg-orange-700">
+                                <i class="fas fa-skull mr-1"></i>Ver Zombies
+                            </button>
+                            <button onclick="cleanupZombies()"
+                                class="px-3 py-1 bg-red-900 rounded hover:bg-red-800 border border-red-700">
+                                <i class="fas fa-trash-alt mr-1"></i>Limpiar
+                            </button>
+                            <button onclick="loadUsers(true)"
+                                class="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 text-white font-semibold">Cargar
+                                Más</button>
                         </div>
                     </div>
                 </div>
@@ -309,6 +320,116 @@
 
         </div>
     </main>
+
+    <!-- User Details Modal (ADMIN VIEW) -->
+    <div id="userModal"
+        class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div
+            class="glass-strong rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content shadow-2xl relative">
+
+            <!-- Modal Header (Cover Image) -->
+            <div class="h-40 md:h-52 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 relative overflow-hidden">
+                <div class="absolute inset-0 bg-black/20"></div>
+                <!-- Decorative bubbles -->
+                <div
+                    class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full mix-blend-overlay filter blur-3xl transform translate-x-1/2 -translate-y-1/2">
+                </div>
+
+                <!-- Close Button (Floating) -->
+                <button id="closeModal"
+                    class="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-sm z-10">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="px-6 md:px-8 pb-8 -mt-16 md:-mt-20 relative z-10">
+
+                <!-- User Avatar & Core Info (Centered) -->
+                <div class="flex flex-col items-center text-center mb-8">
+                    <!-- Avatar -->
+                    <div class="relative mb-4">
+                        <div id="modalAvatarContainer"
+                            class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 shadow-2xl overflow-hidden bg-slate-800 flex items-center justify-center relative">
+                            <!-- Content injected by JS -->
+                            <span class="text-4xl text-white font-bold">U</span>
+                        </div>
+                        <span id="modalOnlineIndicator"
+                            class="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-900 rounded-full hidden z-20"></span>
+                    </div>
+
+                    <!-- Name & Verification -->
+                    <div class="flex items-center gap-2 mb-1 justify-center">
+                        <h3 id="modalName" class="text-3xl md:text-4xl font-bold text-white drop-shadow-md">Usuario
+                        </h3>
+                        <i id="modalVerifiedBadge"
+                            class="fas fa-check-circle text-blue-400 text-xl hidden bg-white rounded-full box-content border-2 border-transparent"
+                            title="Verificado"></i>
+                    </div>
+
+                    <div id="modalEmail"
+                        class="text-slate-400 text-sm mb-2 font-mono bg-slate-800/50 px-3 py-1 rounded-full inline-block">
+                        email@example.com</div>
+
+                    <!-- Meta Info (Age, Distance) -->
+                    <p
+                        class="text-slate-200 text-sm md:text-base flex items-center gap-3 mb-4 font-medium opacity-90 justify-center">
+                        <span id="modalAge"><i class="fas fa-birthday-cake mr-1 text-pink-400"></i><span>25
+                                años</span></span>
+                        <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
+                        <span id="modalReputationContainer"></span>
+                    </p>
+                </div>
+
+                <!-- Stats Grid (Compact) -->
+                <div class="grid grid-cols-2 gap-2 md:gap-4 mb-8">
+                    <div
+                        class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
+                        <div class="text-xl md:text-2xl font-bold text-blue-400" id="modalCitasCompletadas">0</div>
+                        <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">Citas
+                        </div>
+                    </div>
+                    <div
+                        class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
+                        <div class="text-xl md:text-2xl font-bold text-purple-400" id="modalJoined">--</div>
+                        <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">
+                            Registro
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio Section -->
+                <div class="mb-8 bg-white/5 rounded-2xl p-6 border border-white/5 relative">
+                    <i class="fas fa-quote-left absolute top-4 left-4 text-white/10 text-4xl -z-10"></i>
+                    <h4 class="font-bold mb-2 text-sm uppercase tracking-wider text-slate-400">Sobre mí</h4>
+                    <p id="modalBio" class="text-slate-200 leading-relaxed italic text-lg text-center"></p>
+                </div>
+
+                <!-- Photos Gallery (Dynamic) -->
+                <div id="modalGallerySection" class="mb-8 hidden">
+                    <h4 class="font-bold mb-3 text-sm uppercase tracking-wider text-slate-400">Galería</h4>
+                    <div id="modalGalleryGrid" class="grid grid-cols-3 md:grid-cols-4 gap-2">
+                        <!-- Photos injected here -->
+                    </div>
+                </div>
+
+                <!-- Admin Actions -->
+                <div
+                    class="sticky bottom-0 bg-[#0f172a] pt-4 pb-2 border-t border-white/10 -mx-6 md:-mx-8 px-6 md:px-8">
+                    <div class="flex gap-3 justify-center">
+                        <button id="modalAdminBanBtn"
+                            class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
+                            <i class="fas fa-ban"></i> <span>Banear</span>
+                        </button>
+                        <button id="modalAdminVerifyBtn"
+                            class="bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
+                            <i class="fas fa-check"></i> <span>Verificar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase Logic -->
     <script type="module" src="./js/admin-dashboard.js"></script>

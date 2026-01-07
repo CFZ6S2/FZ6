@@ -110,7 +110,12 @@ function scrollReveal() {
 
 // Initialize all when DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    initParticles();
+    // Defer particle initialization to improve LCP
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => initParticles());
+    } else {
+        setTimeout(initParticles, 2000);
+    }
     const headline = document.getElementById('hero-headline');
     if (headline) {
         typeHeadline(headline, ['Conexiones Reales, Sin Riesgos', 'Seguridad Garantizada', 'Citas Verificadas']);

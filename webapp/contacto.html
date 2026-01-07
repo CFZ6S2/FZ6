@@ -71,10 +71,12 @@
     <script type="module" src="./js/language-selector.js"></script>
     <script type="module">
         import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-        import { db } from './js/firebase-config-env.js';
+        import { auth } from './js/firebase-config-env.js';
 
         document.getElementById('contactForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+            const { getDb } = await import('./js/firebase-config-env.js');
+            const db = await getDb();
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.textContent;
 

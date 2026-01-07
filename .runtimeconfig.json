@@ -1,0 +1,18 @@
+{
+  "recaptcha": {
+    "project_id": "tucitasegura-129cc",
+    "site_key": "6LeC6ycsAAAAAN4r6SrwP3R2_l4SAWFJCxGhAVJj"
+  },
+  "smtp": {
+    "pass": "4*ll2w7U6",
+    "host": "mail.tucitasegura.com",
+    "port": "465",
+    "user": "admin@tucitasegura.com"
+  },
+  "admin": {
+    "bootstrap_secret": "NUEVO_SECRETO_AQUI"
+  },
+  "api": {
+    "base_url": "https://fz6-production-ea5d.up.railway.app"
+  }
+}

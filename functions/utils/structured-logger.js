@@ -1,8 +1,6 @@
 // functions/utils/structured-logger.js
 // Sistema de logs estructurados con sanitización de datos sensibles
 
-const functions = require('firebase-functions/v1');
-
 /**
  * Niveles de severidad según Cloud Logging
  * https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logseverity

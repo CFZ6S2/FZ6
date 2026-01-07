@@ -5,11 +5,10 @@
 
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { app, VAPID_PUBLIC_KEY } from "./firebase-config-env.js";
-import { getFirestore, doc, updateDoc, getDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { createLogger } from "./logger.js";
 
 const messaging = getMessaging(app);
-const db = getFirestore(app);
 const logger = createLogger('push-notifications');
 
 /**
@@ -65,6 +64,8 @@ export async function requestNotificationPermission(userId) {
  */
 async function saveTokenToFirestore(userId, token) {
   try {
+    const { getDb } = await import('./firebase-config-env.js');
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userRef);
 

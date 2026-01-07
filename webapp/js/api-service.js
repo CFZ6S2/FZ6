@@ -3,6 +3,8 @@
  * Connects frontend with FastAPI backend
  */
 
+import { uploadPhotoToStorage } from './storage-upload.js';
+
 export class APIService {
   constructor() {
     const host = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
@@ -268,16 +270,19 @@ export class APIService {
    * Upload profile photo
    * @param {File} file - Image file
    * @param {string} photoType - Type of photo (avatar, gallery_1, etc.)
+   * @param {string|null} gender - Override gender for storage path
    * @returns {Promise<Object>} Upload result
    */
-  async uploadProfilePhoto(file, photoType = 'avatar') {
+  async uploadProfilePhoto(file, photoType = 'avatar', gender = null) {
     // HOTFIX: Upload directly to Firebase Storage to avoid backend 500 errors
     console.log('🔧 Using direct Storage upload (backend bypassed)');
 
     try {
-      // Dynamic import to avoid circular dependencies
-      const { uploadPhotoToStorage } = await import('./storage-upload.js');
-      const downloadURL = await uploadPhotoToStorage(file, photoType);
+      // Use static import function (exposed as method or imported at top)
+      // Since we are inside a class, we rely on the top-level import we will add.
+      // But for now, let's assume we will adding the import.
+
+      const downloadURL = await uploadPhotoToStorage(file, photoType, gender);
 
       return {
         success: true,

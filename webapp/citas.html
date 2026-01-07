@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -15,12 +15,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  
+
   <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
-    <meta name="theme-color" content="#764ba2">
+  <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/output.css">
@@ -132,6 +132,10 @@
         class="filter-tab flex-1 py-3 px-4 rounded-xl font-semibold transition text-sm md:text-base">
         Rechazadas
       </button>
+      <button id="filterCompleted"
+        class="filter-tab flex-1 py-3 px-4 rounded-xl font-semibold transition text-sm md:text-base">
+        Completadas
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -161,188 +165,14 @@
 
   </div>
 
+  <!-- Theme Script -->
+  <script type="module" src="./js/theme.js"></script>
   <!-- Firebase SDK -->
   <script type="module" src="./js/error-fixes.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   <script type="module" src="./js/sanitizer.js"></script>
 
-  <script type="module">
-    // ... imports ...
-    import './js/firebase-appcheck.js';
-    import { auth, db } from './js/firebase-config-env.js';
-    import { onAuthStateChanged } from "firebase/auth";
-    import {
-      collection,
-      query,
-      where,
-      orderBy,
-      getDocs,
-      doc,
-      getDoc,
-      updateDoc
-    } from "firebase/firestore";
-    import { showToast } from './js/utils.js';
-    import { loadTheme } from './js/theme.js';
-    import { sanitizer } from './js/sanitizer.js';
-
-    // ... variables ...
-    let currentUser = null;
-    let currentUserData = null;
-    let allDates = [];
-    let filteredDates = [];
-    let currentFilter = 'all';
-
-    // ... auth observer ...
-
-    // ... load user data ...
-
-    // ... load dates ...
-
-    // ... apply filter ...
-
-    // Render dates
-    function renderDates() {
-      const datesList = document.getElementById('datesList');
-
-      if (filteredDates.length === 0) {
-        datesList.innerHTML = `
-          <div class="glass-strong rounded-2xl p-12 text-center">
-            <i class="fas fa-calendar-times text-5xl text-white/50 mb-4"></i>
-            <p class="text-lg text-slate-300">No hay citas con este filtro</p>
-          </div>
-        `;
-        return;
-      }
-
-      datesList.innerHTML = filteredDates.map(date => {
-        const dateObj = date.timestamp?.toDate() || new Date();
-        const formattedDate = dateObj.toLocaleDateString('es-ES', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        });
-
-        const safeDate = sanitizer.text(date.date || '');
-        const safeTime = sanitizer.text(date.time || '');
-        const safePlace = sanitizer.text(date.place || '');
-        const safeMessage = sanitizer.text(date.message || '');
-        const safeAlias = sanitizer.text(date.otherUser.alias || 'Usuario');
-
-        let statusClass = 'status-pending';
-        let statusText = 'Pendiente';
-        let statusIcon = 'fa-clock';
-
-        if (date.status === 'accepted') {
-          statusClass = 'status-accepted';
-          statusText = 'Aceptada';
-          statusIcon = 'fa-check-circle';
-        } else if (date.status === 'rejected') {
-          statusClass = 'status-rejected';
-          statusText = 'Rechazada';
-          statusIcon = 'fa-times-circle';
-        }
-
-        return `
-          <div class="date-card glass-strong rounded-2xl p-6">
-            <div class="flex flex-col md:flex-row gap-4 items-center md:items-start text-center md:text-left">
-              <div class="flex-shrink-0">
-                ${date.otherUser.photoURL ?
-            `<img src="${sanitizer.url(date.otherUser.photoURL)}" alt="${safeAlias}" class="w-20 h-20 rounded-full object-cover border-2 border-white/20">` :
-            `<div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl font-bold border-2 border-white/20">
-                    ${safeAlias.charAt(0).toUpperCase()}
-                  </div>`
-          }
-              </div>
-              <div class="flex-1 w-full">
-                <div class="flex flex-col md:flex-row items-center md:items-start justify-between mb-3 gap-2">
-                  <div>
-                    <h3 class="text-xl font-bold mb-1">${safeAlias}</h3>
-                    <span class="status-badge ${statusClass}">
-                      <i class="fas ${statusIcon} mr-1"></i>${statusText}
-                    </span>
-                  </div>
-                  ${date.isSentByMe ?
-            '<span class="text-sm text-slate-400"><i class="fas fa-paper-plane mr-1"></i>Enviada por ti</span>' :
-            '<span class="text-sm text-slate-400"><i class="fas fa-inbox mr-1"></i>Recibida</span>'
-          }
-                </div>
-                <div class="space-y-2 text-slate-300">
-                  <div class="flex items-center gap-2 justify-center md:justify-start">
-                    <i class="fas fa-calendar text-purple-400"></i>
-                    <span><strong>Fecha:</strong> ${safeDate}</span>
-                  </div>
-                  <div class="flex items-center gap-2 justify-center md:justify-start">
-                    <i class="fas fa-clock text-blue-400"></i>
-                    <span><strong>Hora:</strong> ${safeTime}</span>
-                  </div>
-                  <div class="flex items-center gap-2 justify-center md:justify-start">
-                    <i class="fas fa-map-marker-alt text-red-400"></i>
-                    <span><strong>Lugar:</strong> ${safePlace}</span>
-                  </div>
-                  ${safeMessage ? `
-                    <div class="flex items-start gap-2 mt-3 pt-3 border-t border-white/10 justify-center md:justify-start">
-                      <i class="fas fa-comment text-green-400 mt-1"></i>
-                      <span><strong>Mensaje:</strong> ${safeMessage}</span>
-                    </div>
-                  ` : ''}
-                </div>
-                <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full">
-                  <a href="/chat.html?conversation=${date.conversationId}" 
-                     class="flex-1 glass hover:glass-strong text-center py-3 px-4 rounded-xl transition font-semibold">
-                    <i class="fas fa-comments mr-2"></i>Ver Conversación
-                  </a>
-                  ${date.status === 'accepted' ? `
-                    <a href="/cita-detalle.html?dateId=${date.id}&conversationId=${date.conversationId}" 
-                       class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-center py-3 px-4 rounded-xl transition font-semibold">
-                      <i class="fas fa-info-circle mr-2"></i>Detalles
-                    </a>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Filter tabs
-    document.getElementById('filterAll').addEventListener('click', () => {
-      currentFilter = 'all';
-      updateFilterTabs();
-      applyFilter();
-    });
-
-    document.getElementById('filterPending').addEventListener('click', () => {
-      currentFilter = 'pending';
-      updateFilterTabs();
-      applyFilter();
-    });
-
-    document.getElementById('filterAccepted').addEventListener('click', () => {
-      currentFilter = 'accepted';
-      updateFilterTabs();
-      applyFilter();
-    });
-
-    document.getElementById('filterRejected').addEventListener('click', () => {
-      currentFilter = 'rejected';
-      updateFilterTabs();
-      applyFilter();
-    });
-
-    function updateFilterTabs() {
-      document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.classList.remove('active', 'bg-gradient-to-r', 'from-purple-500', 'to-pink-500');
-        tab.classList.add('glass');
-      });
-
-      const activeTab = document.getElementById(`filter${currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1)}`) ||
-        document.getElementById('filterAll');
-      activeTab.classList.remove('glass');
-      activeTab.classList.add('active', 'bg-gradient-to-r', 'from-purple-500', 'to-pink-500');
-    }
-  </script>
+  <script type="module" src="./js/citas.js"></script>
 </body>
 
 </html>

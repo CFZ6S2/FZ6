@@ -7,7 +7,7 @@ import os
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from firebase_admin import auth, credentials, initialize_app
+from firebase_admin import auth, credentials, initialize_app, firestore
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -19,6 +19,7 @@ service_account_json = os.getenv("SERVICE_ACCOUNT_JSON")
 
 # Flag to track if Firebase is initialized
 firebase_initialized = False
+db = None # Initialize db globally to prevent ImportError
 
 # Try to load from JSON string first (for Railway/cloud deployment)
 if service_account_json:
@@ -27,6 +28,11 @@ if service_account_json:
         service_account_dict = json.loads(service_account_json)
         cred = credentials.Certificate(service_account_dict)
         initialize_app(cred)
+        try:
+            db = firestore.client()
+        except Exception as e:
+            print(f"⚠️ Failed to initialize Firestore: {e}")
+            db = None
         firebase_initialized = True
         print(f"✅ Firebase Admin SDK initialized from JSON variable")
     except Exception as e:
@@ -37,6 +43,11 @@ elif cred_path and os.path.exists(cred_path):
     try:
         cred = credentials.Certificate(cred_path)
         initialize_app(cred)
+        try:
+            db = firestore.client()
+        except Exception as e:
+            print(f"⚠️ Failed to initialize Firestore: {e}")
+            db = None
         firebase_initialized = True
         print(f"✅ Firebase Admin SDK initialized from file: {cred_path}")
     except Exception as e:

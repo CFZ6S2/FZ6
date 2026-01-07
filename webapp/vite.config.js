@@ -1,13 +1,49 @@
 import { defineConfig } from 'vite';
 import path from 'path';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 export default defineConfig(({ mode }) => {
     return {
         root: '.', // si tus archivos están en la raíz de webapp
+        plugins: [
+            ViteImageOptimizer({
+                /* pass your config */
+                png: { quality: 80 },
+                jpeg: { quality: 80 },
+                webp: { quality: 80 },
+                avif: { quality: 70 },
+            }),
+        ],
+        // OPTIMIZATION: Strip console logs in production
+        esbuild: {
+            drop: mode === 'production' ? ['console', 'debugger'] : [],
+        },
         build: {
             outDir: 'dist',
             target: 'esnext', // Enable top-level await support
+            // STRIP CONSOLE LOGS IN PRODUCTION
+            minify: 'esbuild',
+            modulePreload: {
+                polyfill: false // Disable module preload polyfill to strictly lazy load
+            },
             rollupOptions: {
+                output: {
+                    manualChunks: (id) => {
+                        // Firebase App Check (Split this out specifically!)
+                        if (id.includes('node_modules') && (id.includes('firebase/app-check') || id.includes('@firebase/app-check'))) {
+                            return 'firebase-appcheck-vendor';
+                        }
+                        // Main Firebase Vendor Chunk (Auth, Firestore, etc.)
+                        if (id.includes('node_modules') && id.includes('firebase')) {
+                            return 'firebase-vendor';
+                        }
+                        // Other Vendors (split if needed, keep general otherwise)
+                        // This helps parallelize downloading but keeps route chunks focused
+
+                        // Note: Vite splits routes automatically by entry point (input options).
+                        // Adding this manual chunk moves shared firebase code out of those entry chunks.
+                    }
+                },
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
                     login: path.resolve(__dirname, 'login.html'),
@@ -26,6 +62,8 @@ export default defineConfig(({ mode }) => {
                     cuenta_pagos: path.resolve(__dirname, 'cuenta-pagos.html'),
                     evento_detalle: path.resolve(__dirname, 'evento-detalle.html'),
                     eventos_vip: path.resolve(__dirname, 'eventos-vip.html'),
+                    favoritos: path.resolve(__dirname, 'favoritos.html'),
+                    ocultos: path.resolve(__dirname, 'ocultos.html'),
 
                     logros: path.resolve(__dirname, 'logros.html'),
                     membresia: path.resolve(__dirname, 'membresia.html'),

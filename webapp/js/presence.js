@@ -1,4 +1,4 @@
-import { db, auth } from './firebase-config-env.js';
+import { auth, getDb } from './firebase-config-env.js';
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -64,6 +64,7 @@ class PresenceService {
         if (!this.currentUser) return;
 
         try {
+            const db = await getDb();
             const userRef = doc(db, "users", this.currentUser.uid);
             await updateDoc(userRef, {
                 isOnline: status === 'online',

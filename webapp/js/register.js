@@ -2,7 +2,7 @@
 import './firebase-appcheck.js';
 import { verifyRecaptchaScore } from './recaptcha-enterprise.js';
 import { sanitizer } from './sanitizer.js';
-import { auth, db } from './firebase-config-env.js';
+import { auth } from './firebase-config-env.js';
 import { RateLimiters, showRateLimitError } from './rate-limiter.js';
 import { validators, sanitize } from './input-validator.js';
 import { SecurityLogger } from './security-logger.js';
@@ -268,6 +268,10 @@ if (registerForm) {
             await sendEmailVerification(user);
 
             // 3. Create Firestore user document with NEW SCHEMA
+            // Save user profile
+            const { getDb } = await import('./firebase-config-env.js');
+            const db = await getDb();
+
             await setDoc(doc(db, 'users', user.uid), {
                 uid: user.uid,
                 basicInfo: {

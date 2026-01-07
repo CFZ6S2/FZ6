@@ -1,4 +1,4 @@
-import { db, auth } from './firebase-config-env.js';
+import { auth, getDb } from './firebase-config-env.js';
 import { collection, query, where, onSnapshot, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { showToast } from './utils.js';
 
@@ -8,10 +8,13 @@ let unsubscribe = null;
 const notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSl+zPDTgjMGHm7A7+OZRQ0PUZD');
 notificationSound.volume = 0.4;
 
-export function initInAppNotifications(user) {
+export async function initInAppNotifications(user) {
     if (unsubscribe) unsubscribe();
 
     if (!user) return;
+
+    // Lazy load db
+    const db = await getDb();
 
     // Query unread notifications
     const q = query(
@@ -89,6 +92,7 @@ function showNotificationToast(docId, notif) {
 
 async function markAsRead(docId) {
     try {
+        const db = await getDb();
         await updateDoc(doc(db, 'notifications', docId), {
             read: true,
             readAt: new Date()

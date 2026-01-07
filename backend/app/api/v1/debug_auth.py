@@ -4,6 +4,7 @@ import httpx
 import os
 import logging
 from firebase_admin import auth as admin_auth
+from app.services.email.email_service import email_service
 
 # Create Router
 router = APIRouter()
@@ -139,4 +140,29 @@ async def debug_login(credentials: LoginRequest):
         "customToken": custom_token,  # Include for debugging
         "message": "Full authentication complete. Use idToken for API calls."
     }
+
+
+class VerificationEmailRequest(BaseModel):
+    email: str
+    displayName: str | None = None
+    redirect: str | None = None
+    dynamicLinkDomain: str | None = None
+
+@router.post("/send-verification-email", description="Send branded email verification with proper action link")
+async def send_verification_email(req: VerificationEmailRequest):
+    try:
+        base_continue = os.getenv("VERIFICATION_CONTINUE_URL", "https://tucitasegura-129cc.web.app/verify-email.html")
+        continue_url = req.redirect or base_continue
+        success = await email_service.send_email_verification(
+            user_email=req.email,
+            display_name=req.displayName,
+            continue_url=continue_url,
+            dynamic_link_domain=req.dynamicLinkDomain
+        )
+        if not success:
+            raise HTTPException(status_code=500, detail="No se pudo enviar el email de verificación")
+        return {"success": True, "message": "Email de verificación enviado"}
+    except Exception as e:
+        logger.error(f"Error sending verification email: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 

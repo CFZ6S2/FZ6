@@ -6,6 +6,8 @@
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
 const { createLogger } = require('./utils/structured-logger');
+const { sendEmail } = require('./utils/email');
+const { analyzeMessage, logSpamFlag, storeMessageHash } = require('./spam-detection');
 
 // Initialize logger
 const logger = createLogger('notifications');
@@ -173,6 +175,53 @@ exports.onMessageCreated = functions.firestore
       const message = snap.data();
       const { senderId, text, type } = message;
       const conversationId = context.params.conversationId;
+      const messageId = context.params.messageId;
+
+      // ============================================
+      // SPAM DETECTION - Check before processing
+      // ============================================
+      if (text && typeof text === 'string') {
+        // Get message count in this conversation for context
+        const messagesSnapshot = await admin.firestore()
+          .collection('conversations')
+          .doc(conversationId)
+          .collection('messages')
+          .where('senderId', '==', senderId)
+          .limit(10)
+          .get();
+
+        const messageCount = messagesSnapshot.size;
+
+        // Analyze for spam
+        const spamAnalysis = await analyzeMessage(text, senderId, conversationId, messageCount);
+
+        if (spamAnalysis.isSpam) {
+          // Log the spam flag
+          await logSpamFlag(senderId, conversationId, messageId, spamAnalysis);
+
+          // If action is 'block', mark message as hidden and stop processing
+          if (spamAnalysis.action === 'block') {
+            await snap.ref.update({
+              isHidden: true,
+              spamScore: spamAnalysis.score,
+              spamFlags: spamAnalysis.flags
+            });
+            logger.warn('Message blocked as spam', { senderId, conversationId, score: spamAnalysis.score });
+            return; // Don't send notifications for blocked messages
+          }
+
+          // For 'flag' action, continue but mark the message
+          await snap.ref.update({
+            isFlagged: true,
+            spamScore: spamAnalysis.score,
+            spamFlags: spamAnalysis.flags
+          });
+        }
+
+        // Store message hash for repetition detection
+        await storeMessageHash(senderId, conversationId, text);
+      }
+      // ============================================
 
       // Get conversation to find receiver
       const conversationDoc = await admin.firestore()
@@ -214,6 +263,61 @@ exports.onMessageCreated = functions.firestore
           senderName: senderName
         }
       );
+
+      // ✅ NEW: Create in-app notification
+      await admin.firestore().collection('notifications').add({
+        userId: receiverId,
+        type: 'message',
+        title: senderName,
+        message: notificationBody.substring(0, 100),
+        actionUrl: `/chat.html?conversationId=${conversationId}&userId=${senderId}`,
+        actionLabel: 'Ver Chat',
+        data: {
+          conversationId: conversationId,
+          senderId: senderId,
+          senderName: senderName
+        },
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      // ✅ NEW: Send email notification to female users
+      const receiverDoc = await admin.firestore().collection('users').doc(receiverId).get();
+      if (receiverDoc.exists) {
+        const receiverData = receiverDoc.data();
+        if (receiverData.gender === 'femenino' && receiverData.email) {
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #e91e63;">💬 Nuevo mensaje de ${senderName}</h2>
+              <p>Has recibido un nuevo mensaje:</p>
+              <blockquote style="background: #f5f5f5; padding: 15px; border-left: 4px solid #e91e63; margin: 20px 0;">
+                ${notificationBody.substring(0, 200)}
+              </blockquote>
+              <p>
+                <a href="https://tucitasegura.com/webapp/chat.html?conversationId=${conversationId}" 
+                   style="background: #e91e63; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                  Ver mensaje
+                </a>
+              </p>
+              <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                Si no quieres recibir estas notificaciones, puedes desactivarlas en tu perfil.
+              </p>
+            </div>
+          `;
+
+          try {
+            await sendEmail({
+              to: receiverData.email,
+              subject: `💬 Nuevo mensaje de ${senderName}`,
+              html: emailHtml,
+              text: `Nuevo mensaje de ${senderName}: ${notificationBody.substring(0, 200)}`
+            });
+            logger.info('Email notification sent to female user', { receiverId, email: receiverData.email });
+          } catch (emailError) {
+            logger.error('Failed to send email notification', { receiverId, error: emailError.message });
+          }
+        }
+      }
 
       logger.info('Message notification sent', { senderId, receiverId, conversationId });
     } catch (error) {
@@ -276,10 +380,18 @@ exports.sendAppointmentReminders = functions.pubsub
       const now = new Date();
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 
-      // Find appointments in the next hour
+      // Optimize: Filter by date to avoid full collection scan
+      // We verify 'today' and 'tomorrow' to handle timezone rollovers
+      const todayStr = now.toISOString().split('T')[0];
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      // Find appointments in the next hour (filtered by date)
       const appointmentsSnapshot = await admin.firestore()
         .collection('appointments')
         .where('status', '==', 'confirmed')
+        .where('date', 'in', [todayStr, tomorrowStr])
         .get();
 
       let remindersSent = 0;

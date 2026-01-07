@@ -5,7 +5,7 @@
 
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
-import { auth, db, app, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
+import { auth, app, VAPID_PUBLIC_KEY } from './firebase-config-env.js';
 import { showToast } from './utils.js';
 
 let messaging = null;
@@ -67,6 +67,11 @@ async function registerServiceWorker() {
  */
 export async function requestNotificationPermission() {
   try {
+    if (Notification.permission === 'granted') {
+      console.log('Notification permission already granted');
+      return true;
+    }
+
     const permission = await Notification.requestPermission();
 
     if (permission === 'granted') {
@@ -132,6 +137,8 @@ async function getAndSaveFCMToken() {
  */
 async function saveFCMTokenToFirestore(userId, token) {
   try {
+    const { getDb } = await import('./firebase-config-env.js');
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userRef);
 
@@ -358,6 +365,8 @@ export async function deleteFCMToken() {
     const user = auth.currentUser;
     if (!user || !currentToken) return;
 
+    const { getDb } = await import('./firebase-config-env.js');
+    const db = await getDb();
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
 

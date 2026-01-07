@@ -19,8 +19,13 @@ const auth = getAuth(app);
 
 // Initialize Firestore with default settings (no custom persistence)
 // This fixes the "Failed to obtain exclusive access" error that was blocking all reads
-const db = getFirestore(app);
-console.log("✅ Firestore initialized");
+// const db = getFirestore(app);
+// console.log("✅ Firestore initialized");
+
+export async function getDb() {
+    const { getFirestore } = await import('firebase/firestore');
+    return getFirestore(app);
+}
 
 const functions = getFunctions(app);
 const storage = getStorage(app);
@@ -32,9 +37,8 @@ if (typeof window !== 'undefined') {
         return { success: true, score: 1.0, action: 'shim_config' };
     };
     // Expose Firebase instances to window for global functions
-    // Expose Firebase instances to window for global functions
     window._firebaseAuth = auth;
-    window._firebaseDb = db;
+    // window._firebaseDb removed - use await getDb() instead
     window._firebaseStorage = storage;
 }
 
@@ -75,4 +79,4 @@ async function handleStorageBlocked() {
 
 export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
 export default firebaseConfig;
-export { app, auth, db, functions, storage };
+export { app, auth, functions, storage };

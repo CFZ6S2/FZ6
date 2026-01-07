@@ -35,10 +35,9 @@ service firebase.storage {
         isAdmin()
       );
 
-      // Escritura: solo el dueño, en su propia carpeta de su género
+      // Escritura: solo el dueño, en su propia carpeta (sin chequeo estricto de género para permitir onboarding)
       allow write: if isAuthed()
                    && request.auth.uid == userId
-                   && ownerGenderMatchesUploader()
                    && request.resource.size < 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*');
     }

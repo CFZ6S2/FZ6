@@ -1,7 +1,6 @@
 // functions/recaptcha-enterprise.js - Lazy init
 // Verificación de tokens de reCAPTCHA Enterprise
 
-const { RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise');
 const { createLogger, PerformanceTimer } = require('./utils/structured-logger');
 const functions = require('firebase-functions/v1');
 
@@ -10,17 +9,21 @@ const logger = createLogger('recaptcha-enterprise');
 
 // Cliente lazy-initialized
 let recaptchaClient = null;
+let RecaptchaEnterpriseServiceClient = null;
 
 function getRecaptchaClient() {
+  if (!RecaptchaEnterpriseServiceClient) {
+    ({ RecaptchaEnterpriseServiceClient } = require('@google-cloud/recaptcha-enterprise'));
+  }
   if (!recaptchaClient) {
     recaptchaClient = new RecaptchaEnterpriseServiceClient();
   }
   return recaptchaClient;
 }
 
-// Configuración del proyecto
-const PROJECT_ID = (functions.config()?.recaptcha?.project_id) || process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc';
-const SITE_KEY = (functions.config()?.recaptcha?.site_key) || process.env.RECAPTCHA_SITE_KEY || '6LeKWiAsAAAAABCe8YQzXmO_dvBwAhOS-cQh_hzT';
+// Configuración del proyecto solo desde env vars (no usar functions.config en deploy)
+const PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID || 'tucitasegura-129cc';
+const SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '';
 
 /**
  * Verificar token de reCAPTCHA Enterprise
@@ -218,6 +221,42 @@ exports.verifyRecaptcha = onRequest({
       reason: result.reason,
       message: `Verification failed: ${result.reason || 'Low score'}`
     });
+  }
+});
+
+/**
+ * Cloud Function HTTP v1 pública (fallback) para verificar reCAPTCHA
+ * Útil si la v2 requiere IAM explícito y devuelve 403
+ */
+exports.verifyRecaptchaV1 = functions.https.onRequest(async (req, res) => {
+  // CORS básico
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'method_not_allowed', message: 'Only POST requests are allowed' });
+  }
+  try {
+    const { token, action } = req.body || {};
+    if (!token) return res.status(400).json({ error: 'missing_token', message: 'reCAPTCHA token is required' });
+    if (!action) return res.status(400).json({ error: 'missing_action', message: 'Action is required' });
+    const result = await verifyRecaptchaToken(token, action);
+    const SCORE_THRESHOLD = 0.5;
+    if (result.success && result.score >= SCORE_THRESHOLD) {
+      return res.status(200).json({ success: true, score: result.score, action: result.action });
+    }
+    return res.status(400).json({
+      success: false,
+      score: result.score,
+      reason: result.reason,
+      message: `Verification failed: ${result.reason || 'Low score'}`
+    });
+  } catch (error) {
+    logger.error('verifyRecaptchaV1 error', { error: error.message });
+    return res.status(500).json({ error: 'internal_error' });
   }
 });
 

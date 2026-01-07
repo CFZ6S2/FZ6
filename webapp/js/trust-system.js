@@ -13,7 +13,7 @@
 import { TRUST_LEVELS, TRUST_LEVEL_CONFIG, TRUST_LEVEL_RULES } from './constants.js';
 import { GENDERS } from './constants.js';
 import { doc, updateDoc, getDoc, increment, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase-config-env.js';
+import { getDb } from './firebase-config-env.js';
 import { logger } from './logger.js';
 
 /**
@@ -23,14 +23,15 @@ import { logger } from './logger.js';
  */
 export async function getTrustLevel(userId) {
   try {
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       // Usuario nuevo: nivel inicial ORO
       return TRUST_LEVEL_RULES.INITIAL_LEVEL;
     }
-    
+
     const userData = userSnap.data();
     return userData.trustLevel || TRUST_LEVEL_RULES.INITIAL_LEVEL;
   } catch (error) {
@@ -46,9 +47,10 @@ export async function getTrustLevel(userId) {
  */
 export async function getAppointmentStats(userId) {
   try {
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       return {
         successful: 0,
@@ -57,7 +59,7 @@ export async function getAppointmentStats(userId) {
         totalAppointments: 0
       };
     }
-    
+
     const userData = userSnap.data();
     return {
       successful: userData.appointmentsSuccessful || 0,
@@ -84,31 +86,32 @@ export async function getAppointmentStats(userId) {
  */
 export async function handleFailedAppointment(userId, appointmentId) {
   try {
+    const db = await getDb();
     const currentLevel = await getTrustLevel(userId);
     const stats = await getAppointmentStats(userId);
-    
+
     logger.info(`📉 Procesando cita fallida para usuario ${userId}`, {
       currentLevel,
       failedCount: stats.failed + 1,
       appointmentId
     });
-    
+
     // Determinar nuevo nivel según las reglas
     let newLevel = currentLevel;
     const downgradeMap = TRUST_LEVEL_RULES.FAILED_APPOINTMENT_DOWNGRADES;
-    
+
     if (downgradeMap[currentLevel]) {
       newLevel = downgradeMap[currentLevel];
     }
-    
+
     // Si ya está en BRONCE y falla otra vez, ir a NEGRO
     if (currentLevel === 'BRONCE' && downgradeMap['BRONCE']) {
       newLevel = downgradeMap['BRONCE'];
     }
-    
+
     const wasBanned = newLevel === 'NEGRO';
     const previousLevel = currentLevel;
-    
+
     // Actualizar en Firestore
     const userRef = doc(db, 'users', userId);
     const updateData = {
@@ -118,22 +121,22 @@ export async function handleFailedAppointment(userId, appointmentId) {
       lastTrustLevelUpdate: serverTimestamp(),
       lastFailedAppointment: serverTimestamp()
     };
-    
+
     if (wasBanned) {
       updateData.banned = true;
       updateData.bannedAt = serverTimestamp();
       updateData.bannedReason = 'Múltiples citas fallidas';
       logger.warn(`🚫 Usuario ${userId} baneado por citas fallidas`);
     }
-    
+
     await updateDoc(userRef, updateData);
-    
+
     logger.info(`✅ Nivel de confianza actualizado: ${previousLevel} -> ${newLevel}`, {
       userId,
       wasBanned,
       appointmentId
     });
-    
+
     return {
       newLevel,
       previousLevel,
@@ -156,16 +159,16 @@ export async function handleSuccessfulAppointment(userId, appointmentId) {
   try {
     const currentLevel = await getTrustLevel(userId);
     const stats = await getAppointmentStats(userId);
-    
+
     logger.info(`📈 Procesando cita exitosa para usuario ${userId}`, {
       currentLevel,
       consecutiveBefore: stats.consecutiveSuccessful,
       appointmentId
     });
-    
+
     const newConsecutiveCount = (stats.consecutiveSuccessful || 0) + 1;
     const earnedLicense = newConsecutiveCount >= TRUST_LEVEL_RULES.SATISFACTORY_APPOINTMENTS_FOR_LICENSE;
-    
+
     // Actualizar en Firestore
     const userRef = doc(db, 'users', userId);
     const updateData = {
@@ -173,22 +176,22 @@ export async function handleSuccessfulAppointment(userId, appointmentId) {
       consecutiveSuccessfulAppointments: newConsecutiveCount,
       lastSuccessfulAppointment: serverTimestamp()
     };
-    
+
     if (earnedLicense) {
       updateData.drivingLicensePermission = true;
       updateData.drivingLicenseEarnedAt = serverTimestamp();
       logger.success(`🎉 Usuario ${userId} obtuvo permiso para carnet de conductor!`);
     }
-    
+
     await updateDoc(userRef, updateData);
-    
+
     logger.info(`✅ Cita exitosa procesada`, {
       userId,
       consecutiveCount: newConsecutiveCount,
       earnedLicense,
       appointmentId
     });
-    
+
     return {
       earnedLicense,
       consecutiveCount: newConsecutiveCount,
@@ -219,11 +222,11 @@ export async function hasDrivingLicensePermission(userId) {
   try {
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       return false;
     }
-    
+
     const userData = userSnap.data();
     return userData.drivingLicensePermission === true;
   } catch (error) {
@@ -243,16 +246,16 @@ export async function initializeTrustLevel(userId, gender) {
   if (gender !== GENDERS.MALE) {
     return;
   }
-  
+
   try {
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
-    
+
     // Si ya existe, no sobrescribir
     if (userSnap.exists() && userSnap.data().trustLevel) {
       return;
     }
-    
+
     // Inicializar con nivel ORO
     await updateDoc(userRef, {
       trustLevel: TRUST_LEVEL_RULES.INITIAL_LEVEL,
@@ -261,7 +264,7 @@ export async function initializeTrustLevel(userId, gender) {
       consecutiveSuccessfulAppointments: 0,
       trustLevelInitializedAt: serverTimestamp()
     });
-    
+
     logger.info(`✅ Nivel de confianza inicializado (ORO) para usuario ${userId}`);
   } catch (error) {
     logger.error('Error inicializando nivel de confianza:', error);

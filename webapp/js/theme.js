@@ -35,14 +35,14 @@ export const themes = {
   blue: {
     name: 'Azul Profundo',
     icon: '💙',
-    gradient: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)', // Dark Blue to Royal Blue
-    primary: '#2563eb',
-    secondary: '#1d4ed8',
-    accent: '#60a5fa',
+    gradient: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', // Slate 900 to Slate 800 (Matte Dark)
+    primary: '#3b82f6', // Keep primary buttons blue
+    secondary: '#0f172a',
+    accent: '#38bdf8',
     background: {
-      start: 'rgba(30, 58, 138, 0.4)',
-      middle: 'rgba(37, 99, 235, 0.3)',
-      end: 'rgba(59, 130, 246, 0.2)'
+      start: 'rgba(15, 23, 42, 0.4)',
+      middle: 'rgba(30, 41, 59, 0.3)',
+      end: 'rgba(15, 23, 42, 0.2)'
     }
   },
   green: {
@@ -357,16 +357,14 @@ export function applyTheme(themeName) {
  * @returns {string} Theme name
  */
 export function loadTheme(userData = null) {
-  // Priority: userData from Firestore > localStorage > default (blue)
+  // Priority: localStorage (immediate intent) > userData > default (blue)
   let themeName = 'blue';
 
-  if (userData && userData.theme) {
+  const localTheme = localStorage.getItem('userTheme');
+  if (localTheme && themes[localTheme]) {
+    themeName = localTheme;
+  } else if (userData && userData.theme) {
     themeName = userData.theme;
-  } else {
-    const localTheme = localStorage.getItem('userTheme');
-    if (localTheme && themes[localTheme]) {
-      themeName = localTheme;
-    }
   }
 
   applyTheme(themeName);

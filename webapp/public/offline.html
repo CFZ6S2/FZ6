@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <title>TuCitaSegura – Sin conexión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            color-scheme: dark light;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+            background: #050816;
+            color: #f9fafb;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .card {
+            max-width: 420px;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 1rem;
+            padding: 1.75rem 1.5rem;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0 0 0.75rem;
+        }
+
+        p {
+            margin: 0 0 1rem;
+            font-size: 0.95rem;
+            color: #cbd5f5;
+        }
+
+        button {
+            margin-top: 0.75rem;
+            padding: 0.6rem 1.4rem;
+            border-radius: 999px;
+            border: none;
+            background: #6366f1;
+            color: #f9fafb;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Estás sin conexión</h1>
+        <p>No hemos podido cargar TuCitaSegura porque no hay internet.</p>
+        <p>Cuando vuelvas a tener conexión, actualiza esta página.</p>
+        <button onclick="location.reload()">Reintentar</button>
+    </div>
+</body>
+
+</html>

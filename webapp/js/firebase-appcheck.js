@@ -272,12 +272,33 @@ async function initAppCheck() {
 }
 
 // Initialize App Check
+// Initialize App Check (Deferred)
 (async function bootstrap() {
-  try {
-    console.log('🛡️ Initializing App Check...');
-    await initAppCheck();
-  } catch (e) {
-    console.error('CRITICAL: App Check Init Failed', e);
+  const init = async () => {
+    try {
+      console.log('🛡️ Initializing App Check (Deferred)...');
+      await initAppCheck();
+    } catch (e) {
+      console.error('CRITICAL: App Check Init Failed', e);
+    }
+  };
+
+  if (document.readyState === 'complete') {
+    // If loaded, schedule for idle
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(init);
+    } else {
+      setTimeout(init, 2000);
+    }
+  } else {
+    // Wait for load, then schedule
+    window.addEventListener('load', () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(init);
+      } else {
+        setTimeout(init, 2000);
+      }
+    });
   }
 })();
 

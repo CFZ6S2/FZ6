@@ -8,6 +8,22 @@
   <meta name="description"
     content="La plataforma de citas más segura y exclusiva. Verificación de identidad obligatoria para garantizar conexiones 100% reales.">
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tucitasegura.com/">
+  <meta property="og:title" content="TuCitaSegura - Conexiones Reales, Sin Riesgos">
+  <meta property="og:description"
+    content="La plataforma de citas más segura y exclusiva. Verificación de identidad obligatoria.">
+  <meta property="og:image" content="https://tucitasegura.com/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://tucitasegura.com/">
+  <meta property="twitter:title" content="TuCitaSegura - Conexiones Reales, Sin Riesgos">
+  <meta property="twitter:description"
+    content="La plataforma de citas más segura y exclusiva. Verificación de identidad obligatoria.">
+  <meta property="twitter:image" content="https://tucitasegura.com/og-image.jpg">
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
@@ -20,94 +36,35 @@
   <meta name="theme-color" content="#1e3a8a">
 
   <!-- iOS PWA -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="apple-touch-startup-image" href="/icon-512.png">
+
+  <!-- Preload & Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Prefetch -->
+  <link rel="prefetch" href="/login.html">
+  <link rel="prefetch" href="/register.html">
 
   <!-- Tailwind CSS -->
   <link rel="stylesheet" href="./css/input.css">
   <link rel="stylesheet" href="./css/landing.css">
 
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Font Awesome (Async) -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0369a1 100%);
-      color: white;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
 
-    /* Animated Background */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background:
-        radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.08), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
-      z-index: -1;
-      pointer-events: none;
-      animation: pulseBg 10s infinite alternate;
-    }
-
-    @keyframes pulseBg {
-      0% {
-        transform: scale(1);
-        opacity: 0.5;
-      }
-
-      100% {
-        transform: scale(1.1);
-        opacity: 0.8;
-      }
-    }
-
-    .glass-nav {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .glass-card {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .glass-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      border-color: rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .text-gradient {
-      background: linear-gradient(to right, #60a5fa, #c084fc);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .btn-primary {
-      background: linear-gradient(to right, #3b82f6, #8b5cf6);
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-      background: linear-gradient(to right, #2563eb, #7c3aed);
-    }
-  </style>
 </head>
 
 <body class="font-sans antialiased">
@@ -141,15 +98,15 @@
   </nav>
 
   <!-- Hero Section -->
-  <section class="pt-24 pb-20 md:pt-48 md:pb-32 px-6 relative overflow-hidden">
+  <section class="pt-20 pb-12 md:pt-48 md:pb-32 px-6 relative overflow-hidden">
     <canvas id="particle-canvas"></canvas>
     <div class="container mx-auto text-center max-w-4xl relative z-10">
       <div
-        class="inline-block mb-6 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-sm font-semibold animate-[fadeIn_1s_ease-out]">
+        class="inline-block mb-4 md:mb-6 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs md:text-sm font-semibold animate-[fadeIn_1s_ease-out]">
         <i class="fas fa-check-circle mr-2"></i> <span data-i18n="landing.hero.verified">100% Usuarios
           Verificados</span>
       </div>
-      <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
+      <h1 class="text-3xl sm:text-5xl md:text-7xl font-extrabold mb-4 md:mb-6 leading-tight tracking-tight">
         <span data-i18n="landing.hero.title_start">Conexiones Reales,</span> <br><span class="text-gradient"
           data-i18n="landing.hero.title_end">Sin Riesgos</span>
       </h1>
@@ -184,15 +141,7 @@
     </div>
   </section>
 
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-8" data-i18n="landing.testimonials.title">Testimonios</h2>
-    <div class="testimonials">
-      <div class="testimonial-card" data-i18n="landing.testimonials.1">“¡Una experiencia increíble!” – Ana</div>
-      <div class="testimonial-card" data-i18n="landing.testimonials.2">“Me sentí seguro y respetado.” – Luis</div>
-      <div class="testimonial-card" data-i18n="landing.testimonials.3">“¡Encontré a mi pareja ideal!” – Carla</div>
-    </div>
-  </section>
+
 
   <!-- Comparison Section -->
   <section class="comparison">
@@ -272,6 +221,32 @@
           </p>
         </article>
       </div>
+    </div>
+  </section>
+
+  <!-- Features Section End -->
+
+
+
+  <!-- Features Section End -->
+
+  <!-- Girls Landing Banner -->
+  <!-- Girls Landing Banner -->
+  <section class="py-16 px-6 container mx-auto">
+    <div
+      class="relative group rounded-3xl overflow-hidden shadow-2xl border border-white/10 container mx-auto transform hover:scale-[1.01] transition-transform duration-300">
+      <a href="register.html" class="block relative">
+        <img src="/landing-chicas.png" alt="Consigue más citas fiables. Recibe solicitudes solo por email."
+          class="w-full h-auto object-cover">
+
+        <!-- Visual Button Overlay -->
+        <div class="absolute bottom-6 left-6 md:bottom-12 md:left-12">
+          <span
+            class="btn-primary bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 px-8 py-3 md:px-10 md:py-4 rounded-full text-white font-bold text-sm md:text-lg shadow-xl shadow-pink-500/20 inline-flex items-center gap-3">
+            <i class="fas fa-user-plus"></i> Registrarse
+          </span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -404,8 +379,10 @@
     // UUID: 91523BD2-1AA8-4EAF-A9DC-BC7D269C6448
     self.FIREBASE_APPCHECK_DEBUG_TOKEN = "91523BD2-1AA8-4EAF-A9DC-BC7D269C6448";
   </script>
-  <script type="module" src="./js/i18n.js"></script>
-  <script type="module" src="./js/language-selector.js"></script>
+  <script type="module" src="./js/i18n.js" defer></script>
+  <script type="module" src="./js/theme.js" defer></script>
+  <script type="module" src="./js/language-selector.js" defer></script>
+  <script type="module" src="./js/web-vitals.js" defer></script>
 </body>
 
 </html>

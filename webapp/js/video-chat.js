@@ -13,7 +13,7 @@
 // - Reconexión automática
 // ============================================================================
 
-import { db } from './firebase-config-env.js';
+import { getDb } from './firebase-config-env.js';
 import {
   collection,
   doc,
@@ -177,8 +177,11 @@ export class VideoChat {
         createdAt: serverTimestamp()
       };
 
+      const db = await getDb();
+      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
+
       await setDoc(
-        doc(db, 'conversations', this.conversationId, 'calls', 'current'),
+        callRef,
         callDoc
       );
 
@@ -275,9 +278,12 @@ export class VideoChat {
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(answer);
 
+      const db = await getDb();
+      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
+
       // 11. Guardar answer en Firestore
       await updateDoc(
-        doc(db, 'conversations', this.conversationId, 'calls', 'current'),
+        callRef,
         {
           answer: {
             type: answer.type,
@@ -305,7 +311,8 @@ export class VideoChat {
   // SEÑALIZACIÓN VIA FIRESTORE
   // ==========================================================================
 
-  listenForAnswer() {
+  async listenForAnswer() {
+    const db = await getDb();
     const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
 
     this.unsubscribeAnswer = onSnapshot(callRef, async snapshot => {
@@ -454,8 +461,11 @@ export class VideoChat {
 
     // Eliminar documento de llamada
     try {
+      const db = await getDb();
+      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
+
       await deleteDoc(
-        doc(db, 'conversations', this.conversationId, 'calls', 'current')
+        callRef
       );
     } catch (error) {
       console.error('Error eliminando llamada:', error);
@@ -477,6 +487,7 @@ export class VideoChat {
 
   async saveToHistory() {
     try {
+      const db = await getDb();
       await addDoc(collection(db, 'conversations', this.conversationId, 'callHistory'), {
         participants: [this.currentUserId, this.remoteUserId],
         caller: this.currentUserId,
@@ -532,7 +543,8 @@ export class VideoChat {
 // HELPER PARA DETECTAR LLAMADA ENTRANTE
 // ============================================================================
 
-export function listenForIncomingCall(conversationId, currentUserId, onIncomingCall) {
+export async function listenForIncomingCall(conversationId, currentUserId, onIncomingCall) {
+  const db = await getDb();
   const callRef = doc(db, 'conversations', conversationId, 'calls', 'current');
 
   return onSnapshot(callRef, snapshot => {
