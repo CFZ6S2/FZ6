@@ -26,7 +26,7 @@ import {
   query,
   orderBy,
   serverTimestamp
-} from 'firebase/firestore';
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ============================================================================
 // CONFIGURACIÓN WEBRTC
@@ -67,6 +67,7 @@ export class VideoChat {
     this.conversationId = conversationId;
     this.currentUserId = currentUserId;
     this.remoteUserId = remoteUserId;
+    this.db = null; // Firestore instance
 
     // WebRTC
     this.peerConnection = null;
@@ -91,6 +92,14 @@ export class VideoChat {
     this.onStatusChange = null;
   }
 
+  // Helper to ensure DB is initialized
+  async _ensureDb() {
+    if (!this.db) {
+      this.db = await getDb();
+    }
+    return this.db;
+  }
+
   // ==========================================================================
   // INICIAR LLAMADA (CALLER)
   // ==========================================================================
@@ -98,6 +107,7 @@ export class VideoChat {
   async startCall(localVideoElement, remoteVideoElement) {
     try {
       this.updateStatus('Iniciando llamada...');
+      await this._ensureDb();
 
       // 1. Obtener stream local (cámara + micrófono)
       this.localStream = await navigator.mediaDevices.getUserMedia({
@@ -177,11 +187,8 @@ export class VideoChat {
         createdAt: serverTimestamp()
       };
 
-      const db = await getDb();
-      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
-
       await setDoc(
-        callRef,
+        doc(this.db, 'conversations', this.conversationId, 'calls', 'current'),
         callDoc
       );
 
@@ -207,6 +214,7 @@ export class VideoChat {
   async answerCall(localVideoElement, remoteVideoElement, offerData) {
     try {
       this.updateStatus('Respondiendo llamada...');
+      await this._ensureDb();
 
       // 1. Obtener stream local
       this.localStream = await navigator.mediaDevices.getUserMedia({
@@ -278,12 +286,9 @@ export class VideoChat {
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(answer);
 
-      const db = await getDb();
-      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
-
       // 11. Guardar answer en Firestore
       await updateDoc(
-        callRef,
+        doc(this.db, 'conversations', this.conversationId, 'calls', 'current'),
         {
           answer: {
             type: answer.type,
@@ -311,9 +316,12 @@ export class VideoChat {
   // SEÑALIZACIÓN VIA FIRESTORE
   // ==========================================================================
 
-  async listenForAnswer() {
-    const db = await getDb();
-    const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
+  listenForAnswer() {
+    if (!this.db) {
+      console.error("DB not initialized before listenForAnswer");
+      return;
+    }
+    const callRef = doc(this.db, 'conversations', this.conversationId, 'calls', 'current');
 
     this.unsubscribeAnswer = onSnapshot(callRef, async snapshot => {
       const data = snapshot.data();
@@ -330,8 +338,10 @@ export class VideoChat {
   }
 
   async addIceCandidate(type, candidate) {
+    if (!this.db) await this._ensureDb();
+
     const candidatesCollection = collection(
-      db,
+      this.db,
       'conversations',
       this.conversationId,
       'calls',
@@ -343,8 +353,12 @@ export class VideoChat {
   }
 
   listenForRemoteIceCandidates(type) {
+    if (!this.db) {
+      console.error("DB not initialized before listenForRemoteIceCandidates");
+      return;
+    }
     const candidatesCollection = collection(
-      db,
+      this.db,
       'conversations',
       this.conversationId,
       'calls',
@@ -443,6 +457,7 @@ export class VideoChat {
 
   async endCall() {
     this.updateStatus('Finalizando llamada...');
+    await this._ensureDb();
 
     // Detener tracks locales
     if (this.localStream) {
@@ -461,11 +476,8 @@ export class VideoChat {
 
     // Eliminar documento de llamada
     try {
-      const db = await getDb();
-      const callRef = doc(db, 'conversations', this.conversationId, 'calls', 'current');
-
       await deleteDoc(
-        callRef
+        doc(this.db, 'conversations', this.conversationId, 'calls', 'current')
       );
     } catch (error) {
       console.error('Error eliminando llamada:', error);
@@ -487,8 +499,8 @@ export class VideoChat {
 
   async saveToHistory() {
     try {
-      const db = await getDb();
-      await addDoc(collection(db, 'conversations', this.conversationId, 'callHistory'), {
+      await this._ensureDb();
+      await addDoc(collection(this.db, 'conversations', this.conversationId, 'callHistory'), {
         participants: [this.currentUserId, this.remoteUserId],
         caller: this.currentUserId,
         startedAt: serverTimestamp(),
