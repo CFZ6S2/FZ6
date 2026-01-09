@@ -140,29 +140,7 @@ function toRad(degrees) {
  * @param {string} reputation - Reputation level: 'BRONCE', 'PLATA', 'ORO', 'PLATINO'
  * @returns {object} Badge information with color, icon, and label
  */
-/**
- * Get reputation badge information
- * @param {string} reputation - Reputation level: 'BRONCE', 'PLATA', 'ORO', 'PLATINO'
- * @param {number} completedDates - Number of completed dates (optional)
- * @returns {object} Badge information with color, icon, and label
- */
-export function getReputationBadge(reputation, completedDates = 0) {
-  // Logic: Default is ORO. If dates >= 5, upgrade to PLATINO.
-  // We keep 'BRONCE' and 'PLATA' just in case they are explicitly set in DB for some reason (e.g. penalty)
-  // But generally, all men start at ORO.
-
-  let effectiveReputation = reputation || 'ORO';
-
-  // Upgrade to Platinum if criteria met
-  if (completedDates >= 5) {
-    effectiveReputation = 'PLATINO';
-  }
-
-  // Ensure default is ORO if weird value comes in, unless it's a known lower tier
-  if (!['BRONCE', 'PLATA', 'ORO', 'PLATINO'].includes(effectiveReputation)) {
-    effectiveReputation = 'ORO';
-  }
-
+export function getReputationBadge(reputation) {
   const badges = {
     'BRONCE': {
       color: 'text-amber-700 bg-amber-900/30 border border-amber-700/50',
@@ -186,37 +164,7 @@ export function getReputationBadge(reputation, completedDates = 0) {
     }
   };
 
-  return badges[effectiveReputation] || badges['ORO'];
-}
-
-/**
- * Get availability status info for women
- * @param {string} status - Status code: 'available', 'planned', 'unavailable'
- * @returns {object} Status info with color, icon, label
- */
-export function getAvailabilityStatus(status) {
-  const statuses = {
-    'available': { // VERDE
-      color: 'text-green-400 bg-green-900/30 border border-green-500/50',
-      dotColor: 'bg-green-500',
-      icon: 'fa-check-circle',
-      label: 'Disponible (Inmediata)'
-    },
-    'planned': { // AMARILLO
-      color: 'text-yellow-400 bg-yellow-900/30 border border-yellow-500/50',
-      dotColor: 'bg-yellow-500',
-      icon: 'fa-calendar-check',
-      label: 'Cita Planeada'
-    },
-    'unavailable': { // ROJO
-      color: 'text-red-400 bg-red-900/30 border border-red-500/50',
-      dotColor: 'bg-red-500',
-      icon: 'fa-ban',
-      label: 'No Acepta Citas'
-    }
-  };
-
-  return statuses[status] || statuses['available']; // Default to available
+  return badges[reputation] || badges['BRONCE'];
 }
 
 /**
@@ -435,7 +383,31 @@ export function getGenderIcon(gender) {
  * @param {object} user2 - Second user data
  * @returns {number} Compatibility percentage
  */
+export function calculateCompatibility(user1, user2) {
+  // This is a mock implementation
+  // In a real app, you would compare interests, location, age preferences, etc.
+  let compatibility = 50; // Base compatibility
 
+  // Age difference factor
+  if (user1.age && user2.age) {
+    const ageDiff = Math.abs(user1.age - user2.age);
+    if (ageDiff <= 5) compatibility += 20;
+    else if (ageDiff <= 10) compatibility += 10;
+  }
+
+  // Same city bonus
+  if (user1.city && user2.city && user1.city.toLowerCase() === user2.city.toLowerCase()) {
+    compatibility += 15;
+  }
+
+  // Reputation similarity
+  const repLevels = { 'BRONCE': 1, 'PLATA': 2, 'ORO': 3, 'PLATINO': 4 };
+  const rep1 = repLevels[user1.reputation || 'BRONCE'];
+  const rep2 = repLevels[user2.reputation || 'BRONCE'];
+  if (Math.abs(rep1 - rep2) <= 1) compatibility += 15;
+
+  return Math.min(100, compatibility);
+}
 
 /**
  * Sanitize HTML to prevent XSS attacks
@@ -587,12 +559,6 @@ export function validateProfileComplete(userData) {
     return { isComplete: false, missingFields: ['No user data'] };
   }
 
-  // ✅ ADMINS BYPASS PROFILE VALIDATION
-  const SUPER_USERS = ['cesar@tucitasegura.com', 'admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com'];
-  if (userData.email && SUPER_USERS.includes(userData.email)) {
-    return { isComplete: true, missingFields: [] };
-  }
-
   const requiredFields = {
     alias: 'Nombre de usuario',
     gender: 'Género',
@@ -610,27 +576,18 @@ export function validateProfileComplete(userData) {
   // Check each required field
   for (const [field, label] of Object.entries(requiredFields)) {
     if (field === 'galleryPhotos') {
-      // Gallery photos: Mínimum 1 is enough for functional profile? 
-      // User request implied they "completed" everything. Let's relax to 1 or even 0 if they have a main photoURL.
-      // But standard is usually 1.
-      if (!userData[field] || !Array.isArray(userData[field]) || userData[field].length < 1) {
-        // Relaxed from 2 to 1
+      // Gallery photos must have at least 2 photos
+      if (!userData[field] || !Array.isArray(userData[field]) || userData[field].length < 2) {
         missingFields.push(label);
       }
     } else if (field === 'bio') {
-      // Bio: Relaxed from 120 to 10
-      if (!userData[field] || userData[field].trim().length < 10) {
-        missingFields.push(label + ' (mínimo 10 caracteres)');
-      }
-    } else if (field === 'city') {
-      // City is derived from location. If they have location, maybe city is missing string?
-      // Check if location exists instead?
-      if ((!userData.city || userData.city.trim() === '') && (!userData.location || !userData.location.lat)) {
-        missingFields.push(label);
+      // Bio must have at least 120 words
+      if (!userData[field] || userData[field].trim().length < 120) {
+        missingFields.push(label + ' (mínimo 120 caracteres)');
       }
     } else {
       // Other fields must be non-empty strings
-      if (userData[field] === undefined || userData[field] === null || userData[field].toString().trim() === '') {
+      if (!userData[field] || userData[field].toString().trim() === '') {
         missingFields.push(label);
       }
     }
@@ -691,7 +648,6 @@ export function canAccessChat(userData) {
     };
   }
 
-  /* TEMPORARILY DISABLED: PAYMENTS SUSPENDED
   // For men, also check membership
   if (userData.gender === 'masculino') {
     if (!userData.hasActiveSubscription) {
@@ -702,7 +658,6 @@ export function canAccessChat(userData) {
       };
     }
   }
-  */
 
   // All validations passed
   return {
@@ -768,7 +723,7 @@ export default {
   generateId,
   isUserOnline,
   getGenderIcon,
-
+  calculateCompatibility,
   sanitizeHTML,
   sanitizeHTMLAllowTags,
   copyToClipboard,
