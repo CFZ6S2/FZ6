@@ -322,7 +322,7 @@ class SecurityEventLogger {
     // Check for rapid failed logins (brute force)
     const recentFailedLogins = recentEvents.filter(
       e => e.type === 'FAILED_LOGIN' &&
-      new Date(e.timestamp) > new Date(Date.now() - 300000) // Last 5 min
+        new Date(e.timestamp) > new Date(Date.now() - 300000) // Last 5 min
     );
 
     if (recentFailedLogins.length >= 5) {
@@ -406,15 +406,15 @@ export function detectMaliciousInput(input) {
 export function monitorInputSecurity(inputElement, fieldName) {
   if (!inputElement) return;
 
-  inputElement.addEventListener('blur', function() {
+  inputElement.addEventListener('blur', function () {
     const value = this.value;
     const threat = detectMaliciousInput(value);
 
     if (threat) {
       SecurityLogger._logEvent(
         threat === 'xss' ? 'XSS_ATTEMPT' :
-        threat === 'sql' ? 'SQL_INJECTION_ATTEMPT' :
-        'SUSPICIOUS_ACTIVITY',
+          threat === 'sql' ? 'SQL_INJECTION_ATTEMPT' :
+            'SUSPICIOUS_ACTIVITY',
         'critical',
         `Malicious ${threat} pattern detected in ${fieldName}`,
         { field: fieldName, pattern: threat, value: value.substring(0, 100) }

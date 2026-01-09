@@ -9,14 +9,13 @@
  */
 
 import { logger } from './logger.js';
-import DOMPurify from 'dompurify';
 
 /**
  * Check if DOMPurify is loaded
  * @returns {boolean}
  */
 function isDOMPurifyLoaded() {
-  return !!DOMPurify; // Module import is synchronous
+  return typeof window.DOMPurify !== 'undefined';
 }
 
 /**
@@ -43,7 +42,7 @@ export const sanitizer = {
           ...config
         };
 
-        const clean = DOMPurify.sanitize(dirty, defaultConfig);
+        const clean = window.DOMPurify.sanitize(dirty, defaultConfig);
         logger.debug('[Sanitizer] HTML sanitizado:', dirty.length, 'chars');
         return clean;
       } catch (error) {
@@ -207,8 +206,22 @@ export const sanitizer = {
  * Checks if DOMPurify is loaded and warns if not
  */
 export function initSanitizer() {
-  logger.success('✅ Sanitizador inicializado con DOMPurify (NPM Package)');
-  logger.info(`📦 DOMPurify version: ${DOMPurify.version || 'unknown'}`);
+  if (!isDOMPurifyLoaded()) {
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('⚠️  DOMPurify no está cargado');
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    logger.warn('');
+    logger.warn('El sanitizador usará textContent como fallback.');
+    logger.warn('Para máxima protección, carga DOMPurify:');
+    logger.warn('');
+    logger.warn('<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>');
+    logger.warn('');
+    logger.warn('Agrega esto antes de tus scripts en el HTML.');
+    logger.warn('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  } else {
+    logger.success('✅ Sanitizador inicializado con DOMPurify');
+    logger.info(`📦 DOMPurify version: ${window.DOMPurify.version || 'unknown'}`);
+  }
 }
 
 // Auto-initialize on load
