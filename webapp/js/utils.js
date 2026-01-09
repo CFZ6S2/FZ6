@@ -705,6 +705,18 @@ export function requireChatAccess(userData, returnUrl = null) {
   return true;
 }
 
+/**
+ * Get availability status text
+ * @param {Date|Timestamp} lastActivity - Last activity timestamp
+ * @returns {string} Status text ('Online', 'Ausente', 'Desconectado')
+ */
+export function getAvailabilityStatus(lastActivity) {
+  if (!lastActivity) return 'Desconectado';
+  if (isUserOnline(lastActivity, 5)) return 'Online';
+  if (isUserOnline(lastActivity, 30)) return 'Ausente';
+  return 'Desconectado';
+}
+
 // Export all functions as default object
 export default {
   showToast,
@@ -731,5 +743,6 @@ export default {
   validateProfileComplete,
   requireCompleteProfile,
   canAccessChat,
-  requireChatAccess
+  requireChatAccess,
+  getAvailabilityStatus
 };

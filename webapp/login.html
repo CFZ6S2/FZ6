@@ -206,7 +206,7 @@
       return { success: true, score: 1.0, action: 'login' };
     };
 
-    import { auth, db } from './js/firebase-config-env.js';
+    import { auth, getDb } from './js/firebase-config-env.js';
     import { sanitizer } from './js/sanitizer.js';
     import { RateLimiters, showRateLimitError } from './js/rate-limiter.js';
     import { validators } from './js/input-validator.js';
@@ -222,6 +222,16 @@
       browserLocalPersistence
     } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
     import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // Initialize DB
+    let db;
+    (async () => {
+      try {
+        db = await getDb();
+      } catch (e) {
+        console.error("Failed to initialize DB in login.html", e);
+      }
+    })();
 
     // Check if already logged in
     auth.onAuthStateChanged((user) => {
@@ -429,6 +439,7 @@
           }
 
           // Check if user profile exists (only for regular users)
+          if (!db) db = await getDb(); // Ensure db is initialized
           const userDoc = await getDoc(doc(db, 'users', user.uid));
 
           if (!userDoc.exists()) {
