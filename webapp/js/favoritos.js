@@ -17,7 +17,7 @@ import {
     updateDoc,
     arrayUnion
 } from "firebase/firestore";
-import { showToast, calculateAge, getReputationBadge, getAvailabilityStatus, calculateDistance, canAccessChat, calculateCompatibility } from './utils.js';
+import { showToast, calculateAge, getReputationBadge, getAvailabilityStatus, calculateDistance, canAccessChat } from './utils.js';
 import { loadTheme } from './theme.js';
 import { getDownloadURL, ref } from "firebase/storage";
 import { apiService } from './api-service.js';
@@ -1326,7 +1326,7 @@ import { sanitizer } from './sanitizer.js';
         // 4. STATS (Deterministic)
         const userIdHash = user.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         document.getElementById('modalCitasCompletadas').textContent = (userIdHash % 20) + 5;
-        document.getElementById('modalCompatibilidad').textContent = `${calculateCompatibility(currentUserData, user)}%`;
+        // document.getElementById('modalCompatibilidad').textContent = `${calculateCompatibility(currentUserData, user)}%`;
         document.getElementById('modalRespuesta').textContent = `${((userIdHash * 13) % 30) + 65}%`;
 
 

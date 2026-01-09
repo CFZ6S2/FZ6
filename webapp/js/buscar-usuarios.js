@@ -3,7 +3,7 @@ import { auth, storage, app, getDb } from './firebase-config-env.js';
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
     getFirestore, collection, query, where, getDocs, getDoc, addDoc, updateDoc, arrayUnion, deleteDoc,
-    doc, orderBy, limit, serverTimestamp, startAfter
+    doc, orderBy, limit, serverTimestamp, startAfter, getCountFromServer
 } from "firebase/firestore";
 import { showToast, calculateAge, getReputationBadge, getAvailabilityStatus, calculateDistance, canAccessChat } from './utils.js';
 import { loadTheme } from './theme.js';
@@ -109,13 +109,96 @@ import { sanitizer } from './sanitizer.js';
     let filteredUsers = [];
     let displayedUsers = [];
     let userMatches = [];
-    let currentPage = 0;
+    let currentPage = 1; // Start at page 1
     let map = null;
     let markers = [];
     let userLocation = null;
     let autocomplete = null;
     let currentView = 'list';
     const USERS_PER_PAGE = 36;
+
+    // Pagination Elements
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const pageIndicator = document.getElementById('pageIndicator');
+    const paginationContainer = document.getElementById('paginationContainer');
+
+    async function fetchGlobalStats() {
+        try {
+            const usersRef = collection(db, 'users');
+
+            // Count Men
+            const qMen = query(usersRef, where('gender', '==', 'masculino'));
+            const snapMen = await getCountFromServer(qMen);
+            const countMen = snapMen.data().count;
+
+            // Count Women
+            const qWomen = query(usersRef, where('gender', '==', 'femenino'));
+            const snapWomen = await getCountFromServer(qWomen);
+            const countWomen = snapWomen.data().count;
+
+            // Update UI
+            const elMen = document.getElementById('globalStatsMen');
+            const elWomen = document.getElementById('globalStatsWomen');
+
+            if (elMen) elMen.textContent = `${countMen} Hombres`;
+            if (elWomen) elWomen.textContent = `${countWomen} Mujeres`;
+
+        } catch (error) {
+            console.error('Error fetching global stats:', error);
+        }
+    }
+
+    function initPagination() {
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayUsers();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        }
+
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayUsers();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        }
+    }
+
+    function updatePaginationControls() {
+        const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE) || 1;
+
+        if (pageIndicator) pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+
+        if (prevPageBtn) {
+            prevPageBtn.disabled = currentPage === 1;
+            prevPageBtn.classList.toggle('opacity-50', currentPage === 1);
+        }
+
+        if (nextPageBtn) {
+            nextPageBtn.disabled = currentPage >= totalPages;
+            nextPageBtn.classList.toggle('opacity-50', currentPage >= totalPages);
+        }
+
+        if (paginationContainer) {
+            // Only show pagination if we have results
+            if (filteredUsers.length > USERS_PER_PAGE) {
+                paginationContainer.classList.remove('hidden');
+            } else {
+                paginationContainer.classList.add('hidden');
+            }
+        }
+
+        // Ensure loadMore is hidden
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+    }
 
     // Initialize Google Maps
     function initMap() {
@@ -161,28 +244,49 @@ import { sanitizer } from './sanitizer.js';
 
         map = new google.maps.Map(mapElement, mapOptions);
 
-        // Initialize autocomplete
+        // Initialize autocomplete (New PlaceAutocompleteElement)
         const locationInput = document.getElementById('locationSearch');
         if (locationInput) {
-            autocomplete = new google.maps.places.Autocomplete(locationInput, {
-                types: ['(cities)'],
-                componentRestrictions: { country: 'es' }
-            });
+            // Import libraries if needed (PlaceAutocompleteElement requires 'places')
+            if (google.maps.importLibrary) {
+                google.maps.importLibrary("places").then(() => {
+                    // Create the new element
+                    const autocompleteElement = new google.maps.places.PlaceAutocompleteElement({
+                        componentRestrictions: { country: ['es'] },
+                        locationBias: { radius: 100000, center: { lat: 40.4168, lng: -3.7038 } } // Bias to Madrid initially
+                    });
 
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (place.geometry) {
-                    userLocation = {
-                        lat: place.geometry.location.lat(),
-                        lng: place.geometry.location.lng()
-                    };
-                    if (map) {
-                        map.setCenter(userLocation);
-                        map.setZoom(12);
-                    }
-                    applyFiltersAndSort();
-                }
-            });
+                    // Style integration: Replace the input or append?
+                    // The new element is a full web component. Replacing the input might break styling if container is small.
+                    // Strategy: Hide original input, append new element to parent.
+                    // Actually, simpler: Use the new element as the input replacement.
+
+                    // We need to match styling. The new element is encapsulated.
+                    // Let's replace the *input* node with the new element.
+                    locationInput.parentNode.replaceChild(autocompleteElement, locationInput);
+
+                    // Add ID for potential CSS referencing, though styles are internal
+                    autocompleteElement.id = 'locationSearchElement';
+                    autocompleteElement.classList.add('w-full', 'glass', 'text-black'); // Try to apply some classes
+
+                    autocompleteElement.addEventListener('gmp-placeselect', async ({ place }) => {
+                        await place.fetchFields({ fields: ['geometry', 'location'] });
+                        if (place.geometry && place.geometry.location) {
+                            userLocation = {
+                                lat: place.geometry.location.lat(),
+                                lng: place.geometry.location.lng()
+                            };
+                            if (map) {
+                                map.setCenter(userLocation);
+                                map.setZoom(12);
+                            }
+                            applyFiltersAndSort();
+                        }
+                    });
+                }).catch(e => console.error("Failed to load places library for Autocomplete", e));
+            } else {
+                console.warn("Google Maps importLibrary not supported? Fallback or update SDK.");
+            }
         }
     }
 
@@ -280,6 +384,35 @@ import { sanitizer } from './sanitizer.js';
             if (e.key === 'Enter') {
                 applyFiltersAndSort();
             }
+        });
+    }
+
+
+    // View Toggles
+    if (viewList && viewMap) {
+        viewList.addEventListener('click', () => {
+            viewList.classList.add('active');
+            viewMap.classList.remove('active');
+            document.getElementById('gridContainer').classList.remove('hidden');
+            document.getElementById('mapContainer').classList.add('hidden');
+        });
+
+        viewMap.addEventListener('click', () => {
+            viewMap.classList.add('active');
+            viewList.classList.remove('active');
+            document.getElementById('gridContainer').classList.add('hidden');
+            document.getElementById('mapContainer').classList.remove('hidden');
+
+            // Ensure map is handled correctly
+            if (!map) {
+                initMap();
+            } else {
+                // Trigger resize event to fix gray map issue
+                google.maps.event.trigger(map, "resize");
+            }
+
+            // Add markers for filtered users
+            addMarkersToMap(filteredUsers);
         });
     }
 
@@ -391,10 +524,12 @@ import { sanitizer } from './sanitizer.js';
         // Load everything else
         await Promise.all([
             loadUserMatches(),
-            loadUsers() // Now includes fetching scores
+            loadUsers(), // Now includes fetching scores
+            fetchGlobalStats()
         ]);
 
         initMap();
+        initPagination();
         loadSavedFilters();
     });
 
@@ -864,7 +999,7 @@ import { sanitizer } from './sanitizer.js';
             });
         }
 
-        currentPage = 0;
+        currentPage = 1;
         displayedUsers = [];
 
         updateFilterChips(filters);
@@ -872,7 +1007,7 @@ import { sanitizer } from './sanitizer.js';
         if (currentView === 'map') {
             addMarkersToMap(filteredUsers);
         } else {
-            displayUsers();
+            displayUsers(); // Will update controls inside
         }
 
         updateUserCount();
@@ -923,18 +1058,17 @@ import { sanitizer } from './sanitizer.js';
     }
 
     function displayUsers() {
-        const startIdx = currentPage * USERS_PER_PAGE;
+        const startIdx = (currentPage - 1) * USERS_PER_PAGE;
         const endIdx = startIdx + USERS_PER_PAGE;
         const usersToDisplay = filteredUsers.slice(startIdx, endIdx);
 
-        if (currentPage === 0) {
-            userGrid.innerHTML = '';
-            displayedUsers = [];
-        }
+        // Always clear container for pagination
+        userGrid.innerHTML = '';
+        displayedUsers = [];
 
-        if (usersToDisplay.length === 0 && currentPage === 0) {
+        if (usersToDisplay.length === 0) {
             noResults.classList.remove('hidden');
-            loadMoreContainer.classList.add('hidden');
+            updatePaginationControls();
             return;
         }
 
@@ -942,18 +1076,14 @@ import { sanitizer } from './sanitizer.js';
 
         usersToDisplay.forEach((user, index) => {
             displayedUsers.push(user);
-            // First 6 images eager (above fold), rest lazy
-            const isEager = currentPage === 0 && index < 6;
+            // First 12 images eager
+            const isEager = index < 12;
             const card = createUserCard(user, isEager);
             userGrid.insertAdjacentHTML('beforeend', card);
         });
 
-        if (endIdx < filteredUsers.length) {
-            loadMoreContainer.classList.remove('hidden');
-        } else {
-            loadMoreContainer.classList.add('hidden');
-        }
-
+        // Update pagination buttons
+        updatePaginationControls();
         attachCardListeners();
     }
 
@@ -1307,7 +1437,6 @@ import { sanitizer } from './sanitizer.js';
         const respRate = stats.responseRate !== undefined ? stats.responseRate : 100;
 
         document.getElementById('modalCitasCompletadas').textContent = datesCount;
-
         document.getElementById('modalRespuesta').textContent = `${respRate}%`;
 
 
@@ -1351,7 +1480,17 @@ import { sanitizer } from './sanitizer.js';
 
 
         // 7. INTERESTS
-        const interests = ['Música', 'Viajes', 'Deportes', 'Cine', 'Lectura', 'Baile', 'Cocina']; // Added a few more
+        const interests = ['Música', 'Viajes', 'Deportes', 'Cine', 'Lectura', 'Baile', 'Cocina'];
+
+        let userIdHash = 0;
+        if (user.id) {
+            for (let i = 0; i < user.id.length; i++) {
+                userIdHash = ((userIdHash << 5) - userIdHash) + user.id.charCodeAt(i);
+                userIdHash |= 0; // Convert to 32bit integer
+            }
+            userIdHash = Math.abs(userIdHash);
+        }
+
         const interestCount = (userIdHash % 3) + 2;
         const startIndex = userIdHash % interests.length;
         const userInterests = [];
@@ -1516,7 +1655,8 @@ import { sanitizer } from './sanitizer.js';
         if (viewMap) viewMap.classList.remove('active');
         if (mapContainer) mapContainer.classList.add('hidden');
         gridContainer.classList.remove('hidden');
-        loadMoreContainer.classList.remove('hidden');
+        // loadMoreContainer.classList.remove('hidden'); // REMOVED
+        updatePaginationControls();
     });
 
     // Only add event listener if viewMap element exists
@@ -1582,10 +1722,10 @@ import { sanitizer } from './sanitizer.js';
         }, 500);
     });
 
-    loadMoreBtn.addEventListener('click', () => {
+    /* loadMoreBtn.addEventListener('click', () => {
         currentPage++;
         displayUsers();
-    });
+    }); */
 
     closeModal.addEventListener('click', () => {
         userModal.classList.add('opacity-0', 'pointer-events-none');

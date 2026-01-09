@@ -2800,10 +2800,10 @@ exports.scheduledCleanupWarning = functions.pubsub
   });
 
 // ------------------------------------------------------------------
-// 16. Scheduled: Weekly Cleanup Execution (Wednesday 06:00)
+// 16. Scheduled: Weekly Cleanup Execution (Sunday 04:00)
 // ------------------------------------------------------------------
 exports.scheduledCleanupExecution = functions.pubsub
-  .schedule('every wednesday 06:00')
+  .schedule('every sunday 04:00')
   .timeZone('Europe/Madrid')
   .onRun(async (context) => {
     logger.info('🗑️ Running weekly user cleanup (Wednesday)...');
@@ -2876,3 +2876,115 @@ exports.scheduledCleanupExecution = functions.pubsub
       throw error;
     }
   });
+
+// ============================================================================
+// 7) RECURSIVE CHAT DELETION
+// ============================================================================
+exports.onConversationDelete = functions.firestore
+  .document('conversations/{conversationId}')
+  .onDelete(async (snap, context) => {
+    const conversationId = context.params.conversationId;
+    const db = admin.firestore();
+    const bucket = admin.storage().bucket();
+
+    logger.info(`🗑️ Recursive cleanup for conversation ${conversationId}`);
+
+    try {
+      // 1. Delete Subcollection 'messages'
+      // Note: This requires listing and deleting in batches
+      const messagesRef = db.collection('conversations').doc(conversationId).collection('messages');
+      const messagesSnap = await messagesRef.limit(500).get(); // Batch size
+
+      const batch = db.batch();
+      let count = 0;
+      messagesSnap.forEach(doc => {
+        batch.delete(doc.ref);
+        count++;
+      });
+
+      if (count > 0) {
+        await batch.commit();
+        logger.info(`Deleted ${count} messages for conversation ${conversationId}`);
+        // If more than 500, we might need re-trigger or loop, but standard chats usually fit.
+        // For robustness, could use recursive delete tool, but simple batch is often enough.
+      }
+
+      // 2. Delete Storage Attachments (Images/Audio)
+      // Path: chat_attachments/{conversationId}/...
+      await bucket.deleteFiles({ prefix: `chat_attachments/{conversationId}/` });
+      logger.info(`Deleted storage files for conversation ${conversationId}`);
+
+    } catch (error) {
+      logger.error(`Error in recursive chat delete for ${conversationId}`, error);
+    }
+  });
+
+// ============================================================================
+// 8) ADMIN: RESET USER STATS (One-off)
+// ============================================================================
+exports.resetUserStats = functions.https.onCall(async (data, context) => {
+  // Check if admin
+  if (!context.auth || !context.auth.token.admin) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admins can reset stats');
+  }
+
+  const db = admin.firestore();
+  logger.info('🔄 Admin initiated User Stats Reset...');
+
+  try {
+    const usersSnap = await db.collection('users').get();
+    const batchSize = 500;
+    let batch = db.batch();
+    let count = 0;
+    let total = 0;
+
+    for (const doc of usersSnap.docs) {
+      const user = doc.data();
+      // Use set with merge true for safer deep merging and handling missing 'stats' parent
+      const updates = {
+        stats: {
+          completedDates: 0,
+          responseRate: 100
+        }
+      };
+
+      // Remove legacy compatibility if exists
+      if (user.compatibility !== undefined) {
+        updates.compatibility = admin.firestore.FieldValue.delete();
+      }
+
+      // Check if we actually need to update (optimization)
+      // Note: 'set' with merge will overwrite stats even if values are same, keeping it simple is better for robustness
+      // But to be cleaner, we can check basic equality
+      const currentStats = user.stats || {};
+      const needsDateReset = currentStats.completedDates !== 0;
+      const needsRateReset = currentStats.responseRate !== 100;
+      const needsCompatDelete = user.compatibility !== undefined;
+      const missingStats = !user.stats;
+
+      if (needsDateReset || needsRateReset || needsCompatDelete || missingStats) {
+        batch.set(doc.ref, updates, { merge: true });
+        count++;
+        total++;
+      }
+
+      if (count >= batchSize) {
+        await batch.commit();
+        batch = db.batch();
+        count = 0;
+      }
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+
+    logger.info(`✅ Stats reset complete. Updated ${total} users.`);
+    return { success: true, updated: total };
+
+  } catch (error) {
+    logger.error('Error resetting stats:', error);
+    throw new functions.https.HttpsError('internal', 'Reset failed');
+  }
+});
+

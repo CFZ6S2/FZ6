@@ -23,8 +23,29 @@ const auth = getAuth(app);
 // console.log("✅ Firestore initialized");
 
 export async function getDb() {
-    const { getFirestore } = await import('firebase/firestore');
-    return getFirestore(app);
+    const { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } = await import('firebase/firestore');
+
+    // ATTEMPT 1: Try to initialize with our custom settings (Long Polling + Persistence)
+    try {
+        console.log("🔥 Attempting to initialize Firestore with Long Polling...");
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
+        });
+        console.log("✅ Firestore initialized with custom settings (Long Polling active)");
+        return db;
+    } catch (e) {
+        // ATTEMPT 2: If already initialized (FAILED_PRECONDITION), return existing instance
+        if (e.code === 'failed-precondition' || e.message.includes('already exists')) {
+            console.warn("⚠️ Firestore already initialized (defaults?). Returning existing instance.");
+            return getFirestore(app);
+        }
+        // Unknown error
+        console.error("❌ Firestore initialization failed:", e);
+        throw e;
+    }
 }
 
 const functions = getFunctions(app);
@@ -40,6 +61,31 @@ if (typeof window !== 'undefined') {
     window._firebaseAuth = auth;
     // window._firebaseDb removed - use await getDb() instead
     window._firebaseStorage = storage;
+}
+
+// CONSOLE NOISE SUPPRESSION
+// Filters out benign network errors handled by Firebase SDK retries
+if (typeof console !== 'undefined') {
+    const originalError = console.error;
+    const originalWarn = console.warn;
+
+    console.error = function (...args) {
+        const str = args.map(a => String(a)).join(' ');
+        if (str.includes('Fetch failed loading') &&
+            (str.includes('firestore.googleapis.com') || str.includes('channel'))) {
+            // Suppress verbose network errors that simply trigger retries
+            return;
+        }
+        originalError.apply(console, args);
+    };
+
+    console.warn = function (...args) {
+        const str = args.map(a => String(a)).join(' ');
+        if ((str.includes('Network unavailable') || str.includes('falling back to')) && str.includes('Firestore')) {
+            return;
+        }
+        originalWarn.apply(console, args);
+    };
 }
 
 // STORAGE HEALTH CHECK & FALLBACK SYSTEM

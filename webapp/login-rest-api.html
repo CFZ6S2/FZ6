@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login REST API - TuCitaSegura</title>
+    <link rel="stylesheet" href="./css/input.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #1a202c;
+            color: #cbd5e0;
+            font-family: monospace;
+        }
+
+        .terminal {
+            background: #000;
+            border: 1px solid #333;
+            padding: 20px;
+            max-width: 600px;
+            margin: 40px auto;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+
+        input {
+            background: #111;
+            border: 1px solid #444;
+            color: #0f0;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            font-family: monospace;
+        }
+
+        button:hover {
+            background: #0a0;
+        }
+
+        .output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            color: #0f0;
+            border-top: 1px dashed #333;
+            padding-top: 10px;
+            font-size: 0.8em;
+        }
+
+        a {
+            color: #0f0;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal">
+        <h1 class="text-xl mb-4 text-green-500">>> REST_API_LOGIN_TOOL_V1.0</h1>
+        <p class="mb-4 text-sm">Direct interface to Google Identity Toolkit. Bypasses Firebase JS SDK.</p>
+
+        <form id="restLoginForm">
+            <label>USER_EMAIL:</label>
+            <input type="email" id="email" required placeholder="user@example.com">
+
+            <label>PASSWORD:</label>
+            <input type="password" id="password" required placeholder="********">
+
+            <button type="submit">EXECUTE_LOGIN_SEQUENCE()</button>
+        </form>
+
+        <div id="output" class="output hidden"></div>
+
+        <div class="mt-4 text-center">
+            <a href="login-methods.html">
+                << RETURN_TO_BASE</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { default as firebaseConfig } from './js/firebase-config-env.js';
+
+        const form = document.getElementById('restLoginForm');
+        const output = document.getElementById('output');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            output.classList.remove('hidden');
+            output.textContent = '> Initiating request to accounts:signInWithPassword...\n';
+
+            try {
+                const apiKey = firebaseConfig.apiKey;
+                const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        returnSecureToken: true
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error?.message || 'Unknown Error');
+                }
+
+                output.textContent += '> SUCCESS: 200 OK\n';
+                output.textContent += `> ID_TOKEN_RECEIVED: ${data.idToken.substring(0, 20)}...\n`;
+                output.textContent += `> USER_ID: ${data.localId}\n`;
+                output.textContent += '> STATUS: AUTHENTICATED\n';
+                output.textContent += '> NOTE: Session not persisted to Firebase SDK (localStorage only).\n';
+
+                // Store in simple localStorage for debug
+                localStorage.setItem('debug_token', data.idToken);
+
+                // Alert user
+                output.textContent += '\n> Credenciales Válidas. El problema es el SDK, no tu cuenta.';
+
+            } catch (error) {
+                output.textContent += `> ERROR: ${error.message}\n`;
+                output.textContent += '> ACCESS_DENIED\n';
+            }
+        });
+    </script>
+</body>
+
+</html>

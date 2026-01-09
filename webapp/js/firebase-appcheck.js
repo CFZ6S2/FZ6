@@ -231,7 +231,7 @@ async function initAppCheck() {
     // ZOMBIE DB POLICY: DISABLED (Cleaned up)
 
     let appCheckOptions = {
-      isTokenAutoRefreshEnabled: false // Disabled in debug
+      isTokenAutoRefreshEnabled: true,
     };
 
     if (self.FIREBASE_APPCHECK_DEBUG_TOKEN) {

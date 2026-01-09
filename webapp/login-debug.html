@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login Debug - TuCitaSegura</title>
+    <link rel="stylesheet" href="./css/input.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #333;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #console {
+            background: black;
+            color: #0f0;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #555;
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .p-card {
+            background: #444;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="p-card">
+        <h1 class="text-xl font-bold mb-4">🔧 Modo Debug: Login</h1>
+        <p class="mb-4 text-sm text-gray-300">Este modo activa el registro detallado de Firebase para diagnosticar
+            fallos internos del SDK.</p>
+
+        <form id="debugForm" class="space-y-4">
+            <input type="email" id="email" placeholder="Email" class="w-full p-2 rounded text-black" required>
+            <input type="password" id="password" placeholder="Password" class="w-full p-2 rounded text-black" required>
+            <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded font-bold">Diagnosticar
+                Login</button>
+        </form>
+    </div>
+
+    <div id="console">
+        <div>> Sistema de diagnóstico iniciado... waiting for input.</div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="login-methods.html" class="underline">Volver</a>
+    </div>
+
+    <script type="module">
+        import { auth } from './js/firebase-config-env.js';
+        import { signInWithEmailAndPassword, setLogLevel } from 'firebase/auth';
+
+        // Custom Console Override
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function appendLog(type, args) {
+            const line = document.createElement('div');
+            line.style.color = type === 'error' ? '#ff5555' : type === 'warn' ? '#ffaa00' : '#00ff00';
+            line.textContent = `[${type.toUpperCase()}] ` + args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        console.log = (...args) => { appendLog('log', args); originalLog.apply(console, args); };
+        console.error = (...args) => { appendLog('error', args); originalError.apply(console, args); };
+        console.warn = (...args) => { appendLog('warn', args); originalWarn.apply(console, args); };
+
+        console.log('Activating Firebase Verbose Logging...');
+        setLogLevel('debug'); // Activate internal detailed logging provided by SDK
+
+        document.getElementById('debugForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            console.log('Attempting signInWithEmailAndPassword...');
+
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
+                console.log('✅ SIGN IN SUCCESS!', userCred.user);
+                alert('Login Exitoso en modo Debug. Revisa la consola para detalles.');
+            } catch (error) {
+                console.error('❌ SIGN IN ERROR', error);
+                console.log('Error Code:', error.code);
+                console.log('Error Message:', error.message);
+                if (error.customData) console.log('Custom Data:', error.customData);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -433,6 +433,50 @@
         </div>
       </div>
 
+      <!-- ALL USERS LIST SECTION -->
+      <div class="glass-container p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-white text-2xl font-bold flex items-center">
+            <i class="fas fa-users mr-3 text-blue-300"></i>
+            Listado de Usuarios (Paginado)
+          </h2>
+          <div class="text-sm text-slate-300">
+            Total: <span id="totalUsersCount" class="font-bold text-white">0</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-white text-opacity-60 text-sm border-b border-white border-opacity-10">
+                <th class="p-3">Usuario</th>
+                <th class="p-3">Género</th>
+                <th class="p-3">Edad</th>
+                <th class="p-3">Estado</th>
+                <th class="p-3">Registro</th>
+                <th class="p-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="allUsersList" class="text-sm">
+              <!-- Users loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="usersPagination" class="mt-6 flex items-center justify-center gap-4 hidden">
+          <button id="btnPrevUsers"
+            class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition">
+            <i class="fas fa-chevron-left mr-1"></i> Anterior
+          </button>
+          <span id="usersPageIndicator" class="text-slate-300">Página 1</span>
+          <button id="btnNextUsers"
+            class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed transition">
+            Siguiente <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- Recent Activity -->
       <div class="glass-container p-8">
         <h2 class="text-white text-2xl font-bold mb-6 flex items-center">
@@ -572,12 +616,22 @@
     // Then import Firebase services
     import { auth } from '../js/firebase-config-env.js';
     import { onAuthStateChanged, signOut } from 'firebase/auth';
-    import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp } from 'firebase/firestore';
+    import { doc, getDoc, collection, getDocs, query, where, orderBy, limit, updateDoc, serverTimestamp, getCountFromServer, startAfter } from 'firebase/firestore';
     import { loadTheme } from '../js/theme.js';
 
     let currentUser = null;
     let currentUserData = null;
     let db = null; // Declare db globally or pass it
+
+    // Simple text sanitizer
+    const sanitizer = {
+      text: (str) => {
+        if (!str) return '';
+        const temp = document.createElement('div');
+        temp.textContent = str;
+        return temp.innerHTML;
+      }
+    };
 
     // Check authentication and admin role
     onAuthStateChanged(auth, async (user) => {
@@ -599,6 +653,19 @@
         }
 
         document.getElementById('adminName').textContent = currentUserData.alias || currentUser.email;
+
+        // Initialize Pagination Listeners
+        document.getElementById('btnPrevUsers')?.addEventListener('click', () => {
+          if (usersCurrentPage > 1) {
+            usersCurrentPage--;
+            loadAllUsers('prev');
+          }
+        });
+
+        document.getElementById('btnNextUsers')?.addEventListener('click', () => {
+          usersCurrentPage++;
+          loadAllUsers('next');
+        });
 
         await loadDashboardData();
         document.getElementById('loadingOverlay').classList.add('hidden');
@@ -656,8 +723,8 @@
         // Load statistics
         await loadStatistics();
 
-        // Load charts
-        await loadCharts();
+        // Load charts (Merged into loadStatistics)
+        // await loadCharts();
 
         // Load fraud alerts
         await loadFraudAlerts();
@@ -668,21 +735,183 @@
         // Load pending verifications
         await loadPendingVerifications();
 
+        // Load All Users (New)
+        await loadAllUsers();
+
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         showToast('Error al cargar datos del panel', 'error');
       }
     }
 
+
+    // Pagination State
+    let usersCurrentPage = 1;
+    let usersPageCursors = []; // Stores the LAST document of each page
+    const USERS_PER_PAGE = 20;
+
+    // Load All Users with Pagination
+    async function loadAllUsers(direction = 'first') {
+      const listContainer = document.getElementById('allUsersList');
+      // Check if elements exist (in case HTML failed)
+      if (!listContainer) {
+        console.error('All Users List container not found');
+        return;
+      }
+
+      const paginationControls = document.getElementById('usersPagination');
+
+      try {
+        listContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
+
+        let q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(USERS_PER_PAGE));
+
+        if (direction === 'next') {
+          const lastVisible = usersPageCursors[usersCurrentPage - 2];
+          if (lastVisible) {
+            q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(USERS_PER_PAGE));
+          }
+        } else if (direction === 'prev') {
+          if (usersCurrentPage > 1) {
+            const cursor = usersPageCursors[usersCurrentPage - 2];
+            if (cursor) {
+              q = query(collection(db, 'users'), orderBy('createdAt', 'desc'), startAfter(cursor), limit(USERS_PER_PAGE));
+            }
+          }
+        } else {
+          usersCurrentPage = 1;
+          usersPageCursors = [];
+        }
+
+        const snapshot = await getDocs(q);
+
+        listContainer.innerHTML = '';
+
+        if (snapshot.empty) {
+          listContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4">No se encontraron usuarios.</td></tr>';
+          return;
+        }
+
+        // Save last doc for next page
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        usersPageCursors[usersCurrentPage - 1] = lastDoc;
+
+        snapshot.forEach(doc => {
+          const user = doc.data();
+          const createdAt = user.createdAt?.toDate ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
+          const age = calculateAge(user.birthDate) || 'N/A';
+          const avatar = user.photoURL || user.photos?.[0] || '';
+          const avatarHtml = avatar
+            ? `<img src="${avatar}" class="w-10 h-10 rounded-full object-cover">`
+            : `<div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold">${(user.alias || 'U')[0]}</div>`;
+
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-white border-opacity-5 hover:bg-white hover:bg-opacity-5 transition';
+          tr.innerHTML = `
+                    <td class="p-3 flex items-center gap-3">
+                        ${avatarHtml}
+                        <div>
+                            <div class="font-bold text-white">${sanitizer.text(user.alias || 'Usuario')}</div>
+                            <div class="text-xs text-white text-opacity-50">${user.email}</div>
+                        </div>
+                    </td>
+                    <td class="p-3 capitalize">${user.gender || 'N/A'}</td>
+                    <td class="p-3">${age} años</td>
+                    <td class="p-3">
+                        ${user.isVerified
+              ? '<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs border border-green-500/30">Verificado</span>'
+              : '<span class="px-2 py-1 bg-slate-500/20 text-slate-400 rounded text-xs border border-slate-500/30">No Verif.</span>'}
+                    </td>
+                    <td class="p-3 text-slate-400">${createdAt}</td>
+                    <td class="p-3">
+                         <button onclick="viewUserDetails('${doc.id}')" class="text-blue-400 hover:text-blue-300 mr-2" title="Ver Detalle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+          listContainer.appendChild(tr);
+        });
+
+        if (paginationControls) {
+          document.getElementById('usersPageIndicator').textContent = `Página ${usersCurrentPage}`;
+          document.getElementById('btnPrevUsers').disabled = usersCurrentPage === 1;
+          const hasNext = snapshot.docs.length === USERS_PER_PAGE;
+          document.getElementById('btnNextUsers').disabled = !hasNext;
+          paginationControls.classList.remove('hidden');
+        }
+
+      } catch (error) {
+        console.error('Error loading users list:', error);
+        if (listContainer) listContainer.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-red-400">Error al cargar usuarios</td></tr>';
+      }
+    }
+
+    function calculateAge(birthDateString) {
+      if (!birthDateString) return null;
+      const today = new Date();
+      const birthDate = new Date(birthDateString);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    }
+
     // Load statistics
     async function loadStatistics() {
       try {
-        // Total Users
-        const usersSnapshot = await getDocs(query(collection(db, 'users'), limit(1000)));
-        const totalUsers = usersSnapshot.size;
+        // Total Users (Aggregation)
+        const usersColl = collection(db, 'users');
+        const totalSnapshot = await getCountFromServer(usersColl);
+        const totalUsers = totalSnapshot.data().count;
         document.getElementById('totalUsers').textContent = totalUsers;
 
+        // Also update the list header count
+        const totalCountEl = document.getElementById('totalUsersCount');
+        if (totalCountEl) totalCountEl.textContent = totalUsers;
+
+        // Gender Distribution (Aggregation)
+        const maleSnapshot = await getCountFromServer(query(usersColl, where('gender', '==', 'masculino')));
+        const femaleSnapshot = await getCountFromServer(query(usersColl, where('gender', '==', 'femenino')));
+
+        const maleCount = maleSnapshot.data().count;
+        const femaleCount = femaleSnapshot.data().count;
+
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Hombres', 'Mujeres'],
+            datasets: [{
+              data: [maleCount, femaleCount],
+              backgroundColor: [
+                'rgba(59, 130, 246, 0.6)',
+                'rgba(236, 72, 153, 0.6)'
+              ],
+              borderColor: [
+                'rgba(59, 130, 246, 1)',
+                'rgba(236, 72, 153, 1)'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: 'white' }
+              }
+            }
+          }
+        });
+
         // Active Subscriptions
+        // Note: Aggregation for complex queries requires an index, keeping client-side filtering for now
+        // or ensure index exists. For now, we'll fetch a batch.
+        const usersSnapshot = await getDocs(query(collection(db, 'users'), limit(1000)));
         let activeSubscriptions = 0;
         usersSnapshot.forEach((userDoc) => {
           const user = userDoc.data();
@@ -697,8 +926,7 @@
         const pendingReports = reportsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
         document.getElementById('totalReports').textContent = pendingReports;
 
-        // Total Revenue (this month)
-        // Optimization: Get recent payments first
+        // Total Revenue (Recent 1000)
         const paymentsSnapshot = await getDocs(query(collection(db, 'payments'), orderBy('createdAt', 'desc'), limit(1000)));
         let totalRevenue = 0;
         const now = new Date();
@@ -736,129 +964,6 @@
 
       } catch (error) {
         console.error('Error loading statistics:', error);
-      }
-    }
-
-    // Load charts
-    async function loadCharts() {
-      try {
-        // User Growth Chart
-        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
-        new Chart(userGrowthCtx, {
-          type: 'line',
-          data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-            datasets: [{
-              label: 'Usuarios Registrados',
-              data: [10, 25, 45, 78, 120, 165],
-              borderColor: 'rgba(102, 126, 234, 1)',
-              backgroundColor: 'rgba(102, 126, 234, 0.2)',
-              tension: 0.4,
-              fill: true
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                labels: { color: 'white' }
-              }
-            },
-            scales: {
-              x: {
-                ticks: { color: 'white' },
-                grid: { color: 'rgba(255, 255, 255, 0.1)' }
-              },
-              y: {
-                ticks: { color: 'white' },
-                grid: { color: 'rgba(255, 255, 255, 0.1)' }
-              }
-            }
-          }
-        });
-
-        // Revenue Chart
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revenueCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-            datasets: [{
-              label: 'Ingresos (€)',
-              data: [450, 890, 1240, 1890, 2450, 3120],
-              backgroundColor: 'rgba(16, 185, 129, 0.6)',
-              borderColor: 'rgba(16, 185, 129, 1)',
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                labels: { color: 'white' }
-              }
-            },
-            scales: {
-              x: {
-                ticks: { color: 'white' },
-                grid: { color: 'rgba(255, 255, 255, 0.1)' }
-              },
-              y: {
-                ticks: { color: 'white' },
-                grid: { color: 'rgba(255, 255, 255, 0.1)' }
-              }
-            }
-          }
-        });
-
-        // Gender Distribution Chart
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        let maleCount = 0;
-        let femaleCount = 0;
-
-        usersSnapshot.forEach((userDoc) => {
-          const user = userDoc.data();
-          if (user.gender === 'masculino') {
-            maleCount++;
-          } else if (user.gender === 'femenino') {
-            femaleCount++;
-          }
-        });
-
-        const genderCtx = document.getElementById('genderChart').getContext('2d');
-        new Chart(genderCtx, {
-          type: 'doughnut',
-          data: {
-            labels: ['Hombres', 'Mujeres'],
-            datasets: [{
-              data: [maleCount, femaleCount],
-              backgroundColor: [
-                'rgba(59, 130, 246, 0.6)',
-                'rgba(236, 72, 153, 0.6)'
-              ],
-              borderColor: [
-                'rgba(59, 130, 246, 1)',
-                'rgba(236, 72, 153, 1)'
-              ],
-              borderWidth: 2
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: 'white' }
-              }
-            }
-          }
-        });
-
-      } catch (error) {
-        console.error('Error loading charts:', error);
       }
     }
 
@@ -1433,6 +1538,15 @@
     document.getElementById('refreshVerifications')?.addEventListener('click', () => {
       loadPendingVerifications();
       showToast('Lista actualizada', 'success');
+    });
+
+    // User List Pagination Listeners
+    document.getElementById('btnPrevUsers')?.addEventListener('click', () => {
+      loadAllUsers('prev');
+    });
+
+    document.getElementById('btnNextUsers')?.addEventListener('click', () => {
+      loadAllUsers('next');
     });
 
   </script>

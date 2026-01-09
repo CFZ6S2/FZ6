@@ -435,31 +435,7 @@ export function getGenderIcon(gender) {
  * @param {object} user2 - Second user data
  * @returns {number} Compatibility percentage
  */
-export function calculateCompatibility(user1, user2) {
-  // This is a mock implementation
-  // In a real app, you would compare interests, location, age preferences, etc.
-  let compatibility = 50; // Base compatibility
 
-  // Age difference factor
-  if (user1.age && user2.age) {
-    const ageDiff = Math.abs(user1.age - user2.age);
-    if (ageDiff <= 5) compatibility += 20;
-    else if (ageDiff <= 10) compatibility += 10;
-  }
-
-  // Same city bonus
-  if (user1.city && user2.city && user1.city.toLowerCase() === user2.city.toLowerCase()) {
-    compatibility += 15;
-  }
-
-  // Reputation similarity
-  const repLevels = { 'BRONCE': 1, 'PLATA': 2, 'ORO': 3, 'PLATINO': 4 };
-  const rep1 = repLevels[user1.reputation || 'BRONCE'];
-  const rep2 = repLevels[user2.reputation || 'BRONCE'];
-  if (Math.abs(rep1 - rep2) <= 1) compatibility += 15;
-
-  return Math.min(100, compatibility);
-}
 
 /**
  * Sanitize HTML to prevent XSS attacks
@@ -792,7 +768,7 @@ export default {
   generateId,
   isUserOnline,
   getGenderIcon,
-  calculateCompatibility,
+
   sanitizeHTML,
   sanitizeHTMLAllowTags,
   copyToClipboard,

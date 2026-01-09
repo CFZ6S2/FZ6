@@ -398,11 +398,26 @@
               <i class="fas fa-search mr-2 text-blue-400"></i>
               Descubre Personas
             </h1>
-            <p class="text-slate-300">
-              <i class="fas fa-users mr-2"></i>
-              <span id="userCount" class="font-semibold text-blue-400">0</span> usuarios disponibles
+            </h1>
+
+            <!-- Global Stats -->
+            <div class="flex items-center gap-4 text-sm md:text-base text-slate-300 mb-2">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span id="globalStatsMen">0 Hombres</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-pink-500"></div>
+                <span id="globalStatsWomen">0 Mujeres</span>
+              </div>
+            </div>
+
+            <p class="text-slate-300 text-xs">
+              <i class="fas fa-filter mr-1"></i>
+              Mostrando <span id="userCount" class="font-semibold text-white">0</span> resultados
             </p>
-            <div class="mt-2 p-2 bg-blue-500/20 border border-blue-400/30 rounded-lg">
+
+            <div class="mt-2 p-2 bg-blue-500/10 border border-blue-400/20 rounded-lg max-w-xl">
               <p class="text-xs text-blue-300">
                 <i class="fas fa-info-circle mr-1"></i>
                 <strong>Plataforma exclusivamente heterosexual:</strong> Solo verás personas del género opuesto
@@ -418,7 +433,10 @@
                 <i class="fas fa-th-large"></i>
                 <span class="hidden sm:inline">Lista</span>
               </button>
-              <!-- Map Toggle Removed -->
+              <button id="viewMap" class="flex items-center gap-2 flex-1 sm:flex-none justify-center">
+                <i class="fas fa-map-marked-alt"></i>
+                <span class="hidden sm:inline">Mapa</span>
+              </button>
             </div>
 
             <button id="toggleFilters"
@@ -599,8 +617,10 @@
         </div>
       </div>
 
-      <!-- Map View REMOVED -->
-      <div id="mapContainer" class="hidden"></div>
+      <!-- Map View -->
+      <div id="mapContainer" class="hidden glass-strong p-4 rounded-2xl mb-6">
+        <div id="map" class="w-full h-96 rounded-xl"></div>
+      </div>
 
       <!-- User Grid -->
       <div id="gridContainer" class="px-4 md:px-0">
@@ -630,12 +650,23 @@
         </div>
       </div>
 
-      <!-- Load More Button -->
-      <div id="loadMoreContainer" class="text-center mt-8 hidden">
-        <button id="loadMoreBtn" class="glass-strong px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
-          <i class="fas fa-chevron-down mr-2"></i>Cargar Más Usuarios
+      <!-- Pagination Controls -->
+      <div id="paginationContainer" class="mt-8 flex items-center justify-center gap-4 hidden">
+        <button id="prevPageBtn"
+          class="glass px-4 py-2 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+
+        <span id="pageIndicator" class="text-slate-300 font-medium">Página 1</span>
+
+        <button id="nextPageBtn"
+          class="glass px-4 py-2 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2">
+          Siguiente <i class="fas fa-chevron-right"></i>
         </button>
       </div>
+
+      <!-- Load More Container (Legacy - Removed) -->
+      <div id="loadMoreContainer" class="hidden"></div>
 
     </div>
   </main>

@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import {
     showToast, calculateDistance, requireChatAccess, calculateAge,
-    getReputationBadge, getAvailabilityStatus, calculateCompatibility
+    getReputationBadge, getAvailabilityStatus
 } from './utils.js';
 import { sanitizer } from './sanitizer.js';
 import { loadTheme } from './theme.js';
@@ -114,11 +114,13 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
         // Calculate real compatibility if possible
         let compatibility = 0;
         if (currentUserData) {
-            compatibility = calculateCompatibility(currentUserData, user);
+            // compatibility = calculateCompatibility(currentUserData, user); // Deprecated
+            compatibility = ((userIdHash * 7) % 40) + 60; // Mock fallback
         } else {
             compatibility = ((userIdHash * 7) % 40) + 60; // Mock fallback
         }
-        document.getElementById('modalCompatibilidad').textContent = `${compatibility}%`;
+        // document.getElementById('modalCompatibilidad').textContent = `${compatibility}%`; // Deprecated element
+
         document.getElementById('modalRespuesta').textContent = `${((userIdHash * 13) % 30) + 65}%`;
 
         // 5. GALLERY

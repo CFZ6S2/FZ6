@@ -73,7 +73,12 @@ class PresenceService {
             });
             console.log(`[Presence] Status updated: ${status}`);
         } catch (error) {
-            console.error("[Presence] Error updating status:", error);
+            // Suppress common offline/network errors to avoid console spam
+            if (error.code === 'unavailable' || error.message.includes('offline') || error.message.includes('Fetch failed')) {
+                console.warn('[Presence] Network unavailable, update skipped.');
+            } else {
+                console.error("[Presence] Error updating status:", error);
+            }
         }
     }
 }

@@ -4,436 +4,597 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://us-central1-tucitasegura-129cc.cloudfunctions.net https://cdn.jsdelivr.net https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com;">
-    <title>Admin Dashboard - TuCitaSegura</title>
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="./css/output.css">
-    <!-- Font Awesome -->
+    <title>Panel de Administración - TuCitaSegura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        body {
-            background-color: #0f172a;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
     </style>
 </head>
 
-<body class="min-h-screen flex text-slate-100 font-sans">
+<body class="min-h-screen gradient-bg text-white">
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center">
-        <div class="text-center">
-            <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
-            <p class="text-lg">Verificando Credenciales de Admin...</p>
+    <!-- Header -->
+    <header class="glass-card sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-shield-halved text-3xl text-purple-300"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Panel de Administración</h1>
+                        <p class="text-sm text-gray-300">TuCitaSegura</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminName" class="text-sm text-gray-300"></span>
+                    <button onclick="resetStats()" id="resetStatsBtn"
+                        class="bg-yellow-500/20 hover:bg-yellow-500/30 px-4 py-2 rounded-lg transition-colors text-yellow-200 border border-yellow-500/30">
+                        <i class="fas fa-sync-alt mr-2"></i>Reset Stats
+                    </button>
+                    <button onclick="logout()"
+                        class="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col">
-        <div class="p-6 border-b border-slate-800">
-            <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                <i class="fas fa-shield-alt mr-2"></i>Admin
-            </h1>
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-6xl text-purple-300 mb-4"></i>
+            <p class="text-xl">Cargando datos...</p>
         </div>
 
-        <nav class="flex-1 p-4 space-y-2">
-            <a href="#" onclick="showView('users')"
-                class="flex items-center gap-3 px-4 py-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
-                <i class="fas fa-users"></i>
-                Usuarios
-            </a>
-            <a href="#" onclick="showView('marketing')"
-                class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-xl transition">
-                <i class="fas fa-bullhorn"></i>
-                Marketing
-            </a>
-            <a href="#" onclick="showView('stats')"
-                class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-xl transition">
-                <i class="fas fa-chart-bar"></i>
-                Estadísticas
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-xl transition">
-                <i class="fas fa-flag"></i>
-                Reportes
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 rounded-xl transition">
-                <i class="fas fa-ban"></i>
-                Baneados
-            </a>
-        </nav>
+        <!-- Main Content -->
+        <div id="mainContent" class="hidden">
 
-        <div class="p-4 border-t border-slate-800">
-            <button onclick="logout()"
-                class="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar Sesión
-            </button>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 overflow-auto">
-        <!-- Header -->
-        <header
-            class="h-16 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
-            <div class="flex items-center gap-4">
-                <button class="md:hidden text-slate-400 hover:text-white">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <h2 class="font-semibold text-lg">Panel de Usuarios</h2>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold" id="adminName">Admin User</p>
-                    <p class="text-xs text-green-400">Super Admin</p>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">
-                    <i class="fas fa-user-shield text-blue-400"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- Content -->
-        <div class="p-6 md:p-10 max-w-7xl mx-auto">
-
-            <div id="usersView">
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="glass-panel rounded-2xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-slate-400 text-sm font-medium">Total Usuarios</h3>
-                            <i class="fas fa-users text-blue-500 p-2 bg-blue-500/10 rounded-lg"></i>
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 fade-in">
+                <!-- Total Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <i class="fas fa-users text-2xl text-blue-400"></i>
                         </div>
-                        <p class="text-3xl font-bold" id="totalUsers">0</p>
-                        <p class="text-xs text-green-400 mt-2"><i class="fas fa-arrow-up"></i> +12% mes pasado</p>
+                        <span class="text-sm text-gray-400">Total</span>
                     </div>
-
-                    <div class="glass-panel rounded-2xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-slate-400 text-sm font-medium">Hombres / Mujeres</h3>
-                            <i class="fas fa-venus-mars text-purple-500 p-2 bg-purple-500/10 rounded-lg"></i>
-                        </div>
-                        <p class="text-3xl font-bold" id="genderRatio">0 / 0</p>
-                        <div class="w-full bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden">
-                            <div class="bg-blue-500 h-full" style="width: 60%"></div>
-                        </div>
-                    </div>
-
-                    <div class="glass-panel rounded-2xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-slate-400 text-sm font-medium">Reportes Activos</h3>
-                            <i class="fas fa-exclamation-circle text-orange-500 p-2 bg-orange-500/10 rounded-lg"></i>
-                        </div>
-                        <p class="text-3xl font-bold text-orange-400" id="activeReports">0</p>
-                        <p class="text-xs text-slate-400 mt-2">Requieren atención</p>
-                    </div>
-
-                    <div class="glass-panel rounded-2xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-slate-400 text-sm font-medium">Usuarios Baneados</h3>
-                            <i class="fas fa-ban text-red-500 p-2 bg-red-500/10 rounded-lg"></i>
-                        </div>
-                        <p class="text-3xl font-bold text-red-400" id="bannedUsers">0</p>
-                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="totalUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Usuarios Registrados</p>
                 </div>
 
-                <!-- Users Table Section -->
-                <div class="glass-panel rounded-2xl overflow-hidden">
-                    <div
-                        class="p-6 border-b border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <h3 class="text-xl font-bold">Base de Datos de Usuarios</h3>
-
-                        <div class="flex items-center gap-2 w-full md:w-auto">
-                            <div class="relative flex-1 md:w-64">
-                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                                <input type="text" id="userSearch" placeholder="Buscar por email, nombre..."
-                                    class="w-full bg-slate-800 border-slate-700 text-slate-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
-                                onclick="loadUsers()">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
+                <!-- Total Money -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <i class="fas fa-wallet text-2xl text-green-400"></i>
                         </div>
+                        <span class="text-sm text-gray-400">Monederos</span>
                     </div>
+                    <h3 class="text-3xl font-bold mb-1" id="totalMoney">0€</h3>
+                    <p class="text-gray-400 text-sm">Total en el Sistema</p>
+                </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-3 sm:p-4 font-semibold">Usuario</th>
-                                    <th class="p-3 sm:p-4 font-semibold hidden md:table-cell">Rol</th>
-                                    <th class="p-3 sm:p-4 font-semibold">Estado</th>
-                                    <th class="p-3 sm:p-4 font-semibold hidden lg:table-cell">Fecha Registro</th>
-                                    <th class="p-3 sm:p-4 font-semibold">Último Login</th>
-                                    <th class="p-3 sm:p-4 font-semibold text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody" class="divide-y divide-slate-700 text-sm">
-                                <!-- Rows injected by JS -->
-                                <tr>
-                                    <td colspan="6" class="p-8 text-center text-slate-500">
-                                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>
-                                        Cargando usuarios...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="p-4 border-t border-slate-700 flex justify-between items-center text-sm text-slate-400">
-                        <span>Mostrando <span id="showingCount">0</span> usuarios</span>
-                        <div class="flex gap-2">
-                            <button onclick="loadUsers()"
-                                class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Recargar</button>
-                            <button onclick="loadZombieUsers()"
-                                class="px-3 py-1 bg-orange-800 rounded hover:bg-orange-700">
-                                <i class="fas fa-skull mr-1"></i>Ver Zombies
-                            </button>
-                            <button onclick="cleanupZombies()"
-                                class="px-3 py-1 bg-red-900 rounded hover:bg-red-800 border border-red-700">
-                                <i class="fas fa-trash-alt mr-1"></i>Limpiar
-                            </button>
-                            <button onclick="loadUsers(true)"
-                                class="px-3 py-1 bg-blue-600 rounded hover:bg-blue-700 text-white font-semibold">Cargar
-                                Más</button>
+                <!-- Active Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                            <i class="fas fa-user-check text-2xl text-purple-400"></i>
                         </div>
+                        <span class="text-sm text-gray-400">Activos</span>
                     </div>
+                    <h3 class="text-3xl font-bold mb-1" id="activeUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Usuarios Activos Hoy</p>
+                </div>
+
+                <!-- Premium Users -->
+                <div class="stat-card glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                            <i class="fas fa-crown text-2xl text-yellow-400"></i>
+                        </div>
+                        <span class="text-sm text-gray-400">Premium</span>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-1" id="premiumUsers">0</h3>
+                    <p class="text-gray-400 text-sm">Suscripciones Activas</p>
                 </div>
             </div>
 
-            <!-- Marketing View (Hidden by default) -->
-            <div id="marketingView" class="hidden">
-                <div class="glass-panel rounded-2xl p-8 max-w-3xl mx-auto">
-                    <div class="mb-8 border-b border-slate-700 pb-4">
-                        <h2 class="text-2xl font-bold flex items-center gap-3">
-                            <i class="fas fa-paper-plane text-blue-500"></i> Email Marketing
-                        </h2>
-                        <p class="text-slate-400 mt-2">Envía correos masivos a tus usuarios. <span
-                                class="text-yellow-400 font-bold">¡Úsalo con responsabilidad!</span></p>
+            <!-- Search and Filters -->
+            <div class="glass-card rounded-2xl p-6 mb-8 fade-in">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Buscar por email, nombre, alias..."
+                            class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500">
                     </div>
-
-                    <div id="emailForm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-400 mb-2">Destinatarios</label>
-                                <select id="emailTarget"
-                                    class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                    <option value="test_me">🧪 Test (Solo a mí)</option>
-                                    <option value="femenino">👩 Mujeres (Femenino)</option>
-                                    <option value="masculino">👨 Hombres (Masculino)</option>
-                                    <option value="all">🌍 Todos los Usuarios</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-400 mb-2">Modo de Envío</label>
-                                <div
-                                    class="flex items-center gap-4 bg-slate-800 border border-slate-700 rounded-xl p-3">
-                                    <input type="checkbox" id="dryRun" checked
-                                        class="w-5 h-5 text-blue-600 rounded bg-slate-700 border-slate-600 focus:ring-blue-500">
-                                    <label for="dryRun" class="cursor-pointer select-none">
-                                        <span class="font-bold text-white">Simulación (Dry Run)</span>
-                                        <p class="text-xs text-slate-400">No envía correos reales</p>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-slate-400 mb-2">Asunto del Correo</label>
-                            <input type="text" id="emailSubject" placeholder="Ej: ¡Nuevas funciones disponibles!"
-                                class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        </div>
-
-                        <div class="mb-8">
-                            <label class="block text-sm font-medium text-slate-400 mb-2">Cuerpo del Mensaje (HTML
-                                Simple)</label>
-                            <textarea id="emailBody" rows="8"
-                                placeholder="Escribe aquí tu mensaje... Puedes usar <b>negrita</b>, <br> saltos de línea, etc."
-                                class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-white font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
-                            <p class="text-xs text-slate-500 mt-2">Nota: Se añadirá automáticamente la firma y el
-                                saludo.</p>
-                        </div>
-
-                        <div class="flex items-center justify-end gap-4">
-                            <div id="emailStatus" class="flex-1 text-sm font-mono text-slate-300"></div>
-                            <button onclick="sendIncompleteWarning()"
-                                class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform active:scale-95 transition flex items-center gap-2">
-                                <i class="fas fa-exclamation-triangle"></i> Avisar Sin Alias
-                            </button>
-                            <button onclick="sendCampaign()"
-                                class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transform active:scale-95 transition flex items-center gap-2">
-                                <i class="fas fa-rocket"></i> Enviar Campaña
-                            </button>
-                        </div>
-                    </div>
+                    <select id="roleFilter"
+                        class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Todos los roles</option>
+                        <option value="admin">Administradores</option>
+                        <option value="concierge">Concierge</option>
+                        <option value="regular">Regulares</option>
+                    </select>
+                    <select id="genderFilter"
+                        class="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Todos los géneros</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Stats View (Hidden by default) -->
-            <div id="statsView" class="hidden animate-fade-in">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold flex items-center gap-3">
-                        <i class="fas fa-chart-pie text-purple-500"></i> Estadísticas Detalladas
+            <!-- Users Table -->
+            <div class="glass-card rounded-2xl overflow-hidden fade-in">
+                <div class="p-6 border-b border-white/10">
+                    <h2 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-list mr-3 text-purple-400"></i>
+                        Lista de Usuarios
                     </h2>
-                    <p class="text-slate-400 mt-1">Análisis profundo de la base de usuarios.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <!-- Gender Distribution -->
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <h3 class="text-lg font-bold mb-4 text-center">Distribución de Género</h3>
-                        <div class="h-64 flex items-center justify-center">
-                            <canvas id="genderChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- User Status -->
-                    <div class="glass-panel p-6 rounded-2xl">
-                        <h3 class="text-lg font-bold mb-4 text-center">Estado de Cuentas</h3>
-                        <div class="h-64 flex items-center justify-center">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-white/5">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Usuario</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Email</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Rol</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Género</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Monedero</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Premium</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-300">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-white/5">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
                 </div>
 
-                <!-- Registration Timeline -->
-                <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold mb-4">Crecimiento de Usuarios (Últimos 6 Meses)</h3>
-                    <div class="h-80 w-full">
-                        <canvas id="growthChart"></canvas>
+                <div class="p-6 border-t border-white/10 flex items-center justify-between">
+                    <p class="text-sm text-gray-400">
+                        Mostrando <span id="showingCount">0</span> de <span id="totalCount">0</span> usuarios
+                    </p>
+                    <div class="flex space-x-2">
+                        <button id="prevBtn" onclick="previousPage()"
+                            class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="nextBtn" onclick="nextPage()"
+                            class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 
-    <!-- User Details Modal (ADMIN VIEW) -->
+    <!-- User Detail Modal -->
     <div id="userModal"
-        class="opacity-0 pointer-events-none fixed inset-0 bg-black/80 modal-backdrop flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-        <div
-            class="glass-strong rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto modal-content shadow-2xl relative">
-
-            <!-- Modal Header (Cover Image) -->
-            <div class="h-40 md:h-52 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/20"></div>
-                <!-- Decorative bubbles -->
-                <div
-                    class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full mix-blend-overlay filter blur-3xl transform translate-x-1/2 -translate-y-1/2">
-                </div>
-
-                <!-- Close Button (Floating) -->
-                <button id="closeModal"
-                    class="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white w-10 h-10 rounded-full flex items-center justify-center transition backdrop-blur-sm z-10">
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="glass-card rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Detalles del Usuario</h2>
+                <button onclick="closeUserModal()"
+                    class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
-            <!-- Modal Content -->
-            <div class="px-6 md:px-8 pb-8 -mt-16 md:-mt-20 relative z-10">
-
-                <!-- User Avatar & Core Info (Centered) -->
-                <div class="flex flex-col items-center text-center mb-8">
-                    <!-- Avatar -->
-                    <div class="relative mb-4">
-                        <div id="modalAvatarContainer"
-                            class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-900 shadow-2xl overflow-hidden bg-slate-800 flex items-center justify-center relative">
-                            <!-- Content injected by JS -->
-                            <span class="text-4xl text-white font-bold">U</span>
-                        </div>
-                        <span id="modalOnlineIndicator"
-                            class="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-slate-900 rounded-full hidden z-20"></span>
-                    </div>
-
-                    <!-- Name & Verification -->
-                    <div class="flex items-center gap-2 mb-1 justify-center">
-                        <h3 id="modalName" class="text-3xl md:text-4xl font-bold text-white drop-shadow-md">Usuario
-                        </h3>
-                        <i id="modalVerifiedBadge"
-                            class="fas fa-check-circle text-blue-400 text-xl hidden bg-white rounded-full box-content border-2 border-transparent"
-                            title="Verificado"></i>
-                    </div>
-
-                    <div id="modalEmail"
-                        class="text-slate-400 text-sm mb-2 font-mono bg-slate-800/50 px-3 py-1 rounded-full inline-block">
-                        email@example.com</div>
-
-                    <!-- Meta Info (Age, Distance) -->
-                    <p
-                        class="text-slate-200 text-sm md:text-base flex items-center gap-3 mb-4 font-medium opacity-90 justify-center">
-                        <span id="modalAge"><i class="fas fa-birthday-cake mr-1 text-pink-400"></i><span>25
-                                años</span></span>
-                        <span class="w-1 h-1 bg-slate-400 rounded-full"></span>
-                        <span id="modalReputationContainer"></span>
-                    </p>
-                </div>
-
-                <!-- Stats Grid (Compact) -->
-                <div class="grid grid-cols-2 gap-2 md:gap-4 mb-8">
-                    <div
-                        class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
-                        <div class="text-xl md:text-2xl font-bold text-blue-400" id="modalCitasCompletadas">0</div>
-                        <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">Citas
-                        </div>
-                    </div>
-                    <div
-                        class="glass rounded-xl p-3 md:p-4 text-center border border-white/5 hover:bg-white/5 transition">
-                        <div class="text-xl md:text-2xl font-bold text-purple-400" id="modalJoined">--</div>
-                        <div class="text-[10px] md:text-xs text-slate-400 uppercase tracking-wider font-semibold">
-                            Registro
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bio Section -->
-                <div class="mb-8 bg-white/5 rounded-2xl p-6 border border-white/5 relative">
-                    <i class="fas fa-quote-left absolute top-4 left-4 text-white/10 text-4xl -z-10"></i>
-                    <h4 class="font-bold mb-2 text-sm uppercase tracking-wider text-slate-400">Sobre mí</h4>
-                    <p id="modalBio" class="text-slate-200 leading-relaxed italic text-lg text-center"></p>
-                </div>
-
-                <!-- Photos Gallery (Dynamic) -->
-                <div id="modalGallerySection" class="mb-8 hidden">
-                    <h4 class="font-bold mb-3 text-sm uppercase tracking-wider text-slate-400">Galería</h4>
-                    <div id="modalGalleryGrid" class="grid grid-cols-3 md:grid-cols-4 gap-2">
-                        <!-- Photos injected here -->
-                    </div>
-                </div>
-
-                <!-- Admin Actions -->
-                <div
-                    class="sticky bottom-0 bg-[#0f172a] pt-4 pb-2 border-t border-white/10 -mx-6 md:-mx-8 px-6 md:px-8">
-                    <div class="flex gap-3 justify-center">
-                        <button id="modalAdminBanBtn"
-                            class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
-                            <i class="fas fa-ban"></i> <span>Banear</span>
-                        </button>
-                        <button id="modalAdminVerifyBtn"
-                            class="bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
-                            <i class="fas fa-check"></i> <span>Verificar</span>
-                        </button>
-                    </div>
-                </div>
+            <div id="userModalContent">
+                <!-- User details will be loaded here -->
             </div>
         </div>
     </div>
 
-    <!-- Firebase Logic -->
-    <script type="module" src="./js/admin-dashboard.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { auth, getDb, functions } from './js/firebase-config-env.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { collection, getDocs, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js';
 
+        const db = await getDb();
+
+        let allUsers = [];
+        let filteredUsers = [];
+        let currentPage = 0;
+        const usersPerPage = 20;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            // FORCE token refresh to get latest custom claims
+            console.log('🔄 Forcing token refresh to get latest custom claims...');
+            const idTokenResult = await user.getIdTokenResult(true); // true = force refresh
+
+            console.log('📋 Custom claims:', idTokenResult.claims);
+            console.log('👤 Role:', idTokenResult.claims.role);
+
+            // Verify admin role
+            if (idTokenResult.claims.role !== 'admin') {
+                console.error('❌ Access denied: role =', idTokenResult.claims.role);
+                alert('Acceso denegado: Se requieren permisos de administrador\n\nRole actual: ' + (idTokenResult.claims.role || 'undefined'));
+                await signOut(auth);
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            console.log('✅ Admin access granted');
+            document.getElementById('adminName').textContent = user.email;
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                // Get all users
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                allUsers = [];
+
+                usersSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allUsers.push({
+                        id: doc.id,
+                        ...data,
+                        balance: data.balance || 0
+                    });
+                });
+
+                // Calculate stats
+                const totalUsers = allUsers.length;
+                const totalMoney = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const activeUsers = allUsers.filter(user => {
+                    if (!user.lastActivity) return false;
+                    const lastActivity = user.lastActivity.toDate ? user.lastActivity.toDate() : new Date(user.lastActivity);
+                    return lastActivity >= today;
+                }).length;
+
+                const premiumUsers = allUsers.filter(user => user.hasActiveSubscription).length;
+
+                // Update stats
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalMoney').textContent = totalMoney.toFixed(2) + '€';
+                document.getElementById('activeUsers').textContent = activeUsers;
+                document.getElementById('premiumUsers').textContent = premiumUsers;
+
+                // Apply filters and render
+                applyFilters();
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error al cargar los datos: ' + error.message);
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const genderFilter = document.getElementById('genderFilter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                const matchesSearch = !searchTerm ||
+                    (user.email || '').toLowerCase().includes(searchTerm) ||
+                    (user.alias || '').toLowerCase().includes(searchTerm) ||
+                    (user.displayName || '').toLowerCase().includes(searchTerm);
+
+                const matchesRole = !roleFilter || user.userRole === roleFilter;
+                const matchesGender = !genderFilter || user.gender === genderFilter;
+
+                return matchesSearch && matchesRole && matchesGender;
+            });
+
+            currentPage = 0;
+            renderUsers();
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            const start = currentPage * usersPerPage;
+            const end = start + usersPerPage;
+            const pageUsers = filteredUsers.slice(start, end);
+
+            tbody.innerHTML = pageUsers.map(user => `
+        <tr class="hover:bg-white/5 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                ${(user.alias || user.email || 'U')[0].toUpperCase()}
+              </div>
+              <div>
+                <p class="font-semibold">${user.alias || user.displayName || 'Sin nombre'}</p>
+                <p class="text-xs text-gray-400">${user.uid}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-300">${user.email || 'Sin email'}</td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(user.userRole)}">
+              ${getRoleLabel(user.userRole)}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getGenderBadgeClass(user.gender)}">
+              ${user.gender === 'masculino' ? '♂ Masculino' : user.gender === 'femenino' ? '♀ Femenino' : 'No especificado'}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <span class="text-green-400 font-bold">${(user.balance || 0).toFixed(2)}€</span>
+          </td>
+          <td class="px-6 py-4">
+            ${user.hasActiveSubscription ?
+                    '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400"><i class="fas fa-crown mr-1"></i>Premium</span>' :
+                    '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-500/20 text-gray-400">Free</span>'
+                }
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex gap-2">
+              <button
+                onclick="viewUser('${user.id}')"
+                class="px-4 py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 transition-colors text-sm"
+              >
+                <i class="fas fa-eye mr-2"></i>Ver
+              </button>
+              <button
+                onclick="deleteUser('${user.id}', '${user.email?.replace(/'/g, "\\'")}', '${user.userRole}')"
+                class="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors text-sm ${user.userRole === 'admin' ? 'opacity-50 cursor-not-allowed' : ''}"
+                ${user.userRole === 'admin' ? 'disabled' : ''}
+              >
+                <i class="fas fa-trash mr-2"></i>Borrar
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+            // Update pagination
+            document.getElementById('showingCount').textContent = Math.min(end, filteredUsers.length);
+            document.getElementById('totalCount').textContent = filteredUsers.length;
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = end >= filteredUsers.length;
+        }
+
+        function getRoleBadgeClass(role) {
+            switch (role) {
+                case 'admin': return 'bg-red-500/20 text-red-400';
+                case 'concierge': return 'bg-blue-500/20 text-blue-400';
+                default: return 'bg-gray-500/20 text-gray-400';
+            }
+        }
+
+        function getRoleLabel(role) {
+            switch (role) {
+                case 'admin': return 'Admin';
+                case 'concierge': return 'Concierge';
+                default: return 'Regular';
+            }
+        }
+
+        function getGenderBadgeClass(gender) {
+            return gender === 'masculino' ? 'bg-blue-500/20 text-blue-400' : 'bg-pink-500/20 text-pink-400';
+        }
+
+        window.viewUser = async (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            const modalContent = document.getElementById('userModalContent');
+            modalContent.innerHTML = `
+        <div class="space-y-6">
+          <!-- Avatar and Basic Info -->
+          <div class="text-center pb-6 border-b border-white/10">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
+              ${(user.alias || user.email || 'U')[0].toUpperCase()}
+            </div>
+            <h3 class="text-2xl font-bold mb-1">${user.alias || user.displayName || 'Sin nombre'}</h3>
+            <p class="text-gray-400">${user.email || 'Sin email'}</p>
+          </div>
+
+          <!-- Details Grid -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Rol</p>
+              <p class="font-semibold">${getRoleLabel(user.userRole)}</p>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Género</p>
+              <p class="font-semibold">${user.gender === 'masculino' ? 'Masculino' : user.gender === 'femenino' ? 'Femenino' : 'No especificado'}</p>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Monedero</p>
+              <p class="font-semibold text-green-400">${(user.balance || 0).toFixed(2)}€</p>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Suscripción</p>
+              <p class="font-semibold">${user.hasActiveSubscription ? '✓ Premium' : '✗ Free'}</p>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Edad</p>
+              <p class="font-semibold">${user.age || 'No especificada'}</p>
+            </div>
+            <div class="bg-white/5 rounded-lg p-4">
+              <p class="text-xs text-gray-400 mb-1">Ubicación</p>
+              <p class="font-semibold">${user.city || 'No especificada'}</p>
+            </div>
+          </div>
+
+          <!-- Full Details -->
+          <div class="bg-white/5 rounded-lg p-4">
+            <p class="text-xs text-gray-400 mb-2">UID</p>
+            <code class="text-xs bg-black/30 px-2 py-1 rounded">${user.uid}</code>
+          </div>
+
+          ${user.bio ? `
+          <div class="bg-white/5 rounded-lg p-4">
+            <p class="text-xs text-gray-400 mb-2">Biografía</p>
+            <p class="text-sm">${user.bio}</p>
+          </div>
+          ` : ''}
+
+          <!-- Actions -->
+          <div class="pt-4 border-t border-white/10 flex space-x-3">
+            <button
+              onclick="closeUserModal()"
+              class="flex-1 px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      `;
+
+            document.getElementById('userModal').classList.remove('hidden');
+        };
+
+        window.closeUserModal = () => {
+            document.getElementById('userModal').classList.add('hidden');
+        };
+
+        // Delete user function
+        window.deleteUser = async (userId, userEmail, userRole) => {
+            // Prevent deleting admins
+            if (userRole === 'admin') {
+                alert('⚠️ No se pueden borrar cuentas de administrador');
+                return;
+            }
+
+            // Confirm deletion
+            const confirmed = confirm(
+                `⚠️ ¿Estás seguro de que quieres borrar este usuario?\n\n` +
+                `Email: ${userEmail}\n\n` +
+                `Esta acción NO se puede deshacer.`
+            );
+
+            if (!confirmed) return;
+
+            try {
+                console.log('🗑️ Deleting user:', userId, userEmail);
+
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'users', userId));
+
+                console.log('✅ User deleted from Firestore');
+
+                // Remove from local array
+                allUsers = allUsers.filter(u => u.id !== userId);
+
+                // Update display
+                applyFilters();
+
+                // Show success message
+                alert('✅ Usuario borrado exitosamente');
+
+            } catch (error) {
+                console.error('❌ Error deleting user:', error);
+                alert('❌ Error al borrar usuario: ' + error.message);
+            }
+        };
+
+        window.logout = async () => {
+            if (confirm('¿Seguro que quieres cerrar sesión?')) {
+                await signOut(auth);
+                window.location.href = '/admin-login.html';
+            }
+        };
+
+        window.resetStats = async () => {
+            if (!confirm('⚠️ ¿Estás seguro de que quieres RESETEAR las estadísticas?\n\nAcciones:\n1. Poner citas completadas a 0\n2. Poner tasa de respuesta a 100%\n3. Eliminar campo de compatibilidad (legacy)\n\nEsto afectará a TODOS los usuarios.')) return;
+
+            const btn = document.getElementById('resetStatsBtn');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+
+            try {
+                console.log('🔄 Calling resetUserStats function...');
+                const resetStats = httpsCallable(functions, 'resetUserStats');
+                const result = await resetStats();
+
+                console.log('✅ Reset result:', result.data);
+                alert(`✅ Reset completado exitosamente.\n\nUsuarios actualizados: ${result.data.updated}`);
+
+                // Reload data to reflect changes
+                loadData();
+
+            } catch (error) {
+                console.error('❌ Error resetting stats:', error);
+                alert('❌ Error al resetear estadísticas: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        };
+
+        window.previousPage = () => {
+            if (currentPage > 0) {
+                currentPage--;
+                renderUsers();
+            }
+        };
+
+        window.nextPage = () => {
+            if ((currentPage + 1) * usersPerPage < filteredUsers.length) {
+                currentPage++;
+                renderUsers();
+            }
+        };
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
+        document.getElementById('genderFilter').addEventListener('change', applyFilters);
+    </script>
 </body>
 
 </html>
