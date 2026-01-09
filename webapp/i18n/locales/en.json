@@ -4,7 +4,6 @@
     "code": "en",
     "flag": "🇬🇧"
   },
-
   "common": {
     "welcome": "Welcome",
     "login": "Login",
@@ -26,7 +25,6 @@
     "no": "No",
     "offline": "Offline"
   },
-
   "nav": {
     "home": "Home",
     "search": "Search",
@@ -37,7 +35,6 @@
     "logout": "Logout",
     "explore": "Explore"
   },
-
   "home": {
     "title": "SafeDate",
     "subtitle": "Find your perfect match with security, transparency and respect",
@@ -145,7 +142,6 @@
       "badge3": "Protected Data"
     }
   },
-
   "auth": {
     "login": {
       "title": "Login",
@@ -178,7 +174,6 @@
       "resend": "Resend email"
     }
   },
-
   "profile": {
     "title": "My Profile",
     "edit": "Edit Profile",
@@ -203,7 +198,6 @@
       "bio": "Bio"
     }
   },
-
   "search": {
     "title": "Search Users",
     "filters": "Filters",
@@ -220,7 +214,6 @@
     "apply": "Apply filters",
     "clear": "Clear filters"
   },
-
   "chat": {
     "title": "Messages",
     "conversations": "Conversations",
@@ -234,7 +227,6 @@
     "block": "Block",
     "report": "Report"
   },
-
   "membership": {
     "title": "Premium Membership",
     "subtitle": "Unlock all features",
@@ -297,7 +289,6 @@
     "select": "Select plan",
     "currentPlan": "Current plan"
   },
-
   "insurance": {
     "title": "Anti-Ghosting Insurance",
     "subtitle": "€120 protection against canceled dates",
@@ -311,7 +302,6 @@
       "hold": "Hold active"
     }
   },
-
   "events": {
     "title": "VIP Events",
     "upcoming": "Upcoming events",
@@ -322,7 +312,6 @@
     "registered": "Already registered",
     "premiumOnly": "Premium users only"
   },
-
   "settings": {
     "title": "Settings",
     "account": "Account",
@@ -334,7 +323,6 @@
     "deleteAccount": "Delete account",
     "logout": "Logout"
   },
-
   "notifications": {
     "title": "Notifications",
     "markRead": "Mark as read",
@@ -348,7 +336,6 @@
       "event": "New VIP event"
     }
   },
-
   "help": {
     "title": "Help Center",
     "faq": "FAQ",
@@ -356,7 +343,6 @@
     "guides": "Guides",
     "safety": "Safety Tips"
   },
-
   "errors": {
     "networkError": "Connection error. Please check your internet.",
     "authError": "Authentication error. Please sign in again.",
@@ -369,7 +355,6 @@
     "unauthorized": "Unauthorized",
     "serverError": "Server error"
   },
-
   "success": {
     "profileUpdated": "Profile updated successfully",
     "messageSent": "Message sent",
@@ -380,7 +365,6 @@
     "registered": "Registration successful",
     "loginSuccess": "Logged in successfully"
   },
-
   "validation": {
     "required": "This field is required",
     "email": "Invalid email",

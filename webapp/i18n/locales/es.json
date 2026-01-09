@@ -4,7 +4,6 @@
     "code": "es",
     "flag": "🇪🇸"
   },
-
   "common": {
     "welcome": "Bienvenido",
     "login": "Iniciar Sesión",
@@ -26,7 +25,6 @@
     "no": "No",
     "offline": "Sin conexión"
   },
-
   "nav": {
     "home": "Inicio",
     "search": "Buscar",
@@ -37,7 +35,6 @@
     "logout": "Salir",
     "explore": "Explorar"
   },
-
   "home": {
     "title": "TuCitaSegura",
     "subtitle": "Encuentra tu conexión perfecta con seguridad, transparencia y respeto",
@@ -145,7 +142,6 @@
       "badge3": "Datos Protegidos"
     }
   },
-
   "auth": {
     "login": {
       "title": "Iniciar Sesión",
@@ -178,7 +174,6 @@
       "resend": "Reenviar email"
     }
   },
-
   "profile": {
     "title": "Mi Perfil",
     "edit": "Editar Perfil",
@@ -203,7 +198,6 @@
       "bio": "Biografía"
     }
   },
-
   "search": {
     "title": "Buscar Usuarios",
     "filters": "Filtros",
@@ -220,7 +214,6 @@
     "apply": "Aplicar filtros",
     "clear": "Limpiar filtros"
   },
-
   "chat": {
     "title": "Mensajes",
     "conversations": "Conversaciones",
@@ -234,7 +227,6 @@
     "block": "Bloquear",
     "report": "Reportar"
   },
-
   "membership": {
     "title": "Membresía Premium",
     "subtitle": "Desbloquea todas las funciones",
@@ -297,7 +289,6 @@
     "select": "Seleccionar plan",
     "currentPlan": "Plan actual"
   },
-
   "insurance": {
     "title": "Seguro Anti-Plantón",
     "subtitle": "Protección de €120 contra citas canceladas",
@@ -311,7 +302,6 @@
       "hold": "Retención activa"
     }
   },
-
   "events": {
     "title": "Eventos VIP",
     "upcoming": "Próximos eventos",
@@ -322,7 +312,6 @@
     "registered": "Ya registrado",
     "premiumOnly": "Solo para usuarios Premium"
   },
-
   "settings": {
     "title": "Configuración",
     "account": "Cuenta",
@@ -334,7 +323,6 @@
     "deleteAccount": "Eliminar cuenta",
     "logout": "Cerrar sesión"
   },
-
   "notifications": {
     "title": "Notificaciones",
     "markRead": "Marcar como leído",
@@ -348,7 +336,6 @@
       "event": "Nuevo evento VIP"
     }
   },
-
   "help": {
     "title": "Centro de Ayuda",
     "faq": "Preguntas Frecuentes",
@@ -356,7 +343,6 @@
     "guides": "Guías",
     "safety": "Consejos de Seguridad"
   },
-
   "errors": {
     "networkError": "Error de conexión. Por favor, verifica tu internet.",
     "authError": "Error de autenticación. Por favor, inicia sesión nuevamente.",
@@ -369,7 +355,6 @@
     "unauthorized": "No autorizado",
     "serverError": "Error del servidor"
   },
-
   "success": {
     "profileUpdated": "Perfil actualizado correctamente",
     "messageSent": "Mensaje enviado",
@@ -380,7 +365,6 @@
     "registered": "Registro exitoso",
     "loginSuccess": "Sesión iniciada"
   },
-
   "validation": {
     "required": "Este campo es obligatorio",
     "email": "Email inválido",

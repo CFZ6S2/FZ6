@@ -4,7 +4,6 @@
     "code": "pt",
     "flag": "🇵🇹"
   },
-
   "common": {
     "welcome": "Bem-vindo",
     "login": "Entrar",
@@ -26,7 +25,6 @@
     "no": "Não",
     "offline": "Desconectado"
   },
-
   "nav": {
     "home": "Início",
     "search": "Pesquisar",
@@ -37,7 +35,6 @@
     "logout": "Sair",
     "explore": "Explorar"
   },
-
   "home": {
     "title": "Encontrosseguros",
     "subtitle": "Encontre sua conexão perfeita com segurança, transparência e respeito",
@@ -145,7 +142,6 @@
       "badge3": "Dados Protegidos"
     }
   },
-
   "auth": {
     "login": {
       "title": "Entrar",
@@ -178,7 +174,6 @@
       "resend": "Reenviar e-mail"
     }
   },
-
   "profile": {
     "title": "Meu Perfil",
     "edit": "Editar Perfil",
@@ -203,7 +198,6 @@
       "bio": "Biografia"
     }
   },
-
   "search": {
     "title": "Pesquisar Usuários",
     "filters": "Filtros",
@@ -220,7 +214,6 @@
     "apply": "Aplicar filtros",
     "clear": "Limpar filtros"
   },
-
   "chat": {
     "title": "Mensagens",
     "conversations": "Conversas",
@@ -234,7 +227,6 @@
     "block": "Bloquear",
     "report": "Denunciar"
   },
-
   "membership": {
     "title": "Assinatura Premium",
     "subtitle": "Desbloqueie todos os recursos",
@@ -297,7 +289,6 @@
     "select": "Selecionar plano",
     "currentPlan": "Plano atual"
   },
-
   "insurance": {
     "title": "Seguro Anti-Furo",
     "subtitle": "Proteção de €120 contra encontros cancelados",
@@ -311,7 +302,6 @@
       "hold": "Retenção ativa"
     }
   },
-
   "events": {
     "title": "Eventos VIP",
     "upcoming": "Próximos eventos",
@@ -322,7 +312,6 @@
     "registered": "Já registrado",
     "premiumOnly": "Apenas usuários Premium"
   },
-
   "settings": {
     "title": "Configurações",
     "account": "Conta",
@@ -334,7 +323,6 @@
     "deleteAccount": "Excluir conta",
     "logout": "Sair"
   },
-
   "notifications": {
     "title": "Notificações",
     "markRead": "Marcar como lido",
@@ -348,7 +336,6 @@
       "event": "Novo evento VIP"
     }
   },
-
   "help": {
     "title": "Central de Ajuda",
     "faq": "Perguntas Frequentes",
@@ -356,7 +343,6 @@
     "guides": "Guias",
     "safety": "Dicas de Segurança"
   },
-
   "errors": {
     "networkError": "Erro de conexão. Por favor, verifique sua internet.",
     "authError": "Erro de autenticação. Por favor, faça login novamente.",
@@ -369,7 +355,6 @@
     "unauthorized": "Não autorizado",
     "serverError": "Erro do servidor"
   },
-
   "success": {
     "profileUpdated": "Perfil atualizado com sucesso",
     "messageSent": "Mensagem enviada",
@@ -380,7 +365,6 @@
     "registered": "Cadastro bem-sucedido",
     "loginSuccess": "Login bem-sucedido"
   },
-
   "validation": {
     "required": "Este campo é obrigatório",
     "email": "E-mail inválido",

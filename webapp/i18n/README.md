@@ -19,9 +19,9 @@ Sistema multilenguaje completo para TuCitaSegura.
 |--------|--------|--------|
 | Español | `es` | ✅ Completo |
 | English | `en` | ✅ Completo |
-| Français | `fr` | ✅ Completo |
 | Português | `pt` | ✅ Completo |
 | Deutsch | `de` | ✅ Completo |
+| Français | `fr` | 🔄 Pendiente |
 
 ## 📦 Estructura
 
@@ -30,9 +30,9 @@ webapp/i18n/
 ├── locales/          # Archivos de traducciones
 │   ├── es.json      # Español ✅
 │   ├── en.json      # Inglés ✅
-│   ├── fr.json      # Francés ✅
 │   ├── pt.json      # Portugués ✅
-│   └── de.json      # Alemán ✅
+│   ├── de.json      # Alemán ✅
+│   └── fr.json      # Francés 🔄
 ├── i18n.js          # Motor principal de traducciones
 └── README.md        # Este archivo
 ```
@@ -185,7 +185,7 @@ this.defaultLanguage = 'en'; // Cambiar de 'es' a 'en'
 
 ```javascript
 // En i18n.js
-this.supportedLanguages = ['es', 'en', 'fr'];
+this.supportedLanguages = ['es', 'en', 'pt', 'de', 'fr'];
 ```
 
 ### Interpolación de variables:
@@ -269,13 +269,17 @@ Asegúrate de que los archivos JSON estén en:
 ```
 https://tu-dominio.com/webapp/i18n/locales/es.json
 https://tu-dominio.com/webapp/i18n/locales/en.json
+https://tu-dominio.com/webapp/i18n/locales/pt.json
+https://tu-dominio.com/webapp/i18n/locales/de.json
 ```
 
 ## 📈 Próximos Pasos
 
-- [ ] Agregar Francés (fr)
-- [ ] Agregar Portugués (pt)
-- [ ] Agregar Alemán (de)
+- [x] Español (es)
+- [x] Inglés (en)
+- [x] Portugués (pt)
+- [x] Alemán (de)
+- [ ] Francés (fr)
 - [ ] Sistema de traducción automática (Google Translate API)
 - [ ] Panel admin para editar traducciones
 - [ ] Soporte para plurales complejos
@@ -287,6 +291,6 @@ Parte del proyecto TuCitaSegura - Todos los derechos reservados.
 
 ---
 
-**Desarrollado por:** TuCitaSegura Team
-**Versión:** 1.0.0
-**Última actualización:** Noviembre 2025
+**Desarrollado por:** TuCitaSegura Team  
+**Versión:** 1.0.0  
+**Última actualización:** Enero 2026

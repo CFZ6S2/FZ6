@@ -4,7 +4,6 @@
     "code": "de",
     "flag": "🇩🇪"
   },
-
   "common": {
     "welcome": "Willkommen",
     "login": "Anmelden",
@@ -26,7 +25,6 @@
     "no": "Nein",
     "offline": "Offline"
   },
-
   "nav": {
     "home": "Startseite",
     "search": "Suchen",
@@ -37,7 +35,6 @@
     "logout": "Abmelden",
     "explore": "Entdecken"
   },
-
   "home": {
     "title": "SicherDates",
     "subtitle": "Finden Sie Ihre perfekte Verbindung mit Sicherheit, Transparenz und Respekt",
@@ -145,7 +142,6 @@
       "badge3": "Geschützte Daten"
     }
   },
-
   "auth": {
     "login": {
       "title": "Anmelden",
@@ -178,7 +174,6 @@
       "resend": "E-Mail erneut senden"
     }
   },
-
   "profile": {
     "title": "Mein Profil",
     "edit": "Profil Bearbeiten",
@@ -203,7 +198,6 @@
       "bio": "Biografie"
     }
   },
-
   "search": {
     "title": "Benutzer Suchen",
     "filters": "Filter",
@@ -220,7 +214,6 @@
     "apply": "Filter anwenden",
     "clear": "Filter löschen"
   },
-
   "chat": {
     "title": "Nachrichten",
     "conversations": "Unterhaltungen",
@@ -234,7 +227,6 @@
     "block": "Blockieren",
     "report": "Melden"
   },
-
   "membership": {
     "title": "Premium-Mitgliedschaft",
     "subtitle": "Alle Funktionen freischalten",
@@ -297,7 +289,6 @@
     "select": "Plan auswählen",
     "currentPlan": "Aktueller Plan"
   },
-
   "insurance": {
     "title": "Anti-Ghosting-Versicherung",
     "subtitle": "120€ Schutz gegen abgesagte Dates",
@@ -311,7 +302,6 @@
       "hold": "Kaution aktiv"
     }
   },
-
   "events": {
     "title": "VIP-Events",
     "upcoming": "Bevorstehende Events",
@@ -322,7 +312,6 @@
     "registered": "Bereits registriert",
     "premiumOnly": "Nur für Premium-Benutzer"
   },
-
   "settings": {
     "title": "Einstellungen",
     "account": "Konto",
@@ -334,7 +323,6 @@
     "deleteAccount": "Konto löschen",
     "logout": "Abmelden"
   },
-
   "notifications": {
     "title": "Benachrichtigungen",
     "markRead": "Als gelesen markieren",
@@ -348,7 +336,6 @@
       "event": "Neues VIP-Event"
     }
   },
-
   "help": {
     "title": "Hilfe-Center",
     "faq": "FAQ",
@@ -356,7 +343,6 @@
     "guides": "Anleitungen",
     "safety": "Sicherheitstipps"
   },
-
   "errors": {
     "networkError": "Verbindungsfehler. Bitte überprüfen Sie Ihre Internetverbindung.",
     "authError": "Authentifizierungsfehler. Bitte melden Sie sich erneut an.",
@@ -369,7 +355,6 @@
     "unauthorized": "Nicht autorisiert",
     "serverError": "Serverfehler"
   },
-
   "success": {
     "profileUpdated": "Profil erfolgreich aktualisiert",
     "messageSent": "Nachricht gesendet",
@@ -380,7 +365,6 @@
     "registered": "Registrierung erfolgreich",
     "loginSuccess": "Erfolgreich angemeldet"
   },
-
   "validation": {
     "required": "Dieses Feld ist erforderlich",
     "email": "Ungültige E-Mail",
