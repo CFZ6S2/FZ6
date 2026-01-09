@@ -4,7 +4,6 @@
     "code": "fr",
     "flag": "🇫🇷"
   },
-
   "common": {
     "welcome": "Bienvenue",
     "login": "Se connecter",
@@ -26,7 +25,6 @@
     "no": "Non",
     "offline": "Hors ligne"
   },
-
   "nav": {
     "home": "Accueil",
     "search": "Rechercher",
@@ -37,7 +35,6 @@
     "logout": "Déconnexion",
     "explore": "Explorer"
   },
-
   "home": {
     "title": "RencontresSûres",
     "subtitle": "Trouvez votre connexion parfaite avec sécurité, transparence et respect",
@@ -145,7 +142,6 @@
       "badge3": "Données Protégées"
     }
   },
-
   "auth": {
     "login": {
       "title": "Connexion",
@@ -178,7 +174,6 @@
       "resend": "Renvoyer l'email"
     }
   },
-
   "profile": {
     "title": "Mon Profil",
     "edit": "Modifier le Profil",
@@ -203,7 +198,6 @@
       "bio": "Biographie"
     }
   },
-
   "search": {
     "title": "Rechercher des Utilisateurs",
     "filters": "Filtres",
@@ -220,7 +214,6 @@
     "apply": "Appliquer les filtres",
     "clear": "Effacer les filtres"
   },
-
   "chat": {
     "title": "Messages",
     "conversations": "Conversations",
@@ -234,7 +227,6 @@
     "block": "Bloquer",
     "report": "Signaler"
   },
-
   "membership": {
     "title": "Adhésion Premium",
     "subtitle": "Débloquez toutes les fonctionnalités",
@@ -262,7 +254,7 @@
           "J'aime illimités",
           "Messages illimités",
           "Voir qui vous a aimé",
-          "Filtres avancés",
+          "Filtros avancés",
           "Sans publicité",
           "Badge Premium"
         ]
@@ -297,7 +289,6 @@
     "select": "Sélectionner le plan",
     "currentPlan": "Plan actuel"
   },
-
   "insurance": {
     "title": "Assurance Anti-Lapin",
     "subtitle": "Protection de 120€ contre les rendez-vous annulés",
@@ -311,7 +302,6 @@
       "hold": "Retenue active"
     }
   },
-
   "events": {
     "title": "Événements VIP",
     "upcoming": "Événements à venir",
@@ -322,7 +312,6 @@
     "registered": "Déjà inscrit",
     "premiumOnly": "Utilisateurs Premium uniquement"
   },
-
   "settings": {
     "title": "Paramètres",
     "account": "Compte",
@@ -334,7 +323,6 @@
     "deleteAccount": "Supprimer le compte",
     "logout": "Déconnexion"
   },
-
   "notifications": {
     "title": "Notifications",
     "markRead": "Marquer comme lu",
@@ -348,7 +336,6 @@
       "event": "Nouvel événement VIP"
     }
   },
-
   "help": {
     "title": "Centre d'Aide",
     "faq": "FAQ",
@@ -356,7 +343,6 @@
     "guides": "Guides",
     "safety": "Conseils de Sécurité"
   },
-
   "errors": {
     "networkError": "Erreur de connexion. Veuillez vérifier votre internet.",
     "authError": "Erreur d'authentification. Veuillez vous reconnecter.",
@@ -369,7 +355,6 @@
     "unauthorized": "Non autorisé",
     "serverError": "Erreur du serveur"
   },
-
   "success": {
     "profileUpdated": "Profil mis à jour avec succès",
     "messageSent": "Message envoyé",
@@ -380,7 +365,6 @@
     "registered": "Inscription réussie",
     "loginSuccess": "Connexion réussie"
   },
-
   "validation": {
     "required": "Ce champ est obligatoire",
     "email": "Email invalide",
