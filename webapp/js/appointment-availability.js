@@ -11,7 +11,7 @@
 import { APPOINTMENT_AVAILABILITY } from './constants.js';
 import { GENDERS } from './constants.js';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './firebase-config-env.js';
+import { getDb } from './firebase-config-env.js';
 import { logger } from './logger.js';
 
 /**
@@ -22,14 +22,15 @@ import { logger } from './logger.js';
 export async function getAvailabilityStatus(userId) {
   try {
     const { getDoc } = await import('firebase/firestore');
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       // Por defecto: no acepta citas
       return APPOINTMENT_AVAILABILITY.NOT_ACCEPTING.status;
     }
-    
+
     const userData = userSnap.data();
     return userData.appointmentAvailability || APPOINTMENT_AVAILABILITY.NOT_ACCEPTING.status;
   } catch (error) {
@@ -55,7 +56,7 @@ export async function updateAvailabilityStatus(userId, availability, gender) {
         error: 'Solo disponible para mujeres'
       };
     }
-    
+
     // Validar estado
     const validStatuses = Object.values(APPOINTMENT_AVAILABILITY).map(a => a.status);
     if (!validStatuses.includes(availability)) {
@@ -65,24 +66,25 @@ export async function updateAvailabilityStatus(userId, availability, gender) {
         error: 'Estado de disponibilidad inválido'
       };
     }
-    
+
     const previousStatus = await getAvailabilityStatus(userId);
-    
+
     // Actualizar en Firestore
+    const db = await getDb();
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
       appointmentAvailability: availability,
       appointmentAvailabilityUpdatedAt: serverTimestamp()
     });
-    
-    const config = APPOINTMENT_AVAILABILITY[availability.toUpperCase()] || 
-                   Object.values(APPOINTMENT_AVAILABILITY).find(a => a.status === availability);
-    
+
+    const config = APPOINTMENT_AVAILABILITY[availability.toUpperCase()] ||
+      Object.values(APPOINTMENT_AVAILABILITY).find(a => a.status === availability);
+
     logger.info(`✅ Disponibilidad actualizada: ${previousStatus} -> ${availability}`, {
       userId,
       label: config?.label || availability
     });
-    
+
     return {
       success: true,
       previousStatus,

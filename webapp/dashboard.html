@@ -17,7 +17,7 @@
     <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
 
     <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="./css/input.css">
+    <link rel="stylesheet" href="./css/output.css">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style"
         onload="this.onload=null;this.rel='stylesheet'">
     <noscript>
@@ -84,6 +84,13 @@
             </div>
             <div class="flex items-center gap-4">
                 <div id="language-selector-container" class="relative z-50"></div>
+
+                <a href="/panel-concierge.html" id="navConciergeBtn"
+                    class="hidden p-2 rounded-full hover:bg-white/10 transition text-purple-400 hover:text-purple-300"
+                    title="Ir a Panel Concierge">
+                    <i class="fas fa-glass-cheers"></i>
+                </a>
+
                 <button id="logoutBtn"
                     class="p-2 rounded-full hover:bg-white/10 transition text-slate-300 hover:text-white"
                     title="Cerrar Sesión" data-i18n="nav.logout">
@@ -227,6 +234,17 @@
                 </div>
                 <h3 class="font-bold text-lg text-red-200">Panel Admin</h3>
                 <span class="text-xs text-red-400 mt-1">Solo Administradores</span>
+            </a>
+
+            <!-- Concierge Panel (Hidden by default) -->
+            <a href="/panel-concierge.html" id="conciergePanelCard"
+                class="hidden glass-card p-7 rounded-3xl flex flex-col items-center justify-center text-center group h-44 border-2 border-purple-500/50 bg-purple-500/10 order-first">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 transition-transform">
+                    <i class="fas fa-glass-cheers text-3xl text-white"></i>
+                </div>
+                <h3 class="font-bold text-lg text-purple-200">Panel Concierge</h3>
+                <span class="text-xs text-purple-400 mt-1">Gestión Eventos VIP</span>
             </a>
 
             <!-- Buscar -->
@@ -395,6 +413,7 @@
     <script type="module" src="./js/language-selector.js"></script>
     <!-- Presence Heartbeat -->
     <script type="module" src="./js/presence.js"></script>
+    <script type="module" src="./js/legal-consent.js"></script>
 </body>
 
 </html>

@@ -22,30 +22,12 @@ const auth = getAuth(app);
 // const db = getFirestore(app);
 // console.log("✅ Firestore initialized");
 
+// SIMPLE STABLE IMPLEMENTATION
+// Reverting complex persistence logic to prevent "Expected first argument to collection..." error
+// caused by race conditions or undefined db instances in the advanced init sequence.
 export async function getDb() {
-    const { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } = await import('firebase/firestore');
-
-    // ATTEMPT 1: Try to initialize with our custom settings (Long Polling + Persistence)
-    try {
-        console.log("🔥 Attempting to initialize Firestore with Long Polling...");
-        const db = initializeFirestore(app, {
-            experimentalForceLongPolling: true,
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
-        });
-        console.log("✅ Firestore initialized with custom settings (Long Polling active)");
-        return db;
-    } catch (e) {
-        // ATTEMPT 2: If already initialized (FAILED_PRECONDITION), return existing instance
-        if (e.code === 'failed-precondition' || e.message.includes('already exists')) {
-            console.warn("⚠️ Firestore already initialized (defaults?). Returning existing instance.");
-            return getFirestore(app);
-        }
-        // Unknown error
-        console.error("❌ Firestore initialization failed:", e);
-        throw e;
-    }
+    // console.log("🔥 Returning standard Firestore instance (Stable Mode)");
+    return getFirestore(app);
 }
 
 const functions = getFunctions(app);

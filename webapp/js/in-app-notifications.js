@@ -43,6 +43,13 @@ export async function initInAppNotifications(user) {
                 showNotificationToast(change.doc.id, notif);
             }
         });
+    }, (error) => {
+        // Suppress benign network errors
+        if (error.code === 'unavailable' || error.message.includes('offline')) {
+            console.warn('🔕 Notification listener paused (offline).');
+        } else {
+            console.error('❌ Notification listener failed:', error);
+        }
     });
 }
 

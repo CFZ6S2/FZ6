@@ -37,11 +37,6 @@ export default defineConfig(({ mode }) => {
                         if (id.includes('node_modules') && id.includes('firebase')) {
                             return 'firebase-vendor';
                         }
-                        // Other Vendors (split if needed, keep general otherwise)
-                        // This helps parallelize downloading but keeps route chunks focused
-
-                        // Note: Vite splits routes automatically by entry point (input options).
-                        // Adding this manual chunk moves shared firebase code out of those entry chunks.
                     }
                 },
                 input: {
@@ -58,6 +53,7 @@ export default defineConfig(({ mode }) => {
                     citas: path.resolve(__dirname, 'citas.html'),
                     cita_detalle: path.resolve(__dirname, 'cita-detalle.html'),
                     concierge_dashboard: path.resolve(__dirname, 'concierge-dashboard.html'),
+                    panel_concierge: path.resolve(__dirname, 'panel-concierge.html'),
                     conversaciones: path.resolve(__dirname, 'conversaciones.html'),
                     cuenta_pagos: path.resolve(__dirname, 'cuenta-pagos.html'),
                     evento_detalle: path.resolve(__dirname, 'evento-detalle.html'),
@@ -96,8 +92,6 @@ export default defineConfig(({ mode }) => {
                     target: 'http://127.0.0.1:5000',
                     changeOrigin: true,
                     secure: false,
-                    // Rewrite path if needed (optional)
-                    // rewrite: (path) => path.replace(/^\/api/, '') 
                 }
             }
         }

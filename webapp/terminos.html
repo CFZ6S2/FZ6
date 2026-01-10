@@ -5,62 +5,152 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Términos de Servicio - TuCitaSegura</title>
-    <link rel="stylesheet" href="./css/landing.css">
+    <link rel="stylesheet" href="./css/output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
             background: #0f172a;
             color: #fff;
-            margin: 0;
-            padding: 2rem;
+            font-family: 'Inter', sans-serif;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 800px;
-            margin: auto;
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #60a5fa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
         }
 
-        h1 {
-            font-size: 2.5rem;
+        .legal-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+        }
+
+        .legal-content p,
+        .legal-content li {
+            color: #cbd5e1;
+            line-height: 1.7;
             margin-bottom: 1rem;
         }
 
-        h2 {
-            font-size: 1.75rem;
-            margin-top: 1.5rem;
+        .legal-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        p {
-            line-height: 1.6;
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
 
-<body>
-    <div class="card">
-        <h1>Términos de Servicio</h1>
-        <p>Al utilizar TuCitaSegura aceptas los siguientes términos y condiciones.</p>
-        <h2>Conducta del Usuario</h2>
-        <p>Los usuarios deben comportarse de manera respetuosa, no publicar contenido ofensivo, fraudulento o que
-            infrinja derechos de terceros.</p>
-        <h2>Responsabilidad y Limitación</h2>
-        <p>TuCitaSegura no es responsable por interacciones entre usuarios fuera de la plataforma. No garantizamos la
-            veracidad de la información proporcionada por los usuarios.</p>
-        <h2>Cancelación y Suspensión</h2>
-        <p>Podemos suspender o cancelar cuentas que violen los términos sin previo aviso.</p>
-        <h2>Ley Aplicable</h2>
-        <p>Estos términos se rigen por la legislación de la República Argentina.</p>
-        <h2>Contacto</h2>
-        <p>Para consultas, visita la página de <a href="contacto.html" style="color:#60a5fa;">Contacto</a>.</p>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Términos y Condiciones</h1>
+            <p class="text-slate-400">Última actualización: 10 de Enero, 2026</p>
+        </div>
 
-        <div class="mt-8 pt-6 border-t border-white/10 text-center">
-            <a href="/" class="text-blue-400 hover:text-white transition no-underline">
-                ← Volver al Inicio
+        <div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-12 legal-content">
+
+            <div class="warning-box">
+                <h3 class="!mt-0 !text-red-400"><i class="fas fa-exclamation-triangle mr-2"></i> Aviso Importante</h3>
+                <p class="!mb-0 !text-slate-300">Este sitio web contiene material dirigido exclusivamente a adultos. Al
+                    ingresar, usted declara bajo pena de perjurio que tiene al menos 18 años de edad (o la mayoría de
+                    edad en su jurisdicción).</p>
+            </div>
+
+            <h2>1. Aceptación de los Términos</h2>
+            <p>Al acceder o utilizar TuCitaSegura (en adelante, "la Plataforma"), operada por <strong>TCS GLOBAL
+                    SOLUTIONS LLC</strong> (New Mexico, USA), usted acepta vincularse legalmente por estos Términos de
+                Servicio. Si no está de acuerdo, le rogamos que no utilice nuestros servicios.</p>
+
+            <h2>2. Naturaleza del Servicio</h2>
+            <p>La Plataforma es un espacio digital que facilita la conexión y gestión de citas entre adultos que
+                consienten libremente. </p>
+            <ul>
+                <li><strong>NO somos una agencia de acompañantes.</strong></li>
+                <li><strong>NO empleamos a ningún usuario.</strong></li>
+                <li><strong>Tolerancia Cero con la Trata:</strong> Cualquier indicio de coerción, trata de personas o
+                    explotación será reportado inmediatamente a las autoridades competentes (FBI/Europol).</li>
+                <li>La Plataforma prohíbe estrictamente la promoción de servicios sexuales ilegales ("prostitución") en
+                    los espacios públicos de la web. Los acuerdos privados entre adultos consintientes son
+                    responsabilidad exclusiva de las partes.</li>
+            </ul>
+
+            <h2>3. Política de Depósito y Retenciones ("Seguro Anti-Plantón")</h2>
+            <h3>3.1. Naturaleza del Depósito</h3>
+            <p>Para garantizar la seriedad de las citas, la Plataforma requiere una retención de seguridad de
+                <strong>120.00 EUR</strong> (o su equivalente) en la tarjeta o billetera del Usuario Cliente.</p>
+            <ul>
+                <li>Esta cantidad <strong>NO es un cobro</strong>, es una retención temporal (Hold).</li>
+                <li>Solo se captura (cobra) en caso de incumplimiento ("Plantón") verificado.</li>
+            </ul>
+
+            <h3>3.2. Penalizaciones</h3>
+            <p>El Usuario acepta que la Plataforma capture el depósito de 120€ en los siguientes casos:</p>
+            <ul>
+                <li>No presentarse a una cita confirmada ("No Show").</li>
+                <li>Cancelación con menos de 4 horas de antelación.</li>
+                <li>Comportamiento peligroso o abusivo reportado y verificado.</li>
+            </ul>
+
+            <h3>3.3. Liberación de Fondos</h3>
+            <p>Los fondos retenidos se liberarán si la cuenta se cierra y no existen reclamaciones pendientes, sujeto a
+                una <strong>Comisión de Gestión de Retiro de 20.00 EUR</strong>.</p>
+
+            <h2>4. Sistema de Membresía y Pagos</h2>
+            <p>La membresía Premium tiene un costo de <strong>30.00 EUR mensuales</strong>. Esta suscripción otorga
+                acceso a las herramientas de comunicación y gestión. La suscripción se renueva automáticamente salvo
+                cancelación expresa 24h antes del vencimiento.</p>
+            <p>Todas las transacciones se procesan de forma segura a través de proveedores externos autorizados (PayPal,
+                Stripe, Procesadores High-Risk o Crypto). La Plataforma no almacena datos completos de tarjetas de
+                crédito.</p>
+
+            <h2>5. Conducta y Verificación</h2>
+            <p>Para mantener la seguridad de la comunidad:</p>
+            <ul>
+                <li>Todos los usuarios deben pasar un proceso de verificación de identidad.</li>
+                <li>Está prohibido compartir datos de contacto externos (teléfono, redes sociales) antes de confirmar
+                    una cita en la Plataforma.</li>
+                <li>El acoso, la difamación y el doxxing resultarán en la terminación inmediata de la cuenta y sus
+                    fondos.</li>
+            </ul>
+
+            <h2>6. Limitación de Responsabilidad</h2>
+            <p>TCS GLOBAL SOLUTIONS LLC actúa como un mero intermediario tecnológico (Safe Harbor bajo la DMCA y Art.
+                230 CDA de EE.UU.). No somos responsables de las acciones de los usuarios offline. Usted asume todo el
+                riesgo asociado con las interacciones con otros usuarios.</p>
+
+            <h2>7. Ley Aplicable y Jurisdicción</h2>
+            <p>Cualquier disputa relacionada con estos Términos se regirá e interpretará de acuerdo con las leyes del
+                Estado de <strong>Nuevo México, Estados Unidos</strong>, sin dar efecto a ningún principio de conflicto
+                de leyes. Usted acepta someterse a la jurisdicción exclusiva de los tribunales estatales y federales
+                ubicados en Albuquerque, New Mexico.</p>
+
+            <h2>8. Contacto</h2>
+            <p><strong>TCS GLOBAL SOLUTIONS LLC</strong><br>
+                1209 Mountain Road Pl Ne, Ste N<br>
+                Albuquerque, NM, 87110<br>
+                USA</p>
+            <p>Email: legal@tucitasegura.com</p>
+
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/" class="text-slate-400 hover:text-white transition flex items-center justify-center gap-2">
+                <i class="fas fa-arrow-left"></i> Volver al Inicio
             </a>
         </div>
     </div>

@@ -10,7 +10,17 @@ import { initializeNotifications } from './notifications.js';
 import './image-optimizer.js';
 
 (async () => {
-    const db = await getDb();
+    // Initialize Firestore lazily with fallback
+    let db;
+    try {
+        db = await getDb();
+        if (!db) throw new Error('getDb returned null');
+    } catch (e) {
+        console.error('⚠️ Firestore init failed in conversaciones.js, using fallback:', e);
+        const { getFirestore } = await import('firebase/firestore');
+        const { app } = await import('./firebase-config-env.js');
+        db = getFirestore(app);
+    }
     window._debug_db = db;
     let currentUser = null;
     let currentUserData = null;

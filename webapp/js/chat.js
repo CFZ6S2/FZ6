@@ -20,7 +20,17 @@ import './image-optimizer.js';
 import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
 
 (async () => {
-    const db = await getDb();
+    // Initialize Firestore lazily with fallback
+    let db;
+    try {
+        db = await getDb();
+        if (!db) throw new Error('getDb returned null');
+    } catch (e) {
+        console.error('⚠️ Firestore init failed in chat.js, using fallback:', e);
+        const { getFirestore } = await import('firebase/firestore');
+        const { app } = await import('./firebase-config-env.js');
+        db = getFirestore(app);
+    }
     window._debug_db = db;
     // Make functions globally available
     window.closeUserModal = function () {

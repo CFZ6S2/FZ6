@@ -28,7 +28,15 @@ import { guardPage } from './profile-guard.js';
 import { sanitizer } from './sanitizer.js';
 
 (async () => {
-    const db = await getDb();
+    // Initialize Firestore lazily with fallback
+    let db;
+    try {
+        db = await getDb();
+        if (!db) throw new Error('getDb returned null');
+    } catch (e) {
+        console.error('⚠️ Firestore init failed in ocultos.js, using fallback:', e);
+        db = getFirestore(app);
+    }
 
 
 

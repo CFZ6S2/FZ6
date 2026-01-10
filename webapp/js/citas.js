@@ -16,7 +16,17 @@ import { loadTheme } from './theme.js';
 import { sanitizer } from './sanitizer.js';
 
 (async () => {
-  const db = await getDb();
+  // Initialize Firestore lazily with fallback
+  let db;
+  try {
+    db = await getDb();
+    if (!db) throw new Error('getDb returned null');
+  } catch (e) {
+    console.error('⚠️ Firestore init failed in citas.js, using fallback:', e);
+    const { getFirestore } = await import('firebase/firestore');
+    const { app } = await import('./firebase-config-env.js');
+    db = getFirestore(app);
+  }
   let currentUser = null;
   let currentUserData = null;
   let allDates = [];

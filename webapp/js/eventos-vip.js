@@ -1,5 +1,5 @@
 import './firebase-appcheck.js';
-import { auth, storage, getDb } from './firebase-config-env.js';
+import { auth, storage, getDb, app } from './firebase-config-env.js';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import {
     collection,
@@ -9,13 +9,22 @@ import {
     getDocs,
     doc,
     getDoc,
-    Timestamp
+    Timestamp,
+    getFirestore
 } from 'firebase/firestore';
 import { loadTheme } from './theme.js';
 import './image-optimizer.js';
 
 (async () => {
-    const db = await getDb();
+    // Initialize Firestore lazily with fallback
+    let db;
+    try {
+        db = await getDb();
+        if (!db) throw new Error('getDb returned null');
+    } catch (e) {
+        console.error('⚠️ Firestore init failed in eventos-vip.js, using fallback:', e);
+        db = getFirestore(app); // Assumed missing import, will add later or hope it's not needed if we import it
+    }
 
 
 

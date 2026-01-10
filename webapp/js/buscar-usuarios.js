@@ -16,8 +16,9 @@ import { guardPage } from './profile-guard.js';
 import { sanitizer } from './sanitizer.js';
 
 (async () => {
-    const db = await getDb();
+    const db = getFirestore(app);
     window._debug_db = db;
+    console.log('✅ Firestore initialized synchronously in buscar-usuarios.js');
     // Firestore imported from config
 
     // Define SUPER_USERS constant to fix ReferenceError
@@ -101,6 +102,62 @@ import { sanitizer } from './sanitizer.js';
     const quickSearchBtn = document.getElementById('quickSearchBtn');
     const searchText = document.getElementById('searchText');
 
+    // --- EVENT LISTENERS (Moved Up for Immediate Interaction) ---
+    if (toggleFilters && filtersPanel) {
+        toggleFilters.addEventListener('click', () => {
+            console.log('🔘 Toggle filters clicked');
+            filtersPanel.classList.toggle('hidden');
+        });
+    }
+
+    if (applyFilters) {
+        applyFilters.addEventListener('click', () => {
+            saveFilters();
+            applyFiltersAndSort();
+            if (filtersPanel) filtersPanel.classList.add('hidden');
+        });
+    }
+
+    if (clearFilters) {
+        clearFilters.addEventListener('click', () => {
+            const inputs = ['searchText', 'locationSearch', 'filterAgeMin', 'filterAgeMax', 'filterDistance', 'filterReputation'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            const checks = ['filterVerified', 'filterOnline', 'filterFavorites'];
+            checks.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+
+            if (sortBy) sortBy.value = 'distance';
+            localStorage.removeItem('userSearchFilters');
+            applyFiltersAndSort();
+        });
+    }
+
+    if (clearAllFilters) {
+        clearAllFilters.addEventListener('click', () => {
+            if (clearFilters) clearFilters.click();
+        });
+    }
+
+    if (resetSearch) {
+        resetSearch.addEventListener('click', () => {
+            if (clearFilters) clearFilters.click();
+        });
+    }
+
+    if (sortBy) {
+        sortBy.addEventListener('change', () => {
+            saveFilters();
+            applyFiltersAndSort();
+        });
+    }
+    // ------------------------------------------------------------
+
     // State
     let currentUser = null;
     let currentUserData = null;
@@ -143,6 +200,12 @@ import { sanitizer } from './sanitizer.js';
 
             if (elMen) elMen.textContent = `${countMen} Hombres`;
             if (elWomen) elWomen.textContent = `${countWomen} Mujeres`;
+
+            // Update Mobile Stats
+            const elMenMob = document.getElementById('globalStatsMenMobile');
+            const elWomenMob = document.getElementById('globalStatsWomenMobile');
+            if (elMenMob) elMenMob.textContent = `${countMen} Hombres`;
+            if (elWomenMob) elWomenMob.textContent = `${countWomen} Mujeres`;
 
         } catch (error) {
             console.error('Error fetching global stats:', error);
@@ -813,6 +876,14 @@ import { sanitizer } from './sanitizer.js';
                     vipEventsBtn.classList.remove('opacity-0', 'pointer-events-none');
                 }
             }
+
+            // Show Concierge Panel button for authorized users
+            if (currentUserData.role === 'admin' || currentUserData.role === 'concierge' || currentUserData.userRole === 'admin') {
+                const conciergePanelBtn = document.getElementById('conciergePanelBtn');
+                if (conciergePanelBtn) {
+                    conciergePanelBtn.classList.remove('hidden');
+                }
+            }
         }
     }
 
@@ -890,6 +961,7 @@ import { sanitizer } from './sanitizer.js';
                     const age = data.birthDate ? calculateAge(data.birthDate) : null;
 
                     // Add mock location if not present (logic preserved)
+                    /* MOCK LOCATION REMOVED - Preventing users from appearing in Madrid by default
                     if (!data.location) {
                         const userId = doc.id;
                         const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -901,6 +973,7 @@ import { sanitizer } from './sanitizer.js';
                             lng: -3.7038 + lngOffset
                         };
                     }
+                    */
 
                     // Attach Match Score
                     const matchScore = recommendationScores[doc.id] || 0; // Default 0 if not found
@@ -917,7 +990,7 @@ import { sanitizer } from './sanitizer.js';
             applyFiltersAndSort();
         } catch (error) {
             console.error('Error loading users:', error);
-            showToast('Error al cargar usuarios', 'error');
+            showToast(`Error: ${error.message}`, 'error');
             hideLoading();
         }
     }
@@ -1099,13 +1172,26 @@ import { sanitizer } from './sanitizer.js';
         return diffMinutes < 10;
     }
 
+
+    // Helper to get badge details for availability status (Women)
+    function getAvailabilityBadge(status) {
+        const badges = {
+            'available': { color: 'bg-green-500/20 text-green-400 border border-green-500/50', icon: 'fa-check-circle', label: 'Disponible' },
+            'busy': { color: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50', icon: 'fa-clock', label: 'Ocupada' },
+            'offline': { color: 'bg-slate-500/20 text-slate-400 border border-slate-500/50', icon: 'fa-power-off', label: 'Desconectada' },
+            'unavailable': { color: 'bg-red-500/20 text-red-400 border border-red-500/50', icon: 'fa-times-circle', label: 'No Disponible' },
+            'planned': { color: 'bg-purple-500/20 text-purple-400 border border-purple-500/50', icon: 'fa-calendar-check', label: 'Con Cita' }
+        };
+        return badges[status] || badges['available'];
+    }
+
     function createUserCard(user, isEager = false) {
         // Reputation (Men) & Availability (Women) Logic
         let reputationBadge = null;
         let availabilityStatus = null;
 
         if (user.gender === 'femenino') {
-            availabilityStatus = getAvailabilityStatus(user.availabilityStatus || 'available');
+            availabilityStatus = getAvailabilityBadge(user.availabilityStatus || 'available');
         } else {
             // Men: Default ORO, check completedDates for Platinum
             // Assuming 'completedDates' is the field name. If not present, default 0.
@@ -1148,10 +1234,10 @@ import { sanitizer } from './sanitizer.js';
         }
 
         return `
-        <div class="user-card glass rounded-2xl p-4 md:p-6 cursor-pointer relative group transition-all hover:bg-white/5" data-user-id="${user.id}">
-          <div class="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
+        <div class="user-card glass rounded-2xl p-3 md:p-6 cursor-pointer relative group transition-all hover:bg-white/5" data-user-id="${user.id}">
+          <div class="flex items-start gap-3 md:gap-4 mb-2 md:mb-4">
             <div class="relative">
-              <div class="w-16 h-16 md:w-20 md:h-20 rounded-full flex-shrink-0 overflow-hidden border-2 ${borderClass}">
+              <div class="w-14 h-14 md:w-20 md:h-20 rounded-full flex-shrink-0 overflow-hidden border-2 ${borderClass}">
                 ${avatarHtml}
               </div>
               <span class="absolute bottom-0 right-0 w-3 h-3 md:w-5 md:h-5 ${isOnline ? 'bg-green-500' : 'bg-slate-500'} border-2 md:border-4 border-slate-800 rounded-full z-10" title="${isOnline ? 'En línea' : 'Desconectado'}"></span>
@@ -1167,6 +1253,10 @@ import { sanitizer } from './sanitizer.js';
                   <i class="fas fa-birthday-cake mr-1"></i>
                   ${user.age} <span class="hidden md:inline">años</span>
                 </span>
+                ${user.city ? `<span class="badge bg-slate-700/50 text-[10px] md:text-xs px-1.5 md:px-3 py-0.5 md:py-1" title="${user.city}">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  <span class="truncate max-w-[80px] md:max-w-[120px] inline-block align-bottom">${user.city}</span>
+                </span>` : ''}
                 ${distance}
               </div>
 
@@ -1214,22 +1304,22 @@ import { sanitizer } from './sanitizer.js';
             </button>
             
             <div class="flex gap-1.5">
-               <!-- MATCH BUTTON -->
+               <!-- MATCH BUTTON (Always Visible) -->
                ${hasMatched ?
-                '<span class="w-10 h-10 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-semibold border border-yellow-500/30 flex items-center justify-center" title="Match Enviado"><i class="fas fa-check"></i></span>'
+                '<span class="w-8 h-8 md:w-10 md:h-10 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm font-semibold border border-yellow-500/30 flex items-center justify-center" title="Match Enviado"><i class="fas fa-check"></i></span>'
                 :
-                `<button class="quick-match-btn quick-action-btn bg-pink-500 hover:bg-pink-600 text-white w-10 h-10 rounded-lg text-lg shadow-lg flex items-center justify-center transition-transform active:scale-95" title="Me gusta">
+                `<button class="quick-match-btn quick-action-btn bg-pink-500 hover:bg-pink-600 text-white w-8 h-8 md:w-10 md:h-10 rounded-lg text-sm md:text-lg shadow-lg flex items-center justify-center transition-transform active:scale-95" title="Me gusta">
                    <i class="fas fa-heart"></i>
                  </button>`
             }
 
-                <!-- HIDE BUTTON -->
-                <button class="hide-user-btn bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white w-10 h-10 rounded-lg text-lg shadow-lg flex items-center justify-center transition-colors" title="Ocultar usuario (Podrás verlo en Ocultos)">
+                <!-- HIDE BUTTON (Hidden on mobile) -->
+                <button class="hide-user-btn hidden md:flex bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white w-10 h-10 rounded-lg text-lg shadow-lg items-center justify-center transition-colors" title="Ocultar usuario (Podrás verlo en Ocultos)">
                   <i class="fas fa-eye-slash"></i>
                 </button>
 
-                <!-- BLOCK BUTTON -->
-                <button class="block-user-btn bg-slate-800 hover:bg-red-900/80 text-slate-500 hover:text-red-200 w-10 h-10 rounded-lg text-lg shadow-lg flex items-center justify-center transition-colors border border-slate-700 hover:border-red-500/50" title="Bloquear permanentemente">
+                <!-- BLOCK BUTTON (Hidden on mobile) -->
+                <button class="block-user-btn hidden md:flex bg-slate-800 hover:bg-red-900/80 text-slate-500 hover:text-red-200 w-10 h-10 rounded-lg text-lg shadow-lg items-center justify-center transition-colors border border-slate-700 hover:border-red-500/50" title="Bloquear permanentemente">
                   <i class="fas fa-ban"></i>
                 </button>
             </div>
@@ -1612,7 +1702,9 @@ import { sanitizer } from './sanitizer.js';
     }
 
     function updateUserCount() {
-        userCount.textContent = filteredUsers.length;
+        if (userCount) {
+            userCount.textContent = filteredUsers.length;
+        }
     }
 
     function showLoading() {
@@ -1676,43 +1768,7 @@ import { sanitizer } from './sanitizer.js';
         });
     }
 
-    // Event Listeners
-    toggleFilters.addEventListener('click', () => {
-        filtersPanel.classList.toggle('hidden');
-    });
 
-    applyFilters.addEventListener('click', () => {
-        saveFilters();
-        applyFiltersAndSort();
-        filtersPanel.classList.add('hidden');
-    });
-
-    clearFilters.addEventListener('click', () => {
-        document.getElementById('searchText').value = '';
-        document.getElementById('locationSearch').value = '';
-        document.getElementById('filterAgeMin').value = '';
-        document.getElementById('filterAgeMax').value = '';
-        document.getElementById('filterDistance').value = '';
-        document.getElementById('filterReputation').value = '';
-        document.getElementById('filterVerified').checked = false;
-        document.getElementById('filterOnline').checked = false;
-        sortBy.value = 'distance';
-        localStorage.removeItem('userSearchFilters');
-        applyFiltersAndSort();
-    });
-
-    clearAllFilters.addEventListener('click', () => {
-        clearFilters.click();
-    });
-
-    resetSearch.addEventListener('click', () => {
-        clearFilters.click();
-    });
-
-    sortBy.addEventListener('change', () => {
-        saveFilters();
-        applyFiltersAndSort();
-    });
 
     let searchTimeout;
     document.getElementById('searchText').addEventListener('input', (e) => {

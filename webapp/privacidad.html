@@ -5,63 +5,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Política de Privacidad - TuCitaSegura</title>
-    <link rel="stylesheet" href="./css/landing.css">
+    <link rel="stylesheet" href="./css/output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
             background: #0f172a;
             color: #fff;
-            margin: 0;
-            padding: 2rem;
+            font-family: 'Inter', sans-serif;
         }
 
-        .card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 800px;
-            margin: auto;
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #60a5fa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
         }
 
-        h1 {
-            font-size: 2.5rem;
+        .legal-content p,
+        .legal-content li {
+            color: #cbd5e1;
+            line-height: 1.7;
             margin-bottom: 1rem;
         }
 
-        h2 {
-            font-size: 1.75rem;
-            margin-top: 1.5rem;
-        }
-
-        p {
-            line-height: 1.6;
+        .legal-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 
-<body>
-    <div class="card">
-        <h1>Política de Privacidad</h1>
-        <p>En TuCitaSegura nos comprometemos a proteger la privacidad de nuestros usuarios. Esta política describe cómo
-            recopilamos, usamos y protegemos la información personal.</p>
-        <h2>Datos que recopilamos</h2>
-        <p>Recopilamos información de registro, datos de perfil, y datos de interacción dentro de la plataforma, así
-            como datos de verificación de identidad.</p>
-        <h2>Uso de cookies</h2>
-        <p>Utilizamos cookies estrictamente necesarias para la autenticación y para mejorar la experiencia del usuario.
-        </p>
-        <h2>Derechos del usuario</h2>
-        <p>Usted puede solicitar acceso, corrección o eliminación de sus datos en cualquier momento contactando a
-            soporte.</p>
-        <h2>Contacto</h2>
-        <p>Para preguntas sobre privacidad, visite la página de <a href="contacto.html"
-                style="color:#60a5fa;">Contacto</a>.</p>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-12 max-w-4xl">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Política de Privacidad</h1>
+            <p class="text-slate-400">Última actualización: 10 de Enero, 2026</p>
+        </div>
 
-        <div class="mt-8 pt-6 border-t border-white/10 text-center">
-            <a href="/" class="text-blue-400 hover:text-white transition no-underline">
-                ← Volver al Inicio
+        <div class="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-12 legal-content">
+
+            <p class="text-lg">En <strong>TuCitaSegura</strong> (operado por TCS GLOBAL SOLUTIONS LLC), la
+                confidencialidad no es una opción, es la base de nuestro negocio. Esta política detalla cómo blindamos
+                su información.</p>
+
+            <h2>1. Información que Recopilamos</h2>
+            <p>Limitamos la recolección de datos al mínimo necesario para operar con seguridad:</p>
+            <ul>
+                <li><strong>Datos de Identidad (Privado):</strong> Documento de identidad (DNI/Pasaporte) y selfie para
+                    verificación. Estos datos se almacenan cifrados y separados de su perfil público.</li>
+                <li><strong>Datos de Pago:</strong> Procesados directamente por pasarelas seguras (PayPal, Stripe,
+                    etc.). Nosotros solo recibimos tokens de transacción, nunca su número de tarjeta completo.</li>
+                <li><strong>Datos de Actividad:</strong> Historial de citas, reputación ("Karma") y mensajes. Los
+                    mensajes se eliminan periódicamente de nuestros servidores activos.</li>
+            </ul>
+
+            <h2>2. Uso de la Información</h2>
+            <p>Sus datos se utilizan exclusivamente para:</p>
+            <ul>
+                <li>Verificar que es una persona real y mayor de edad (Safety).</li>
+                <li>Procesar las retenciones de seguridad de 120€ y pagos de membresía.</li>
+                <li>Prevenir fraudes y resolver disputas sobre inasistencias ("Plantones").</li>
+            </ul>
+
+            <h2>3. Almacenamiento y Seguridad</h2>
+            <p>Utilizamos estándares de seguridad de nivel bancario:</p>
+            <ul>
+                <li><strong>Cifrado:</strong> Comunicaciones SSL/TLS y bases de datos cifradas en reposo (AES-256).</li>
+                <li><strong>Exif Removal:</strong> Eliminamos automáticamente los metadatos (ubicación GPS) de las fotos
+                    que sube a su perfil público.</li>
+                <li><strong>URLs Firmadas:</strong> Sus documentos de verificación se alojan en buckets privados (AWS
+                    S3/GCP) y solo son accesibles temporalmente por personal de cumplimiento autorizado.</li>
+            </ul>
+
+            <h2>4. Compartir Información con Terceros</h2>
+            <p><strong>NO vendemos sus datos.</strong> Solo compartimos información en casos estrictos:</p>
+            <ul>
+                <li><strong>Proveedores de Pago:</strong> Para procesar transacciones.</li>
+                <li><strong>Cumplimiento Legal:</strong> Solo si somos requeridos por una orden judicial válida o para
+                    reportar delitos graves (trata, abuso de menores, violencia inminente) a las autoridades
+                    (NCMEC/FBI).</li>
+            </ul>
+
+            <h2>5. Derechos ARCO y CCPA</h2>
+            <p>Como usuario, tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos. Puede
+                solicitar la eliminación de su cuenta y datos asociados contactando a <a
+                    href="mailto:privacy@tucitasegura.com" class="text-blue-400">privacy@tucitasegura.com</a>.</p>
+            <p><em>Nota: Ciertos datos de transacciones pueden retenerse por 5 años por obligaciones fiscales y
+                    anti-lavado de dinero (AML).</em></p>
+
+            <h2>6. Entidad Responsable</h2>
+            <p><strong>TCS GLOBAL SOLUTIONS LLC</strong><br>
+                New Mexico, USA</p>
+
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/" class="text-slate-400 hover:text-white transition flex items-center justify-center gap-2">
+                <i class="fas fa-arrow-left"></i> Volver al Inicio
             </a>
         </div>
     </div>

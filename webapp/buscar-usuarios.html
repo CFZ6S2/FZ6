@@ -21,7 +21,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TuCitaSegura">
   <meta name="theme-color" content="#764ba2">
-  <link rel="stylesheet" href="./css/input.css">
+  <link rel="stylesheet" href="./css/output.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet">
@@ -370,6 +370,11 @@
           <span
             class="absolute top-0 right-0 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] rounded-full px-1 py-0.5 font-bold">💎</span>
         </a>
+        <a href="/panel-concierge.html" id="conciergePanelBtn"
+          class="hover:text-purple-400 transition flex items-center gap-2 p-2 hidden">
+          <i class="fas fa-glass-cheers text-xl text-purple-400"></i>
+          <span class="hidden md:inline font-semibold text-purple-400">Concierge</span>
+        </a>
         <a href="/perfil.html" class="hover:text-blue-400 transition flex items-center gap-2 p-2">
           <i class="fas fa-user-circle text-xl"></i>
           <span class="hidden md:inline">Mi Perfil</span>
@@ -391,44 +396,27 @@
       </div>
 
       <!-- Header Section with Stats -->
-      <div class="glass-strong rounded-2xl p-6 mb-6">
+      <!-- Header Section with Stats -->
+      <div class="glass-strong rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 class="text-3xl font-bold mb-2">
+            <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 flex items-center">
               <i class="fas fa-search mr-2 text-blue-400"></i>
-              Descubre Personas
+              Descubre
             </h1>
-            </h1>
+            <p class="text-slate-400 text-xs md:text-sm">Encuentra a tu cita ideal (<span id="userCount">0</span>)</p>
 
-            <!-- Global Stats -->
-            <div class="flex items-center gap-4 text-sm md:text-base text-slate-300 mb-2">
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span id="globalStatsMen">0 Hombres</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-pink-500"></div>
-                <span id="globalStatsWomen">0 Mujeres</span>
-              </div>
-            </div>
-
-            <p class="text-slate-300 text-xs">
-              <i class="fas fa-filter mr-1"></i>
-              Mostrando <span id="userCount" class="font-semibold text-white">0</span> resultados
-            </p>
-
-            <div class="mt-2 p-2 bg-blue-500/10 border border-blue-400/20 rounded-lg max-w-xl">
-              <p class="text-xs text-blue-300">
-                <i class="fas fa-info-circle mr-1"></i>
-                <strong>Plataforma exclusivamente heterosexual:</strong> Solo verás personas del género opuesto
-              </p>
+            <!-- Mobile Stats (Compact) -->
+            <div class="flex items-center gap-3 text-xs text-slate-400 mt-2 md:hidden">
+              <span id="globalStatsMenMobile">- Hombres</span>
+              <span id="globalStatsWomenMobile">- Mujeres</span>
             </div>
           </div>
 
-          <!-- CONTROLS: Grid mobile, Flex dsk -->
-          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3">
-            <!-- View Toggle (Full width on tiny screens if needed, otherwise shared) -->
-            <div class="view-toggle glass flex col-span-2 sm:col-span-1 justify-center sm:justify-start">
+          <!-- Controls -->
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 md:gap-3">
+            <!-- View Toggle -->
+            <div class="view-toggle glass flex col-span-2 sm:col-span-1 justify-center sm:justify-start h-10 md:h-auto">
               <button id="viewList" class="active flex items-center gap-2 flex-1 sm:flex-none justify-center">
                 <i class="fas fa-th-large"></i>
                 <span class="hidden sm:inline">Lista</span>
@@ -440,14 +428,12 @@
             </div>
 
             <button id="toggleFilters"
-              class="glass px-4 py-3 sm:py-2 rounded-lg hover:bg-white/10 transition flex items-center justify-center gap-2">
-              <i class="fas fa-sliders"></i> <span class="sm:hidden">Filtros</span> <span
-                class="hidden sm:inline">Filtros</span>
+              class="glass px-3 py-2 md:px-4 md:py-3 rounded-lg hover:bg-white/10 transition flex items-center justify-center gap-2 h-10 md:h-auto">
+              <i class="fas fa-sliders"></i> <span class="text-xs md:text-base">Filtros</span>
             </button>
 
             <select id="sortBy"
-              class="glass px-4 py-3 sm:py-2 rounded-lg border-0 cursor-pointer hover:bg-white/10 transition w-full sm:w-auto">
-
+              class="glass px-3 py-2 md:px-4 md:py-3 rounded-lg border-0 cursor-pointer hover:bg-white/10 transition w-full sm:w-auto h-10 md:h-auto text-xs md:text-base">
               <option value="distance">📍 Cercanos</option>
               <option value="newest">🕒 Recientes</option>
               <option value="age-asc">👶 Edad (Menor)</option>
@@ -470,7 +456,7 @@
 
       <!-- Advanced Filters Panel (Collapsible) -->
       <div id="filtersPanel"
-        class="hidden fixed inset-0 z-[60] bg-slate-900/95 p-6 overflow-y-auto md:relative md:inset-auto md:bg-transparent md:p-6 md:mb-8 md:glass md:rounded-2xl md:z-auto">
+        class="hidden fixed top-0 left-0 w-full h-full bg-slate-900 p-4 overflow-y-auto z-[60] md:relative md:inset-auto md:w-auto md:h-auto md:bg-white/10 md:backdrop-blur-xl md:border md:border-white/10 md:shadow-xl md:rounded-2xl md:p-6 md:mb-8 md:z-0">
         <div class="flex items-center justify-between mb-6 md:mb-4">
           <h2 class="text-xl font-bold">
             <i class="fas fa-filter mr-2 text-blue-400"></i>
@@ -624,7 +610,7 @@
 
       <!-- User Grid -->
       <div id="gridContainer" class="px-4 md:px-0">
-        <div id="userGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div id="userGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
           <!-- Users will be loaded here -->
         </div>
       </div>
@@ -828,6 +814,7 @@
     </div>
 
     <script type="module" src="./js/buscar-usuarios.js"></script>
+    <script type="module" src="./js/legal-consent.js"></script>
 </body>
 
 </html>

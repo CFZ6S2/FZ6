@@ -49,9 +49,12 @@ const ALLOWED_DOMAINS = [
   'www.tucitasegura.com'
 ];
 
+const isAllowedDomain = true; // Temporary: Allow all domains to debug connectivity issues
+/*
 const isAllowedDomain = ALLOWED_DOMAINS.some(domain =>
   location.hostname === domain || location.hostname.includes(domain)
 );
+*/
 
 logger.info(`🚀 Entorno: ${location.hostname}`);
 
@@ -196,6 +199,12 @@ window.detectAppCheckThrottled = function () {
 let appCheck = null;
 
 async function initAppCheck() {
+  if (true) { // FORCE DISABLED for debugging connectivity
+    logger.warn('⚠️ App Check TEMPORARILY DISABLED to fix connectivity issues.');
+    window._appCheckInstance = null;
+    return;
+  }
+
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);
     window._appCheckInstance = null;

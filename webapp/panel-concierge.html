@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concierge Dashboard - TuCitaSegura</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="./css/output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1c2e 0%, #111 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+
+        .nav-btn {
+            @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-white/5;
+        }
+
+        .nav-btn.active {
+            @apply bg-purple-600/20 text-purple-400 border border-purple-500/30;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 glass-panel m-4 mr-0 hidden md:flex flex-col">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                        <i class="fas fa-gem text-white"></i>
+                    </div>
+                    <h1 class="font-bold text-xl">Concierge Panel</h1>
+                </div>
+
+                <nav class="space-y-2">
+                    <button class="nav-btn active w-full" data-tab="dashboard">
+                        <i class="fas fa-chart-line w-5"></i> Dashboard
+                    </button>
+                    <button class="nav-btn w-full" data-tab="events">
+                        <i class="fas fa-calendar-star w-5"></i> Mis Eventos
+                    </button>
+                    <button class="nav-btn w-full" data-tab="applications">
+                        <i class="fas fa-users w-5"></i> Candidatas
+                    </button>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-6 border-t border-white/5">
+                <button id="logoutBtn"
+                    class="flex items-center gap-3 text-slate-400 hover:text-red-400 transition-colors w-full">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <!-- Header -->
+            <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div class="flex items-center justify-between w-full md:w-auto">
+                    <div>
+                        <h2
+                            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                            Bienvenido, Concierge
+                        </h2>
+                        <p class="text-slate-400 text-sm">Gestiona tus eventos exclusivos high-ticket.</p>
+                    </div>
+                    <!-- Mobile Exit Button -->
+                    <a href="/dashboard.html" class="md:hidden p-2 text-slate-400 hover:text-white transition">
+                        <i class="fas fa-sign-out-alt text-xl"></i>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <a href="/dashboard.html"
+                        class="hidden md:flex items-center gap-2 text-slate-400 hover:text-white px-4 py-2 hover:bg-white/5 rounded-lg transition">
+                        <i class="fas fa-arrow-left"></i> <span>Volver</span>
+                    </a>
+
+                    <button id="createEventBtn"
+                        class="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/20 transition-all transform hover:-translate-y-0.5 border border-white/10 text-center">
+                        <i class="fas fa-plus mr-2"></i> Nuevo Evento
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content space-y-8">
+                <!-- KPIs -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-purple-500/10 rounded-lg text-purple-400"><i
+                                    class="fas fa-calendar-check text-xl"></i></div>
+                            <span class="text-green-400 text-sm font-medium">+12%</span>
+                        </div>
+                        <h3 class="text-slate-400 text-sm mb-1">Eventos Activos</h3>
+                        <p class="text-3xl font-bold" id="kpiActiveEvents">-</p>
+                    </div>
+
+                    <div class="glass-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-pink-500/10 rounded-lg text-pink-400"><i
+                                    class="fas fa-users text-xl"></i></div>
+                            <span class="text-green-400 text-sm font-medium">+5%</span>
+                        </div>
+                        <h3 class="text-slate-400 text-sm mb-1">Candidatas Totales</h3>
+                        <p class="text-3xl font-bold" id="kpiTotalApplicants">-</p>
+                    </div>
+
+                    <div class="glass-panel p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-3 bg-blue-500/10 rounded-lg text-blue-400"><i
+                                    class="fas fa-check-double text-xl"></i></div>
+                            <span class="text-slate-400 text-xs">Total histórico</span>
+                        </div>
+                        <h3 class="text-slate-400 text-sm mb-1">Eventos Completados</h3>
+                        <p class="text-3xl font-bold" id="kpiCompletedEvents">-</p>
+                    </div>
+                </div>
+
+                <!-- Recent Events -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-bold mb-6">Mis Eventos Recientes</h3>
+                    <div id="recentEventsList" class="space-y-4">
+                        <!-- Loading State -->
+                        <div class="animate-pulse flex items-center space-x-4 p-4 rounded-xl bg-white/5">
+                            <div class="rounded-full bg-slate-700 h-10 w-10"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-4 bg-slate-700 rounded w-1/4"></div>
+                                <div class="h-3 bg-slate-700 rounded w-3/4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Event View (Initially Hidden) -->
+            <div id="view-create-event" class="hidden">
+                <div class="max-w-3xl mx-auto glass-panel p-8">
+                    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+                        <button id="cancelCreateBtn" class="text-slate-400 hover:text-white"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <h2 class="text-2xl font-bold">Publicar Nuevo Evento VIP</h2>
+                    </div>
+
+                    <form id="createEventForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Title -->
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="text-sm text-slate-400">Título del Evento (Ej. Cena exclusiva en
+                                    Zalacain)</label>
+                                <input type="text" name="title" required
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition placeholder-slate-600 text-white">
+                            </div>
+
+                            <!-- Type -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-slate-400">Tipo de Evento</label>
+                                <select name="eventType" required
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-white">
+                                    <option value="dinner" class="bg-slate-900">🍷 Cena / Gastronomía</option>
+                                    <option value="party" class="bg-slate-900">🎉 Fiesta / Evento Social</option>
+                                    <option value="travel" class="bg-slate-900">✈️ Viaje</option>
+                                    <option value="networking" class="bg-slate-900">🤝 Networking</option>
+                                    <option value="other" class="bg-slate-900">⭐ Otro</option>
+                                </select>
+                            </div>
+
+                            <!-- Date -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-slate-400">Fecha y Hora</label>
+                                <input type="datetime-local" name="eventDate" required
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-white placeholder-slate-400">
+                            </div>
+
+                            <!-- Location City -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-slate-400">Ciudad</label>
+                                <select name="locationCity" required
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-white">
+                                    <option value="Madrid" class="bg-slate-900">Madrid</option>
+                                    <option value="Barcelona" class="bg-slate-900">Barcelona</option>
+                                    <option value="Marbella" class="bg-slate-900">Marbella</option>
+                                    <option value="Ibiza" class="bg-slate-900">Ibiza</option>
+                                    <option value="Valencia" class="bg-slate-900">Valencia</option>
+                                </select>
+                            </div>
+
+                            <!-- Compensation -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-slate-400">Compensación (€) o Regalo</label>
+                                <input type="number" name="compensationAmount" placeholder="Ej. 150"
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-white">
+                            </div>
+
+                            <!-- Spots -->
+                            <div class="space-y-2">
+                                <label class="text-sm text-slate-400">Plazas Disponibles</label>
+                                <input type="number" name="spotsAvailable" value="1" min="1" max="10" required
+                                    class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition text-white">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="space-y-2">
+                            <label class="text-sm text-slate-400">Descripción Detallada (Requisitos, Dress-code,
+                                etc.)</label>
+                            <textarea name="description" rows="4" required
+                                class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 transition placeholder-slate-600 text-white"></textarea>
+                        </div>
+
+                        <!-- Image (Optional) -->
+                        <!-- Ideally use existing image upload logic, simplified here for MVP -->
+
+                        <div class="pt-4 flex gap-4">
+                            <button type="submit"
+                                class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/20 transition-all">
+                                🚀 Publicar Evento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Event Details View (Initially Hidden) -->
+            <div id="view-event-details" class="hidden">
+                <div class="max-w-4xl mx-auto glass-panel p-8">
+                    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+                        <button id="closeEventDetailsBtn" class="text-slate-400 hover:text-white"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold" id="detailEventTitle">Título del Evento</h2>
+                            <p class="text-slate-400 text-sm" id="detailEventDate">Fecha</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-bold" id="detailEventSpots">0/0</div>
+                            <div class="text-xs text-slate-500 uppercase">Plazas</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Applicants List -->
+                        <div>
+                            <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
+                                Candidatas
+                                <span class="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded text-xs"
+                                    id="applicantCountBadge">0</span>
+                            </h3>
+                            <div id="applicantsList" class="space-y-3 min-h-[200px]">
+                                <!-- Injected by JS -->
+                                <div class="text-center py-8 text-slate-500 text-sm">Cargando candidatas...</div>
+                            </div>
+                        </div>
+
+                        <!-- Selected Candidates -->
+                        <div>
+                            <h3 class="text-lg font-bold mb-4 flex items-center justify-between">
+                                Seleccionadas
+                                <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs"
+                                    id="selectedCountBadge">0</span>
+                            </h3>
+                            <div id="selectedList"
+                                class="space-y-3 min-h-[200px] border border-green-500/10 rounded-xl p-4 bg-green-500/5">
+                                <!-- Injected by JS -->
+                                <div class="text-center py-8 text-slate-500 text-sm">Ninguna seleccionada aún</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed top-4 right-4 z-50 transform transition-all duration-300 translate-x-full opacity-0">
+        <!-- Injected by JS -->
+    </div>
+
+    <script type="module" src="./js/panel-concierge.js"></script>
+</body>
+
+</html>

@@ -216,7 +216,9 @@ if (loginForm) {
 
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (!userDoc.exists()) {
-                        throw new Error('PROFILE_NOT_FOUND');
+                        console.warn('⚠️ User authenticated but no profile found. Redirecting to creation...');
+                        window.location.href = '/perfil.html?incomplete=true&restoring=true';
+                        return;
                     }
                     console.log('✅ Profile found.');
                 } catch (firestoreError) {

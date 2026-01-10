@@ -175,7 +175,25 @@ export function getReputationBadge(reputation) {
 export function formatRelativeTime(date) {
   if (!date) return 'Desconocido';
 
-  const timestamp = date.toMillis ? date.toMillis() : date.getTime();
+  let timestamp;
+  if (!date) {
+    return 'Desconocido';
+  }
+
+  // Handle Firestore Timestamp
+  if (typeof date.toMillis === 'function') {
+    timestamp = date.toMillis();
+  }
+  // Handle Date objects (check if valid and has getTime)
+  else if ((date instanceof Date || Object.prototype.toString.call(date) === '[object Date]') && typeof date.getTime === 'function') {
+    timestamp = date.getTime();
+  }
+  // Handle strings/numbers or other objects
+  else {
+    timestamp = new Date(date).getTime();
+  }
+
+  if (isNaN(timestamp)) return 'Desconocido';
   const now = Date.now();
   const diff = now - timestamp;
 
@@ -204,7 +222,8 @@ export function formatRelativeTime(date) {
 export function formatDate(date) {
   if (!date) return 'Fecha desconocida';
 
-  const d = date.toDate ? date.toDate() : new Date(date);
+  const d = (date && typeof date.toDate === 'function') ? date.toDate() : new Date(date);
+  if (!d || typeof d.getTime !== 'function' || isNaN(d.getTime())) return 'Fecha inválida';
 
   const options = {
     year: 'numeric',
@@ -225,7 +244,8 @@ export function formatDate(date) {
 export function formatDateShort(date) {
   if (!date) return 'N/A';
 
-  const d = date.toDate ? date.toDate() : new Date(date);
+  const d = (date && typeof date.toDate === 'function') ? date.toDate() : new Date(date);
+  if (!d || typeof d.getTime !== 'function' || isNaN(d.getTime())) return 'Fecha inválida';
 
   const options = {
     month: 'short',
@@ -354,7 +374,16 @@ export function generateId() {
 export function isUserOnline(lastActivity, threshold = 5) {
   if (!lastActivity) return false;
 
-  const timestamp = lastActivity.toMillis ? lastActivity.toMillis() : lastActivity.getTime();
+  let timestamp;
+  if (typeof lastActivity.toMillis === 'function') {
+    timestamp = lastActivity.toMillis();
+  } else if ((lastActivity instanceof Date || Object.prototype.toString.call(lastActivity) === '[object Date]') && typeof lastActivity.getTime === 'function') {
+    timestamp = lastActivity.getTime();
+  } else {
+    timestamp = new Date(lastActivity).getTime();
+  }
+
+  if (isNaN(timestamp)) return false;
   const now = Date.now();
   const diff = now - timestamp;
   const minutes = Math.floor(diff / 60000);

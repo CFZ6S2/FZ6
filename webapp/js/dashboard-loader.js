@@ -42,7 +42,17 @@ export async function loadDashboardData(user) {
 
             // Lazy load Firestore instance
             const { getDb } = await import('./firebase-config-env.js');
-            const db = await getDb();
+            const { getFirestore } = await import('firebase/firestore');
+            const { app } = await import('./firebase-config-env.js');
+
+            let db;
+            try {
+                db = await getDb();
+                if (!db) throw new Error('getDb returned null');
+            } catch (e) {
+                console.error('⚠️ Firestore init failed in dashboard-loader, using fallback:', e);
+                db = getFirestore(app);
+            }
 
             const userDoc = await getDoc(doc(db, 'users', user.uid));
 
@@ -234,15 +244,28 @@ function updateDashboardUI(user, firestoreData) {
     // -----------------------------------------------------------------------
     // ADMIN ACCESS CHECK
     // -----------------------------------------------------------------------
-    // -----------------------------------------------------------------------
-    // ADMIN ACCESS CHECK
-    // -----------------------------------------------------------------------
     // Check role in Firestore data (UI Toggle only - Security is in Backend)
     if (firestoreData && (firestoreData.role === 'admin' || firestoreData.userRole === 'admin')) {
         const adminCard = document.getElementById('adminPanelCard');
         if (adminCard) {
             adminCard.classList.remove('hidden');
             console.log('🛡️ Admin Panel button UNHIDDEN');
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // CONCIERGE ACCESS CHECK
+    // -----------------------------------------------------------------------
+    if (firestoreData && (firestoreData.role === 'admin' || firestoreData.role === 'concierge' || firestoreData.userRole === 'admin' || firestoreData.userRole === 'concierge')) {
+        const conciergeCard = document.getElementById('conciergePanelCard');
+        const navConciergeBtn = document.getElementById('navConciergeBtn');
+
+        if (conciergeCard) {
+            conciergeCard.classList.remove('hidden');
+            console.log('🥂 Concierge Panel card UNHIDDEN');
+        }
+        if (navConciergeBtn) {
+            navConciergeBtn.classList.remove('hidden');
         }
     } else {
         // Double check claims if available via token result (not directly exposed in user object usually without forceRefresh)

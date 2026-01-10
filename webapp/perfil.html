@@ -24,7 +24,7 @@
   <meta name="theme-color" content="#764ba2">
 
   <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="./css/input.css">
+  <link rel="stylesheet" href="./css/output.css">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -619,21 +619,21 @@
         <div id="themeSelectorContainer" class="relative max-w-sm mx-auto mt-6">
           <div class="glass flex p-1 rounded-full relative z-10">
             <!-- Light Mode (Left) -->
-            <button onclick="applyTheme('light')"
+            <button onclick="selectTheme('light')"
               class="flex-1 py-3 px-4 rounded-full text-2xl transition-all duration-300 hover:bg-white/10 flex items-center justify-center group"
               id="themeBtn-light" title="Modo Claro">
               <span class="group-hover:scale-110 transition-transform">☀️</span>
             </button>
 
             <!-- Default Mode (Center - Blue) -->
-            <button onclick="applyTheme('blue')"
+            <button onclick="selectTheme('blue')"
               class="flex-1 py-3 px-4 rounded-full text-2xl transition-all duration-300 hover:bg-white/10 flex items-center justify-center group"
               id="themeBtn-blue" title="Modo Original (Azul)">
               <span class="group-hover:scale-110 transition-transform text-blue-300">💙</span>
             </button>
 
             <!-- Dark Mode (Right) -->
-            <button onclick="applyTheme('dark')"
+            <button onclick="selectTheme('dark')"
               class="flex-1 py-3 px-4 rounded-full text-2xl transition-all duration-300 hover:bg-white/10 flex items-center justify-center group"
               id="themeBtn-dark" title="Modo Oscuro">
               <span class="group-hover:scale-110 transition-transform">🌙</span>
@@ -847,6 +847,7 @@
     // Debug Console removed
   </script>
 
+  <script type="module" src="./js/legal-consent.js"></script>
 </body>
 
 </html>
