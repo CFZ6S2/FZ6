@@ -73,8 +73,6 @@ export default defineConfig(({ mode }) => {
                     verificacion_identidad: path.resolve(__dirname, 'verificacion-identidad.html'),
                     verify_email: path.resolve(__dirname, 'verify-email.html'),
                     video_chat: path.resolve(__dirname, 'video-chat.html'),
-                    diagnostics: path.resolve(__dirname, 'diagnostics.html'),
-                    test_firestore_minimal: path.resolve(__dirname, 'test-firestore-minimal.html'),
 
                     // Legal & Support
                     privacidad: path.resolve(__dirname, 'privacidad.html'),

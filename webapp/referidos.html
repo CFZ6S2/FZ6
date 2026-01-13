@@ -427,13 +427,17 @@
           active: 'fa-user-check'
         };
 
+        // Sanitize user-controlled data to prevent XSS
+        const safeAlias = DOMPurify.sanitize(ref.referredAlias || 'Usuario', { ALLOWED_TAGS: [] });
+        const safeStatus = DOMPurify.sanitize(ref.status || 'pendiente', { ALLOWED_TAGS: [] });
+
         const item = document.createElement('div');
         item.className = 'flex items-center justify-between p-4 border-b border-gray-200 hover:bg-gray-50 transition';
         item.innerHTML = `
           <div class="flex items-center gap-4">
             <i class="fas fa-user-circle text-3xl text-purple-600"></i>
             <div>
-              <div class="font-semibold">${ref.referredAlias || 'Usuario'}</div>
+              <div class="font-semibold">${safeAlias}</div>
               <div class="text-sm text-gray-500">
                 ${ref.createdAt ? new Date(ref.createdAt.toDate()).toLocaleDateString() : 'Fecha desconocida'}
               </div>
@@ -442,7 +446,7 @@
           <div>
             <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColors[ref.status] || 'bg-gray-100 text-gray-800'}">
               <i class="fas ${statusIcons[ref.status] || 'fa-question'} mr-1"></i>
-              ${ref.status || 'pendiente'}
+              ${safeStatus}
             </span>
           </div>
         `;
