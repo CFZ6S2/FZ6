@@ -58,6 +58,10 @@
         "function": "apiUpload"
       },
       {
+        "source": "/api/v1/debug/login",
+        "function": "apiProxy"
+      },
+      {
         "source": "/api/v1/moderation/message",
         "function": "apiModerateMessage"
       },

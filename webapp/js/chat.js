@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import {
     showToast, calculateDistance, requireChatAccess, calculateAge,
-    getReputationBadge, getAvailabilityStatus
+    getReputationBadge, getAvailabilityStatus, getAvailabilityBadge
 } from './utils.js';
 import { sanitizer } from './sanitizer.js';
 import { loadTheme } from './theme.js';
@@ -97,8 +97,8 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
         const repCont = document.getElementById('modalReputationContainer');
 
         if (user.gender === 'femenino') {
-            const availabilityStatus = getAvailabilityStatus(user.availabilityStatus || 'available');
-            repCont.innerHTML = `<span class="badge ${availabilityStatus.color} text-xs py-0.5 px-2 rounded-full border"><i class="fas ${availabilityStatus.icon}"></i> ${sanitizer.text(availabilityStatus.label)}</span>`;
+            const availabilityStatus = getAvailabilityBadge(user.availabilityStatus || 'available');
+            repCont.innerHTML = `<span class="badge ${availabilityStatus.color} text-xs py-0.5 px-2 rounded-full border"><i class="fas ${sanitizer.attribute(availabilityStatus.icon)}"></i> ${sanitizer.text(availabilityStatus.label)}</span>`;
         } else {
             const reputationBadge = getReputationBadge(user.reputation || 'ORO', user.completedDates || 0);
             repCont.innerHTML = `<span class="badge ${reputationBadge.color} text-xs py-0.5 px-2 rounded-full border">${sanitizer.text(reputationBadge.icon)} ${sanitizer.text(reputationBadge.label)}</span>
@@ -152,11 +152,15 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
 
         if (displayPhotos.length > 0) {
             gallerySection.classList.remove('hidden');
-            galleryGrid.innerHTML = displayPhotos.map(url => `
-                  <div class="aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 group cursor-pointer" onclick="window.open('${sanitizer.url(url)}', '_blank')">
-                      <img src="${sanitizer.url(url)}" class="w-full h-full object-cover transition transform group-hover:scale-110">
+            galleryGrid.innerHTML = displayPhotos.map(url => {
+                const safeUrl = sanitizer.url(url);
+                const attrUrl = sanitizer.attribute(safeUrl); // Safe for attribute injection
+                return `
+                  <div class="aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 group cursor-pointer" onclick="window.open('${attrUrl}', '_blank')">
+                      <img src="${safeUrl}" class="w-full h-full object-cover transition transform group-hover:scale-110">
                   </div>
-              `).join('');
+              `;
+            }).join('');
         } else {
             gallerySection.classList.add('hidden');
         }
@@ -377,8 +381,9 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
                 const safeTime = sanitizer.text(msg.time || '');
                 const safePlace = sanitizer.text(msg.place || '');
                 const safeMessage = sanitizer.text(msg.message || '');
-                const safeId = sanitizer.text(msg.id || '');
-                const safeDateId = sanitizer.text(msg.dateId || ''); // New field
+                // Use attribute sanitizer for IDs used in onclick params
+                const safeId = sanitizer.attribute(msg.id || '');
+                const safeDateId = sanitizer.attribute(msg.dateId || ''); // New field
 
                 return `
             <div class="flex ${isSent ? 'justify-end' : 'justify-start'}">
@@ -460,6 +465,8 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
 
         if (!text) return;
 
+        // PAYMENTS DISABLED - Free chat until critical mass
+        /*
         // Check payment - CRITICAL VALIDATION
         const userMustPay = currentUserData.gender === 'masculino';
         if (userMustPay && !currentUserData.hasActiveSubscription) {
@@ -469,6 +476,7 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
             }
             return;
         }
+        */
 
         try {
             // Disable input while processing
@@ -638,6 +646,8 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
 
     // Video call
     window.startVideoCall = function () {
+        // PAYMENTS DISABLED - Free video calls until critical mass
+        /*
         // Check membership - CRITICAL VALIDATION
         const userMustPay = currentUserData.gender === 'masculino';
         if (userMustPay && !currentUserData.hasActiveSubscription) {
@@ -647,6 +657,7 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
             }
             return;
         }
+        */
 
         // Verificar soporte del navegador
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {

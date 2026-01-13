@@ -2988,3 +2988,96 @@ exports.resetUserStats = functions.https.onCall(async (data, context) => {
   }
 });
 
+// TEMPORARY GLOBAL UPDATE
+exports.tempGlobalUpdate = functions.https.onRequest(async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const usersSnapshot = await db.collection('users').get();
+
+    let updatedCount = 0;
+    const specificEmails = ['melinafloressuarez@gmail.com', 'Noa171932@gmail.com'];
+    const logs = [];
+
+    for (const doc of usersSnapshot.docs) {
+      const user = doc.data();
+      const updates = {};
+      let needsUpdate = false;
+
+      // 1. WOMEN -> 5 Stars
+      // Use 'stats.rating' dot notation but we must ensure we don't wipe other stats if using set, but update is fine.
+      if (user.gender === 'femenino') {
+        // If stats object doesn't exist, we must initialize it?
+        // update() with dotted notation works if parent field exists or not?
+        // Firebase update() fails if document doesn't exist, but here we iterate existing docs.
+        // It creates nested fields if using dot notation.
+        const currentRating = user.stats?.rating;
+        if (currentRating !== 5) {
+          updates['stats.rating'] = 5;
+          needsUpdate = true;
+        }
+      }
+      // 2. MEN -> Gold Reputation
+      else if (user.gender === 'masculino') {
+        if (user.reputation !== 'ORO') {
+          updates.reputation = 'ORO';
+          needsUpdate = true;
+        }
+      }
+
+      // 3. SPECIFIC USERS (Alias + Email)
+      if (user.email && specificEmails.includes(user.email)) {
+        // Fix Alias if missing or empty
+        const desiredAlias = user.email.split('@')[0];
+        if (!user.alias || user.alias === 'Sin Alias' || user.alias !== desiredAlias) {
+          updates.alias = desiredAlias;
+          needsUpdate = true;
+          logs.push(`Setting alias for ${user.email} -> ${desiredAlias}`);
+        }
+
+        // Send Email (always sending it as requested "mandas un email")
+        const { sendEmail } = require('./utils/email');
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+              <div style="background: #e91e63; padding: 20px; text-align: center;">
+                <h2 style="color: white; margin: 0;">¡Tu Perfil está Completo! ✅</h2>
+              </div>
+              <div style="padding: 30px;">
+                <p style="font-size: 16px; color: #333;">Hola <strong>${desiredAlias}</strong>,</p>
+                <p style="font-size: 16px; color: #333;">Tu perfil en <strong>TuCitaSegura</strong> ha sido configurado correctamente.</p>
+                <p style="color: #555;">Ahora tienes acceso completo para explorar, conectar y conocer gente.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://tucitasegura.com/webapp/perfil.html" 
+                     style="background: #e91e63; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; display: inline-block;">
+                    Ver Mi Perfil
+                  </a>
+                </div>
+              </div>
+            </div>
+        `;
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: '✅ ¡Tu perfil está completo!',
+            html: emailHtml,
+            text: `Hola ${desiredAlias}, tu perfil está completo. Entra en https://tucitasegura.com`
+          });
+          logs.push(`Email sent to ${user.email}`);
+        } catch (e) {
+          logs.push(`Email FAILED for ${user.email}: ${e.message}`);
+        }
+      }
+
+      if (needsUpdate) {
+        await doc.ref.update(updates);
+        updatedCount++;
+      }
+    }
+
+    res.json({ success: true, updated: updatedCount, logs });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+});

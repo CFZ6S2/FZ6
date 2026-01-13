@@ -199,11 +199,7 @@ window.detectAppCheckThrottled = function () {
 let appCheck = null;
 
 async function initAppCheck() {
-  if (true) { // FORCE DISABLED for debugging connectivity
-    logger.warn('⚠️ App Check TEMPORARILY DISABLED to fix connectivity issues.');
-    window._appCheckInstance = null;
-    return;
-  }
+  // App Check enabled - reCAPTCHA Enterprise configured
 
   if (!isAllowedDomain) {
     logger.warn('⚠️  App Check DESACTIVADO: dominio no permitido:', location.hostname);

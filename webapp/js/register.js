@@ -11,7 +11,9 @@ import { handleFirebaseNetworkError, showNetworkError, retryOperation } from './
 import { isDemoMode, getDemoUser, initializeDemoMode } from './demo-mode.js';
 import {
     createUserWithEmailAndPassword,
-    sendEmailVerification
+    sendEmailVerification,
+    GoogleAuthProvider,
+    signInWithPopup
 } from 'firebase/auth';
 import {
     doc,
@@ -193,6 +195,126 @@ if (document.readyState === 'loading') {
 } else {
     // DOM already ready (common with type="module")
     autoFillReferralCode();
+}
+
+// Google Sign-Up handler
+const googleSignUpBtn = document.getElementById('googleSignUpBtn');
+if (googleSignUpBtn) {
+    googleSignUpBtn.addEventListener('click', async function () {
+        const button = this;
+        const originalHTML = button.innerHTML;
+
+        // Disable button and show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Conectando con Google...';
+
+        try {
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+
+            // Sign up with popup
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            console.log('✅ Google Sign-Up successful:', user.email);
+
+            // Check if user profile already exists
+            const { getDb } = await import('./firebase-config-env.js');
+            const db = await getDb();
+            const { doc: firestoreDoc, getDoc } = await import('firebase/firestore');
+            const userDoc = await getDoc(firestoreDoc(db, 'users', user.uid));
+
+            if (userDoc.exists()) {
+                // User already registered - redirect to dashboard
+                showToast('Bienvenido de vuelta', 'success');
+                setTimeout(() => {
+                    window.location.href = '/buscar-usuarios.html';
+                }, 1000);
+            } else {
+                // New user - create basic profile and redirect to completion
+                await setDoc(firestoreDoc(db, 'users', user.uid), {
+                    uid: user.uid,
+                    basicInfo: {
+                        email: user.email,
+                        alias: user.displayName || '',
+                        birthDate: '',
+                        gender: '',
+                        profession: '',
+                        municipality: ''
+                    },
+                    preferences: {
+                        ageRange: [18, 99],
+                        maxDistance: 50,
+                        genderInterest: ''
+                    },
+                    membership: {
+                        type: 'free',
+                        expiresAt: null
+                    },
+                    verification: {
+                        email: true, // Google pre-verifies
+                        identity: 'pending',
+                        trustLevel: 'bronze'
+                    },
+                    stats: {
+                        score: 0,
+                        flakeCount: 0,
+                        reputation: 'ORO'
+                    },
+                    authProvider: 'google.com',
+                    photoURL: user.photoURL || '',
+                    createdAt: serverTimestamp(),
+                    isOnline: true,
+                    lastActivity: serverTimestamp(),
+                    email: user.email,
+                    userRole: 'regular',
+                    profileComplete: false,
+                    wallet: { balance: 0, currency: 'EUR' }
+                });
+
+                SecurityLogger.logSuccessfulLogin(user.uid, user.email);
+                showToast('Cuenta creada. Por favor completa tu perfil.', 'info');
+
+                setTimeout(() => {
+                    window.location.href = '/perfil.html?oauth=true&provider=google&returnUrl=/buscar-usuarios';
+                }, 1500);
+            }
+
+        } catch (error) {
+            console.error('Google Sign-Up error:', error);
+
+            let errorMessage = 'Error al registrarse con Google';
+
+            switch (error.code) {
+                case 'auth/popup-closed-by-user':
+                    errorMessage = 'Registro cancelado';
+                    break;
+                case 'auth/popup-blocked':
+                    errorMessage = 'Popup bloqueado. Permite popups para este sitio.';
+                    break;
+                case 'auth/cancelled-popup-request':
+                    errorMessage = 'Ventana de registro cancelada';
+                    break;
+                case 'auth/account-exists-with-different-credential':
+                    errorMessage = 'Ya existe una cuenta con este email usando otro método';
+                    break;
+                case 'auth/network-request-failed':
+                    errorMessage = 'Error de conexión. Verifica tu internet.';
+                    break;
+                default:
+                    errorMessage = error.message || errorMessage;
+            }
+
+            SecurityLogger.logFailedLogin(error.email || 'google-signup', errorMessage);
+            showToast(errorMessage, 'error');
+
+            // Re-enable button
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+    });
 }
 
 if (registerForm) {

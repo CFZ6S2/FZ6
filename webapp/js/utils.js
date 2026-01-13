@@ -677,6 +677,9 @@ export function canAccessChat(userData) {
     };
   }
 
+  // TEMPORARILY DISABLED: Allow free chat until payment processing isready
+  // TODO: Re-enable when company/US bank account is set up
+  /*
   // For men, also check membership
   if (userData.gender === 'masculino') {
     if (!userData.hasActiveSubscription) {
@@ -687,6 +690,7 @@ export function canAccessChat(userData) {
       };
     }
   }
+  */
 
   // All validations passed
   return {
@@ -746,7 +750,33 @@ export function getAvailabilityStatus(lastActivity) {
   return 'Desconectado';
 }
 
-// Export all functions as default object
+/**
+ * Get availability badge information
+ * @param {string} status - Availability status: 'available', 'busy', 'offline'
+ * @returns {object} Badge information with color, icon, and label
+ */
+export function getAvailabilityBadge(status) {
+  const badges = {
+    'available': {
+      color: 'text-green-400 bg-green-900/30 border border-green-500/50',
+      icon: 'fa-check-circle',
+      label: 'Disponible'
+    },
+    'busy': {
+      color: 'text-yellow-400 bg-yellow-900/30 border border-yellow-600/50',
+      icon: 'fa-clock',
+      label: 'Ocupada'
+    },
+    'offline': {
+      color: 'text-red-400 bg-red-900/30 border border-red-500/50',
+      icon: 'fa-times-circle',
+      label: 'No disponible'
+    }
+  };
+
+  return badges[status] || badges['available'];
+}
+
 export default {
   showToast,
   calculateAge,
@@ -773,5 +803,6 @@ export default {
   requireCompleteProfile,
   canAccessChat,
   requireChatAccess,
-  getAvailabilityStatus
+  getAvailabilityStatus,
+  getAvailabilityBadge
 };

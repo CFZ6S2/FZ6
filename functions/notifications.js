@@ -116,6 +116,51 @@ exports.onMatchCreated = functions.firestore
       );
 
       logger.info('Match notification sent', { senderId, receiverId, matchId: context.params.matchId });
+
+      // ✅ NEW: Send email notification to receiver
+      const receiverDoc = await admin.firestore().collection('users').doc(receiverId).get();
+      if (receiverDoc.exists) {
+        const receiverData = receiverDoc.data();
+        if (receiverData.email) {
+          const receiverAlias = receiverData.alias || 'Usuario';
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+              <div style="background: #e91e63; padding: 20px; text-align: center;">
+                <h2 style="color: white; margin: 0;">¡Nuevo Match! ❤️</h2>
+              </div>
+              <div style="padding: 30px;">
+                <p style="font-size: 16px; color: #333;">Hola <strong>${receiverAlias}</strong>,</p>
+                <p style="font-size: 16px; color: #333;">¡Tienes un nuevo match con <strong>${senderName}</strong> en TuCitaSegura!</p>
+                <p style="font-size: 16px; color: #333;">Ahora podéis chatear y conoceros mejor.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://tucitasegura.com/webapp/chat.html?conversationId=${context.params.matchId}&userId=${senderId}" 
+                     style="background: #e91e63; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(233, 30, 99, 0.2);">
+                    Ir al Chat
+                  </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px; text-align: center;">
+                  O copia este enlace: <br>
+                  <a href="https://tucitasegura.com/webapp/chat.html" style="color: #e91e63;">https://tucitasegura.com/webapp/chat.html</a>
+                </p>
+              </div>
+            </div>
+          `;
+
+          try {
+            await sendEmail({
+              to: receiverData.email,
+              subject: `🥰 ¡Tienes un nuevo Match con ${senderName}!`,
+              html: emailHtml,
+              text: `Hola ${receiverAlias}, ¡Tienes un nuevo match con ${senderName}! Accede aquí: https://tucitasegura.com/webapp/chat.html`
+            });
+            logger.info('Match email sent', { receiverId, email: receiverData.email });
+          } catch (emailError) {
+            logger.error('Failed to send match email', { receiverId, error: emailError.message });
+          }
+        }
+      }
     } catch (error) {
       logger.error('Error in onMatchCreated', { matchId: context.params.matchId, error: error.message });
     }
@@ -282,37 +327,49 @@ exports.onMessageCreated = functions.firestore
       });
 
       // ✅ NEW: Send email notification to female users
+      // ✅ NEW: Send email notification to ALL users
       const receiverDoc = await admin.firestore().collection('users').doc(receiverId).get();
       if (receiverDoc.exists) {
         const receiverData = receiverDoc.data();
-        if (receiverData.gender === 'femenino' && receiverData.email) {
+        // Check if user has email and notifications enabled (optional check, for now just email)
+        if (receiverData.email) {
+          const receiverAlias = receiverData.alias || 'Usuario';
           const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #e91e63;">💬 Nuevo mensaje de ${senderName}</h2>
-              <p>Has recibido un nuevo mensaje:</p>
-              <blockquote style="background: #f5f5f5; padding: 15px; border-left: 4px solid #e91e63; margin: 20px 0;">
-                ${notificationBody.substring(0, 200)}
-              </blockquote>
-              <p>
-                <a href="https://tucitasegura.com/webapp/chat.html?conversationId=${conversationId}" 
-                   style="background: #e91e63; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                  Ver mensaje
-                </a>
-              </p>
-              <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                Si no quieres recibir estas notificaciones, puedes desactivarlas en tu perfil.
-              </p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+              <div style="background: #e91e63; padding: 20px; text-align: center;">
+                <h2 style="color: white; margin: 0;">💬 Nuevo Mensaje</h2>
+              </div>
+              <div style="padding: 30px;">
+                <p style="font-size: 16px; color: #333;">Hola <strong>${receiverAlias}</strong>,</p>
+                <p style="font-size: 16px; color: #333;">Tienes un mensaje de <strong>${senderName}</strong> en TuCitaSegura:</p>
+                
+                <blockquote style="background: #fdf2f8; padding: 15px; border-left: 4px solid #e91e63; margin: 20px 0; color: #555; font-style: italic;">
+                  "${notificationBody.substring(0, 200)}${notificationBody.length > 200 ? '...' : ''}"
+                </blockquote>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="https://tucitasegura.com/webapp/chat.html?conversationId=${conversationId}" 
+                     style="background: #e91e63; color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(233, 30, 99, 0.2);">
+                    Responder Ahora
+                  </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px; text-align: center;">
+                  Accede a tus mensajes aquí: <br>
+                  <a href="https://tucitasegura.com/webapp/chat.html?conversationId=${conversationId}" style="color: #e91e63;">https://tucitasegura.com/webapp/chat.html</a>
+                </p>
+              </div>
             </div>
           `;
 
           try {
             await sendEmail({
               to: receiverData.email,
-              subject: `💬 Nuevo mensaje de ${senderName}`,
+              subject: `💬 ${senderName} te ha enviado un mensaje`,
               html: emailHtml,
-              text: `Nuevo mensaje de ${senderName}: ${notificationBody.substring(0, 200)}`
+              text: `Hola ${receiverAlias}, tienes un mensaje de ${senderName}: "${notificationBody.substring(0, 50)}...". Responde aquí: https://tucitasegura.com/webapp/chat.html`
             });
-            logger.info('Email notification sent to female user', { receiverId, email: receiverData.email });
+            logger.info('Email notification sent to user', { receiverId, email: receiverData.email });
           } catch (emailError) {
             logger.error('Failed to send email notification', { receiverId, error: emailError.message });
           }

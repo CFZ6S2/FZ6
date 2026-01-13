@@ -387,7 +387,7 @@
     </nav>
   </header>
 
-  <main class="pt-20 pb-20 px-4 md:px-4">
+  <main class="pt-28 pb-20 px-4 md:px-4">
     <div class="max-w-7xl mx-auto">
 
       <!-- Payment Status Banner -->
@@ -395,51 +395,55 @@
         <!-- Will be populated dynamically -->
       </div>
 
-      <!-- Header Section with Stats -->
-      <!-- Header Section with Stats -->
-      <div class="glass-strong rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 class="text-2xl md:text-3xl font-bold mb-1 md:mb-2 flex items-center">
-              <i class="fas fa-search mr-2 text-blue-400"></i>
-              Descubre
-            </h1>
-            <p class="text-slate-400 text-xs md:text-sm">Encuentra a tu cita ideal (<span id="userCount">0</span>)</p>
-
-            <!-- Mobile Stats (Compact) -->
-            <div class="flex items-center gap-3 text-xs text-slate-400 mt-2 md:hidden">
-              <span id="globalStatsMenMobile">- Hombres</span>
-              <span id="globalStatsWomenMobile">- Mujeres</span>
+      <!-- Header Section - Mobile Optimized -->
+      <div class="glass-strong rounded-2xl p-4 mb-4">
+        <!-- Title & Stats -->
+        <div class="mb-4">
+          <h1 class="text-2xl font-bold mb-2 flex items-center">
+            <i class="fas fa-search mr-2 text-blue-400"></i>
+            Descubre
+          </h1>
+          <div class="flex items-center justify-between text-sm">
+            <p class="text-slate-400">
+              <span id="userCount">0</span> personas cerca
+            </p>
+            <div class="flex gap-3 text-xs text-slate-400">
+              <span id="globalStatsMenMobile">- 👨</span>
+              <span id="globalStatsWomenMobile">- 👩</span>
             </div>
           </div>
+        </div>
 
-          <!-- Controls -->
-          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 md:gap-3">
-            <!-- View Toggle -->
-            <div class="view-toggle glass flex col-span-2 sm:col-span-1 justify-center sm:justify-start h-10 md:h-auto">
-              <button id="viewList" class="active flex items-center gap-2 flex-1 sm:flex-none justify-center">
-                <i class="fas fa-th-large"></i>
-                <span class="hidden sm:inline">Lista</span>
-              </button>
-              <button id="viewMap" class="flex items-center gap-2 flex-1 sm:flex-none justify-center">
-                <i class="fas fa-map-marked-alt"></i>
-                <span class="hidden sm:inline">Mapa</span>
-              </button>
-            </div>
-
-            <button id="toggleFilters"
-              class="glass px-3 py-2 md:px-4 md:py-3 rounded-lg hover:bg-white/10 transition flex items-center justify-center gap-2 h-10 md:h-auto">
-              <i class="fas fa-sliders"></i> <span class="text-xs md:text-base">Filtros</span>
+        <!-- Controls Row 1: View Toggle (Full Width) -->
+        <div class="mb-3">
+          <div class="view-toggle glass flex w-full rounded-xl overflow-hidden h-11">
+            <button id="viewList" class="active flex items-center gap-2 flex-1 justify-center font-medium">
+              <i class="fas fa-th-large"></i>
+              <span>Lista</span>
             </button>
-
-            <select id="sortBy"
-              class="glass px-3 py-2 md:px-4 md:py-3 rounded-lg border-0 cursor-pointer hover:bg-white/10 transition w-full sm:w-auto h-10 md:h-auto text-xs md:text-base">
-              <option value="distance">📍 Cercanos</option>
-              <option value="newest">🕒 Recientes</option>
-              <option value="age-asc">👶 Edad (Menor)</option>
-              <option value="age-desc">🧓 Edad (Mayor)</option>
-            </select>
+            <button id="viewMap" class="flex items-center gap-2 flex-1 justify-center font-medium">
+              <i class="fas fa-map-marked-alt"></i>
+              <span>Mapa</span>
+            </button>
           </div>
+        </div>
+
+        <!-- Controls Row 2: Filters & Sort -->
+        <div class="grid grid-cols-2 gap-3">
+          <button id="toggleFilters"
+            class="glass px-4 py-3 rounded-xl hover:bg-white/10 transition flex items-center justify-center gap-2 font-medium">
+            <i class="fas fa-sliders-h"></i>
+            <span>Filtros</span>
+          </button>
+
+          <select id="sortBy"
+            class="glass px-4 py-3 rounded-xl border-0 cursor-pointer hover:bg-white/10 transition font-medium appearance-none bg-right pr-8"
+            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em 1.5em;">
+            <option value="distance">📍 Cercanos</option>
+            <option value="newest">🕒 Recientes</option>
+            <option value="age-asc">👶 Más Joven</option>
+            <option value="age-desc">🧓 Mayor</option>
+          </select>
         </div>
       </div>
 

@@ -7,7 +7,8 @@ import firebaseConfig, { auth, storage, app, getDb } from './firebase-config-env
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp, getFirestore, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { showToast, validateProfileComplete, getAvailabilityStatus } from './utils.js';
+import { showToast, validateProfileComplete, getAvailabilityStatus, getAvailabilityBadge } from './utils.js';
+import { sanitizer } from './sanitizer.js';
 
 import apiService from './api-service.js';
 import { themes, applyTheme, loadTheme, saveThemeToFirestore } from './theme.js';
@@ -181,6 +182,9 @@ window.applyTheme = applyTheme;
 
 
     // Map variables (Legacy - Removed for Cost Optimization)
+    // GPS location variables
+    let userLatitude = null;
+    let userLongitude = null;
 
 
 
@@ -216,13 +220,18 @@ window.applyTheme = applyTheme;
             document.getElementById('latitude').value = userLatitude;
             document.getElementById('longitude').value = userLongitude;
 
-            // Initialize or update map (Removed)
-            // initializeMap(userLatitude, userLongitude);
+            // Show coordinates in the UI
+            const coordsDisplay = document.getElementById('coordinatesDisplay');
+            const coordsText = document.getElementById('coordsText');
+            if (coordsDisplay && coordsText) {
+                coordsText.textContent = `${userLatitude.toFixed(4)}, ${userLongitude.toFixed(4)}`;
+                coordsDisplay.classList.remove('hidden');
+            }
 
-            // Get municipality name
+            // Get municipality name via reverse geocoding
             await reverseGeocode(userLatitude, userLongitude);
 
-            showToast('Coordenadas guardadas. Por favor escribe tu municipio.', 'success');
+            showToast('✅ Ubicación detectada correctamente', 'success');
             document.getElementById('city').focus();
 
         } catch (error) {
@@ -442,7 +451,7 @@ window.applyTheme = applyTheme;
             // Add Banner
             const banner = document.createElement('div');
             banner.className = 'fixed top-20 left-0 right-0 bg-yellow-600/90 text-white text-center py-2 z-50 font-bold backdrop-blur-md shadow-lg';
-            banner.innerHTML = `<i class="fas fa-eye"></i> MODO VISTA ADMIN - Editando a: ${currentUserData.alias || 'Usuario'} (${targetUid}) <button onclick="window.history.back()" class="ml-4 underline text-sm">Volver</button>`;
+            banner.innerHTML = `<i class="fas fa-eye"></i> MODO VISTA ADMIN - Editando a: ${sanitizer.text(currentUserData.alias || 'Usuario')} (${sanitizer.text(targetUid)}) <button onclick="window.history.back()" class="ml-4 underline text-sm">Volver</button>`;
             document.body.appendChild(banner);
 
             // Hide sensitive sections if needed, or keep for Admin visibility
@@ -462,8 +471,8 @@ window.applyTheme = applyTheme;
             // Instead, let's just populate the DOM elements here directly since we have the data.
 
             // 1. Header Info
-            document.getElementById('userName').textContent = currentUserData.alias || 'Usuario';
-            document.getElementById('userEmail').textContent = currentUserData.email || 'Email oculto';
+            document.getElementById('userName').textContent = sanitizer.text(currentUserData.alias || 'Usuario');
+            document.getElementById('userEmail').textContent = sanitizer.text(currentUserData.email || 'Email oculto');
 
             // 2. Avatar
             const photoUrl = currentUserData.photoURL || (currentUserData.photos && currentUserData.photos[0]);
@@ -500,7 +509,7 @@ window.applyTheme = applyTheme;
                         const imgEl = document.getElementById(`gallery-img-${index + 1}`);
                         const phEl = document.getElementById(`gallery-ph-${index + 1}`);
                         if (imgEl && phEl) {
-                            imgEl.src = url;
+                            imgEl.src = sanitizer.url(url);
                             imgEl.classList.remove('hidden');
                             phEl.classList.add('hidden');
                             // Disable delete buttons
@@ -550,8 +559,8 @@ window.applyTheme = applyTheme;
             const userEmailEl = document.getElementById('userEmail');
             const photoInitialEl = document.getElementById('photoInitial');
 
-            if (userNameEl) userNameEl.textContent = demoUser.displayName || 'Usuario Demo';
-            if (userEmailEl) userEmailEl.textContent = demoUser.email;
+            if (userNameEl) userNameEl.textContent = sanitizer.text(demoUser.displayName || 'Usuario Demo');
+            if (userEmailEl) userEmailEl.textContent = sanitizer.text(demoUser.email);
 
             // Photo placeholder
             if (photoInitialEl) {
@@ -563,7 +572,7 @@ window.applyTheme = applyTheme;
             const aliasInput = document.getElementById('alias');
             const bioInput = document.getElementById('bio');
 
-            if (aliasInput) aliasInput.value = demoUser.displayName || 'Usuario Demo';
+            if (aliasInput) aliasInput.value = sanitizer.text(demoUser.displayName || 'Usuario Demo');
             if (bioInput) bioInput.value = 'Usuario en modo demo - funcionalidad limitada';
 
             // Set hidden fields safely
@@ -681,8 +690,8 @@ window.applyTheme = applyTheme;
             const userNameEl = document.getElementById('userName');
             const userEmailEl = document.getElementById('userEmail');
 
-            if (userNameEl) userNameEl.textContent = currentUserData.alias || 'Usuario';
-            if (userEmailEl) userEmailEl.textContent = currentUser.email;
+            if (userNameEl) userNameEl.textContent = sanitizer.text(currentUserData.alias || 'Usuario');
+            if (userEmailEl) userEmailEl.textContent = sanitizer.text(currentUser.email);
 
             // Reputation / Availability Display Logic
             const reputationContainer = document.getElementById('reputationContainer');
@@ -694,13 +703,13 @@ window.applyTheme = applyTheme;
                 const gender = (currentUserData.gender || '').toLowerCase();
 
                 if (gender === 'femenino' || gender === 'mujer') {
-                    // FEMALE: Status Indicator (Traffic Light)
                     const status = currentUserData.availabilityStatus || 'available';
-                    const statusConfig = getAvailabilityStatus(status);
+                    const statusConfig = getAvailabilityBadge(status);
 
                     // Apply styles
                     reputationBadgeEl.className = `inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border shadow-lg backdrop-blur-md transition-all duration-300 ${statusConfig.color}`;
-                    reputationBadgeEl.innerHTML = `<i class="fas ${statusConfig.icon}"></i> ${statusConfig.label}`;
+                    // sanitizer.html used here because icons are trusted HTML from utils
+                    reputationBadgeEl.innerHTML = `<i class="fas ${sanitizer.attribute(statusConfig.icon)}"></i> ${sanitizer.text(statusConfig.label)}`;
 
                     // Add click handler to toggle status (optional immediate toggle?)
                     // For now just display. User changes it in the form below.
@@ -737,7 +746,7 @@ window.applyTheme = applyTheme;
                     }
 
                     reputationBadgeEl.className = `inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold shadow-lg backdrop-blur-md transition-all duration-300 ${badgeClass}`;
-                    reputationBadgeEl.innerHTML = `<i class="${icon}"></i> ${label}`;
+                    reputationBadgeEl.innerHTML = `<i class="${sanitizer.attribute(icon)}"></i> ${sanitizer.text(label)}`;
                 }
             }
 
@@ -833,7 +842,7 @@ window.applyTheme = applyTheme;
             const bioInput = document.getElementById('bio');
 
             if (aliasInput) {
-                aliasInput.value = currentUserData.alias || '';
+                aliasInput.value = sanitizer.text(currentUserData.alias || '');
                 if (currentUserData.alias) {
                     // UNLOCK FOR RECOVERY (User request: messed up profile)
                     // aliasInput.disabled = true;
@@ -872,7 +881,7 @@ window.applyTheme = applyTheme;
             }
 
             if (cityInput) cityInput.value = currentUserData.city || currentUserData.municipio || '';
-            if (professionInput) professionInput.value = currentUserData.profession || '';
+            if (professionInput) professionInput.value = sanitizer.text(currentUserData.profession || '');
 
 
 
@@ -896,7 +905,7 @@ window.applyTheme = applyTheme;
                 };
                 window.toggleAvailabilitySelector();
             }
-            if (bioInput) bioInput.value = currentUserData.bio || '';
+            if (bioInput) bioInput.value = sanitizer.text(currentUserData.bio || '');
 
             // Load geolocation data if available
             if (currentUserData.latitude && currentUserData.longitude) {
@@ -905,20 +914,29 @@ window.applyTheme = applyTheme;
                 document.getElementById('latitude').value = userLatitude;
                 document.getElementById('longitude').value = userLongitude;
 
-                // Initialize map with saved location
-                initializeMap(userLatitude, userLongitude);
+                // Show saved coordinates in UI
+                const coordsDisplay = document.getElementById('coordinatesDisplay');
+                const coordsText = document.getElementById('coordsText');
+                if (coordsDisplay && coordsText) {
+                    coordsText.textContent = `${userLatitude.toFixed(4)}, ${userLongitude.toFixed(4)}`;
+                    coordsDisplay.classList.remove('hidden');
+                }
             } else if (currentUserData.location && currentUserData.location.lat) {
                 // Handle 'location' object format from backend
                 userLatitude = currentUserData.location.lat;
                 userLongitude = currentUserData.location.lng;
                 document.getElementById('latitude').value = userLatitude;
                 document.getElementById('longitude').value = userLongitude;
-                initializeMap(userLatitude, userLongitude);
-            } else {
-                // Initialize map with default (Madrid) if no location set
-                console.log('🌍 No location set. Initializing map with default.');
-                initializeMap(null, null);
+
+                // Show saved coordinates in UI
+                const coordsDisplay = document.getElementById('coordinatesDisplay');
+                const coordsText = document.getElementById('coordsText');
+                if (coordsDisplay && coordsText) {
+                    coordsText.textContent = `${userLatitude.toFixed(4)}, ${userLongitude.toFixed(4)}`;
+                    coordsDisplay.classList.remove('hidden');
+                }
             }
+            // Map initialization removed for cost optimization
 
             // Load gallery photos - SAFE ELEMENT ACCESS
             if (currentUserData.photos && Array.isArray(currentUserData.photos)) {
@@ -935,9 +953,9 @@ window.applyTheme = applyTheme;
 
                         if (imageEl && previewEl && removeBtn) {
                             if (index < 3) {
-                                imageEl.src = url;
+                                imageEl.src = sanitizer.url(url);
                             } else {
-                                imageEl.dataset.src = url;
+                                imageEl.dataset.src = sanitizer.url(url);
                                 imageEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E";
                                 imageEl.classList.add('lazy-loading');
                             }
