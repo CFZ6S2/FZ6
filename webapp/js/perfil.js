@@ -1079,6 +1079,13 @@ window.applyTheme = applyTheme;
     // Bio counter (characters)
     document.getElementById('bio').addEventListener('input', updateBioCounter);
 
+    // Remove error highlights on input
+    ['alias', 'birthDate', 'gender', 'city'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', function () {
+            this.classList.remove('border-red-500');
+        });
+    });
+
     function updateBioCounter() {
         const bioEl = document.getElementById('bio');
         if (!bioEl) return;
@@ -1273,38 +1280,39 @@ window.applyTheme = applyTheme;
         const relationshipStatus = document.getElementById('relationshipStatus').value;
         const lookingFor = document.getElementById('lookingFor').value;
 
-        // RELAXED VALIDATION
-        if (!alias) {
-            showToast('El nombre de usuario (Alias) es obligatorio', 'warning');
-            return;
+        // STRICT VALIDATION (Required for Firestore Creation)
+        const missingFields = [];
+        if (!alias) missingFields.push('Alias');
+        if (!birthDate) missingFields.push('Fecha de Nacimiento');
+        if (!gender) missingFields.push('Género');
+        if (!city) missingFields.push('Ciudad');
+
+        if (missingFields.length > 0) {
+            showToast(`Campos obligatorios faltantes: ${missingFields.join(', ')}`, 'error');
+            // Highlight empty fields
+            if (!alias) document.getElementById('alias')?.classList.add('border-red-500');
+            if (!birthDate) document.getElementById('birthDate')?.classList.add('border-red-500');
+            if (!gender) document.getElementById('gender')?.classList.add('border-red-500');
+            if (!city) document.getElementById('city')?.classList.add('border-red-500');
+            return; // STOP SAVE
         }
 
-        if (!birthDate || !gender || !city || !profession || !relationshipStatus || !lookingFor) {
-            showToast('Perfil incompleto: Se recomienda completar todos los campos', 'info');
+        // Age Validation (Strict 18+)
+        const birthDateObj = new Date(birthDate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDateObj.getFullYear();
+        const monthDiff = today.getMonth() - birthDateObj.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
+            age--;
         }
 
-        if (bio.length > 0 && bio.length < 10) {
-            showToast(`La descripción es muy corta, se recomienda explayarse más.`, 'info');
+        if (age < 18) {
+            showToast('Debes ser mayor de 18 años para usar TuCitaSegura', 'error');
+            return; // STOP SAVE
         }
 
-        const uploadedGalleryCount = galleryFiles.filter(file => file !== null).length;
-        const existingGalleryCount = (currentUserData && currentUserData.galleryPhotos) ? currentUserData.galleryPhotos.filter(url => url).length : 0;
-        if (uploadedGalleryCount + existingGalleryCount === 0) {
-            showToast('Tip: Sube fotos a tu galería para tener más matches', 'info');
-        }
-
-        if (birthDate) {
-            const birthDateObj = new Date(birthDate);
-            const today = new Date();
-            let age = today.getFullYear() - birthDateObj.getFullYear();
-            const monthDiff = today.getMonth() - birthDateObj.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-                age--;
-            }
-            if (age < 18) {
-                showToast('Debes ser mayor de 18 años para usar TuCitaSegura', 'error');
-                return;
-            }
+        if (!profession || !relationshipStatus || !lookingFor) {
+            showToast('Se recomienda completar todos los campos para mejorar tus matches', 'info');
         }
 
         saveButton.disabled = true;
@@ -1466,6 +1474,7 @@ window.applyTheme = applyTheme;
                 console.log('🆕 Creating NEW user document (Verified) - Adding required fields');
                 payload.email = currentUser.email;
                 payload.userRole = 'regular';
+                payload.createdAt = serverTimestamp(); // REQUIRED by Firestore rules
                 // createdAt handled by backend if new
             } else {
                 console.log('🔄 Updating EXISTING user document');
