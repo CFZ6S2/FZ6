@@ -226,6 +226,7 @@ async function initAppCheck() {
     }
 
     logger.info('🔐 Inicializando App Check (Enterprise Mode)...');
+    logger.info('🔑 reCAPTCHA Key:', RECAPTCHA_ENTERPRISE_SITE_KEY);
     logger.info('ℹ️ Firebase app en uso', { projectId: app.options?.projectId, appId: app.options?.appId });
 
     // ANTI-HANG FIX: Clear storage non-blocking
@@ -277,33 +278,13 @@ async function initAppCheck() {
 }
 
 // Initialize App Check
-// Initialize App Check (Deferred)
+// Initialize App Check immediately to prevent race conditions with data fetching
 (async function bootstrap() {
-  const init = async () => {
-    try {
-      console.log('🛡️ Initializing App Check (Deferred)...');
-      await initAppCheck();
-    } catch (e) {
-      console.error('CRITICAL: App Check Init Failed', e);
-    }
-  };
-
-  if (document.readyState === 'complete') {
-    // If loaded, schedule for idle
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(init);
-    } else {
-      setTimeout(init, 2000);
-    }
-  } else {
-    // Wait for load, then schedule
-    window.addEventListener('load', () => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(init);
-      } else {
-        setTimeout(init, 2000);
-      }
-    });
+  try {
+    console.log('🛡️ Initializing App Check (Immediate)...');
+    await initAppCheck();
+  } catch (e) {
+    console.error('CRITICAL: App Check Init Failed', e);
   }
 })();
 

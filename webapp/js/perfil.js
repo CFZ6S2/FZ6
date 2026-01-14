@@ -5,7 +5,7 @@ import './firebase-appcheck.js';
 // Then import Firebase services
 import firebaseConfig, { auth, storage, app, getDb } from './firebase-config-env.js'; // Added getDb
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp, getFirestore, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp, getFirestore, collection, query, where, orderBy, limit, getDocs, onSnapshot } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { showToast, validateProfileComplete, getAvailabilityStatus, getAvailabilityBadge } from './utils.js';
 import { sanitizer } from './sanitizer.js';
@@ -387,6 +387,32 @@ window.applyTheme = applyTheme;
 
                 await loadUserProfile();
                 hasLoadedProfile = true;
+
+                // REAL-TIME LISTENER for Verification Status
+                try {
+                    const userDocRef = doc(db, 'users', currentUser.uid);
+                    onSnapshot(userDocRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            // Update Status Badge UI if exists
+                            const status = data.photoVerificationStatus;
+                            const photoStatusEl = document.getElementById('photo-verification-status');
+
+                            if (photoStatusEl) {
+                                if (status === 'APPROVED') {
+                                    photoStatusEl.innerHTML = '<span class="text-green-500 font-bold"><i class="fas fa-check-circle"></i> Foto Verificada</span>';
+                                } else if (status === 'REVIEW_REQUIRED') {
+                                    photoStatusEl.innerHTML = '<span class="text-yellow-500 font-bold"><i class="fas fa-clock"></i> En Revisión</span>';
+                                } else if (status && status.startsWith('REJECT')) {
+                                    photoStatusEl.innerHTML = '<span class="text-red-500 font-bold"><i class="fas fa-times-circle"></i> Foto Rechazada</span>';
+                                    showToast('Tu foto ha sido rechazada. Por favor sube una foto real.', 'error');
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error setting up real-time listener:', e);
+                }
 
                 try {
                     // Fix violation: Only init if already granted. If default, wait for user gesture (e.g. enable button).
@@ -1140,11 +1166,19 @@ window.applyTheme = applyTheme;
             // Show errors and warnings
             showValidationErrors(validation, showToast);
 
-            // If validation failed, don't proceed
+            // If validation failed, check if it's ONLY due to size
             if (!validation.isValid) {
-                e.target.value = ''; // Clear the input
-                window.isPhotoProcessing = false; // RELEASE LOCK
-                return;
+                const isOnlySizeError = validation.errors.every(e => e.startsWith('File too large'));
+                if (isOnlySizeError && validation.errors.length > 0) {
+                    console.warn('⚠️ File too large, attempting to resize/compress...', validation.errors);
+                    showToast('Imagen grande detectada. Optimizando...', 'info');
+                    // Proceed to compression
+                } else {
+                    // Other errors (type, dangerous, empty) are fatal
+                    e.target.value = ''; // Clear the input
+                    window.isPhotoProcessing = false; // RELEASE LOCK
+                    return;
+                }
             }
 
             // COMPRESSION STEP
@@ -1212,10 +1246,18 @@ window.applyTheme = applyTheme;
                 // Show errors and warnings
                 showValidationErrors(validation, showToast);
 
-                // If validation failed, don't proceed
+                // If validation failed, check if it's ONLY due to size
                 if (!validation.isValid) {
-                    e.target.value = ''; // Clear the input
-                    return;
+                    const isOnlySizeError = validation.errors.every(e => e.startsWith('File too large'));
+                    if (isOnlySizeError && validation.errors.length > 0) {
+                        console.warn('⚠️ File too large, attempting to resize/compress...', validation.errors);
+                        showToast('Imagen grande detectada. Optimizando...', 'info');
+                        // Proceed to compression
+                    } else {
+                        // Other errors (type, dangerous, empty) are fatal
+                        e.target.value = ''; // Clear the input
+                        return;
+                    }
                 }
 
                 // COMPRESSION STEP

@@ -1,3 +1,4 @@
+import './firebase-appcheck.js';
 import { auth, getDb } from './firebase-config-env.js';
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
