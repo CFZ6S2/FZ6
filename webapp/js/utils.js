@@ -658,6 +658,9 @@ export function requireCompleteProfile(userData, returnUrl = null) {
  * @returns {Object} { canAccess: boolean, reason: string, missingFields: string[] }
  */
 export function canAccessChat(userData) {
+  // TEMPORARILY DISABLED: All restrictions removed to allow all users to access chat
+  // TODO: Re-enable profile requirements when desired
+  /*
   if (!userData) {
     return {
       canAccess: false,
@@ -677,9 +680,8 @@ export function canAccessChat(userData) {
     };
   }
 
-  // TEMPORARILY DISABLED: Allow free chat until payment processing isready
+  // TEMPORARILY DISABLED: Allow free chat until payment processing is ready
   // TODO: Re-enable when company/US bank account is set up
-  /*
   // For men, also check membership
   if (userData.gender === 'masculino') {
     if (!userData.hasActiveSubscription) {
@@ -692,7 +694,7 @@ export function canAccessChat(userData) {
   }
   */
 
-  // All validations passed
+  // All users can access chat - no restrictions
   return {
     canAccess: true,
     reason: 'ok',

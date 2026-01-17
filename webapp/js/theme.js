@@ -18,6 +18,20 @@ export const themes = {
       end: 'rgba(255, 0, 128, 0.2)'
     }
   },
+  light: {
+    name: 'Modo Claro',
+    icon: '☀️',
+    gradient: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    primary: '#3b82f6',
+    secondary: '#64748b',
+    accent: '#2563eb',
+    background: {
+      start: 'rgba(255, 255, 255, 0.8)',
+      middle: 'rgba(240, 240, 250, 0.8)',
+      end: 'rgba(255, 255, 255, 0.8)'
+    },
+    isDark: false
+  },
   blue: {
     name: 'Azul Océano',
     icon: '💙',

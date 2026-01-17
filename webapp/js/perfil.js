@@ -1,6 +1,7 @@
 
 // Import App Check FIRST
 import './firebase-appcheck.js';
+import '../css/input.css'; // Ensure Tailwind styles are loaded
 
 // Then import Firebase services
 import firebaseConfig, { auth, storage, app, getDb } from './firebase-config-env.js'; // Added getDb
@@ -701,6 +702,16 @@ window.applyTheme = applyTheme;
                 }
             }
 
+            // FINAL CHECK: If still no profile data, Redirect to Assistant
+            if (!currentUserData || !currentUserData.alias || !currentUserData.gender) {
+                console.warn('🚨 Profile is truly incomplete/missing. Redirecting to Assistant...');
+                showToast('Perfil incompleto. Redirigiendo al asistente...', 'warning');
+                setTimeout(() => {
+                    window.location.href = '/perfil-asistido.html';
+                }, 1500);
+                return;
+            }
+
 
 
             // POPULATE DEBUG PANEL
@@ -966,8 +977,11 @@ window.applyTheme = applyTheme;
 
             // Load gallery photos - SAFE ELEMENT ACCESS
             if (currentUserData.photos && Array.isArray(currentUserData.photos)) {
-                // Backend uses 'photos', frontend used 'galleryPhotos'. Mapping...
+                // Legacy: Backend uses 'photos'
                 currentUserData.galleryPhotos = currentUserData.photos;
+            } else if (currentUserData.gallery && Array.isArray(currentUserData.gallery)) {
+                // New: Profile Assistant uses 'gallery'
+                currentUserData.galleryPhotos = currentUserData.gallery;
             }
 
             if (currentUserData.galleryPhotos && Array.isArray(currentUserData.galleryPhotos)) {

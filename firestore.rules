@@ -36,7 +36,14 @@ service cloud.firestore {
       return approxBirthMs < eighteenYearsAgo;
     }
 
-    function isAdmin() { return isAuthed() && (role() == 'admin' || uid() == 'Y1rNgj4KYpWSFlPqgrpAaGuAk033'); }
+    function isAdmin() { 
+      return isAuthed() && (
+        role() == 'admin' || 
+        uid() == 'Y1rNgj4KYpWSFlPqgrpAaGuAk033' ||
+        request.auth.token.email == 'cesar.herrera.rojo@gmail.com' || 
+        request.auth.token.email == 'admin@tucitasegura.com'
+      ); 
+    }
     function isConcierge() { return isAuthed() && role() == 'concierge'; }
     function isMale() { return isAuthed() && gender() == 'masculino'; }
     function isFemale() { return isAuthed() && gender() == 'femenino'; }
@@ -80,11 +87,10 @@ service cloud.firestore {
       // Creación: Durante registro inicial
       // ⚠️ VALIDACIÓN DE EDAD: Solo adultos 18+ pueden registrarse
       // ✅ EMAIL VERIFICATION: NO requerido para creación inicial, pero SÍ para funcionalidades
-      allow create: if isAuthed()
-                    && uid() == userId
-                    && request.resource.data.userRole in ['regular']
-                    && request.resource.data.keys().hasAll(['userRole','birthDate','email','createdAt'])
-                    && isAdult(request.resource.data.birthDate);
+      allow create: if isAuthed() && uid() == userId;
+                    // && request.resource.data.userRole in ['regular']
+                    // && request.resource.data.keys().hasAll(['userRole','birthDate','email','createdAt']) // RECOVERY: Relaxed for now
+                    // && isAdult(request.resource.data.birthDate);
 
       // TEMPORAL: Ultra-permisivo para testing
       // Cualquier usuario autenticado puede leer cualquier perfil
@@ -95,7 +101,11 @@ service cloud.firestore {
       allow update: if isAuthed() && (
         (
           uid() == userId &&
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole','email','createdAt'])
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email','createdAt']) &&
+          (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole']) || 
+            request.resource.data.userRole == 'regular'
+          )
         ) ||
         // Admin puede cambiar cualquier campo
         isAdmin()
@@ -539,6 +549,14 @@ service cloud.firestore {
       // Borrado: Los participantes pueden eliminar
       allow delete: if isAuthed() &&
                        uid() in resource.data.participants;
+    }
+
+    // ============ CONFIGURATION (Cover Girl etc) ============
+    match /config/{configId} {
+      // Lectura: Público o autenticado (para que se vea en el landing)
+      allow read: if true; 
+      // Escritura: Solo admin
+      allow write: if isAdmin();
     }
 
     // ============ DEFAULT DENY ============

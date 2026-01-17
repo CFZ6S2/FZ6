@@ -43,8 +43,9 @@ const getTransporter = () => {
  * @param {string} subject - Email subject
  * @param {string} html - HTML content
  * @param {string} text - Fallback text content
+ * @param {string} replyTo - (Optional) Reply-To address
  */
-async function sendEmail({ to, subject, html, text }) {
+async function sendEmail({ to, subject, html, text, replyTo }) {
     const transporter = getTransporter();
 
     if (!transporter) {
@@ -56,13 +57,19 @@ async function sendEmail({ to, subject, html, text }) {
         const config = functions.config().smtp || {};
         const senderEmail = config.user || process.env.SMTP_USER;
 
-        const info = await transporter.sendMail({
+        const mailOptions = {
             from: `TuCitaSegura <${senderEmail}>`,
             to,
             subject,
             text, // plain text body
             html, // html body
-        });
+        };
+
+        if (replyTo) {
+            mailOptions.replyTo = replyTo;
+        }
+
+        const info = await transporter.sendMail(mailOptions);
 
         console.log(`✅ Email sent to ${to}: ${info.messageId}`);
         return { success: true, messageId: info.messageId };

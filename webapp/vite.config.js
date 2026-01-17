@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         ],
         // OPTIMIZATION: Strip console logs in production
         esbuild: {
-            drop: mode === 'production' ? ['console', 'debugger'] : [],
+            drop: [], // CHECKPOINT: Enabled logs to debug Login 400 error
         },
         build: {
             outDir: 'dist',
@@ -77,7 +77,11 @@ export default defineConfig(({ mode }) => {
                     // Legal & Support
                     privacidad: path.resolve(__dirname, 'privacidad.html'),
                     terminos: path.resolve(__dirname, 'terminos.html'),
-                    contacto: path.resolve(__dirname, 'contacto.html')
+                    contacto: path.resolve(__dirname, 'contacto.html'),
+
+                    // CupidIA Guided Registration
+                    registro_asistido: path.resolve(__dirname, 'registro-asistido.html'),
+                    perfil_asistido: path.resolve(__dirname, 'perfil-asistido.html')
                 }
             }
         },

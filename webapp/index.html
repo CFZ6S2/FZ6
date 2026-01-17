@@ -46,6 +46,7 @@
     .hero-text-gradient {
       background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -92,9 +93,9 @@
         <a href="login.html" class="hidden md:block text-sm font-semibold text-white hover:text-blue-300 transition">
           Iniciar Sesión
         </a>
-        <a href="register.html"
-          class="primary-gradient px-6 py-2.5 rounded-full font-bold text-sm hover:shadow-lg hover:shadow-blue-500/25 transition transform hover:-translate-y-0.5">
-          Crear Cuenta
+        <a href="registro-asistido.html"
+          class="primary-gradient px-6 py-2.5 rounded-full font-bold text-sm hover:shadow-lg hover:shadow-blue-500/25 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+          💘 Registro con CupidIA
         </a>
       </div>
     </div>
@@ -122,9 +123,9 @@
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 pt-4">
-          <a href="register.html"
-            class="primary-gradient text-white px-8 py-4 rounded-2xl font-bold text-lg text-center hover:shadow-xl hover:shadow-blue-500/20 transition transform hover:-translate-y-1">
-            Empezar Ahora
+          <a href="registro-asistido.html"
+            class="secondary-gradient text-white px-8 py-4 rounded-2xl font-bold text-lg text-center hover:shadow-xl hover:shadow-pink-500/20 transition transform hover:-translate-y-1 flex items-center justify-center gap-3">
+            💘 Regístrate GRATIS con CupidIA
           </a>
           <a href="login.html"
             class="glass-card px-8 py-4 rounded-2xl font-bold text-lg text-center hover:bg-white/10 transition flex items-center justify-center gap-2">
@@ -160,24 +161,17 @@
           <!-- Card 2 (Main) -->
           <div class="relative z-10 glass-card p-6 rounded-3xl border border-white/20 shadow-2xl bg-slate-900/80">
             <div class="w-full aspect-[4/5] bg-slate-800 rounded-2xl mb-4 overflow-hidden relative">
-              <img
+              <img id="heroProfilePhoto"
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
                 alt="Profile" class="w-full h-full object-cover">
               <div class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                <h3 class="text-xl font-bold">Andrea, 26</h3>
-                <p class="text-sm text-slate-300"><i class="fas fa-map-marker-alt mr-1"></i> Madrid, España</p>
+                <h3 class="text-xl font-bold" id="heroProfileName">Andrea, 26</h3>
+                <p class="text-sm text-slate-300" id="heroProfileLocation"><i class="fas fa-map-marker-alt mr-1"></i>
+                  Madrid, España</p>
               </div>
             </div>
-            <div class="flex justify-between items-center">
-              <button
-                class="w-12 h-12 rounded-full bg-slate-800 text-red-400 hover:bg-slate-700 transition flex items-center justify-center text-xl">
-                <i class="fas fa-times"></i>
-              </button>
-              <button
-                class="w-14 h-14 rounded-full secondary-gradient text-white shadow-lg shadow-pink-500/30 hover:scale-105 transition flex items-center justify-center text-2xl">
-                <i class="fas fa-heart"></i>
-              </button>
-            </div>
+            <!-- Buttons Removed per user request -->
+            <div class="hidden"></div>
 
             <!-- Verified Badge Floating -->
             <div
@@ -277,7 +271,8 @@
       </div>
 
       <!-- Video Placeholder/CTA -->
-      <div class="mt-16 relative group cursor-pointer max-w-2xl mx-auto" onclick="window.location.href='register.html'">
+      <div class="mt-16 relative group cursor-pointer max-w-2xl mx-auto"
+        onclick="window.location.href='registro-asistido.html'">
         <div
           class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
         </div>
@@ -562,7 +557,7 @@
 
       <!-- CTA -->
       <div class="text-center mt-16">
-        <a href="register.html"
+        <a href="registro-asistido.html"
           class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 font-bold text-lg shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 transition transform hover:scale-105">
           <i class="fas fa-gem"></i>
           Solicita Acceso al Concierge
@@ -593,7 +588,7 @@
           <h4 class="font-bold mb-4">Plataforma</h4>
           <ul class="space-y-2 text-sm text-slate-400">
             <li><a href="login.html" class="hover:text-white transition">Iniciar Sesión</a></li>
-            <li><a href="register.html" class="hover:text-white transition">Registro</a></li>
+            <li><a href="registro-asistido.html" class="hover:text-white transition">Registro con CupidIA</a></li>
             <li><a href="#features" class="hover:text-white transition">Características</a></li>
           </ul>
         </div>
@@ -649,6 +644,58 @@
       animation: bounce-slow 3s infinite ease-in-out;
     }
   </style>
+
+  <!-- Firebase SDK for Cover Girl Loading -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // Firebase configuration (read-only for public access)
+    // Firebase configuration (read-only for public access)
+    // Updated to match production project tucitasegura-129cc
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmaE2tXMBsKc8DjBd1ShJ1HnDxVYQ0yzU",
+      authDomain: "tucitasegura-129cc.firebaseapp.com",
+      projectId: "tucitasegura-129cc",
+      storageBucket: "tucitasegura-129cc.firebasestorage.app",
+      messagingSenderId: "180656060538",
+      appId: "1:180656060538:web:3168487130aa126db663c3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Load cover girl data
+    async function loadCoverGirl() {
+      try {
+        const coverGirlDoc = await getDoc(doc(db, 'config', 'coverGirl'));
+
+        if (coverGirlDoc.exists()) {
+          const data = coverGirlDoc.data();
+
+          // Update hero card with cover girl data
+          document.getElementById('heroProfilePhoto').src = data.photoURL;
+          document.getElementById('heroProfileName').textContent = `${data.alias}, ${data.age}`;
+          document.getElementById('heroProfileLocation').innerHTML = `<i class="fas fa-map-marker-alt mr-1"></i> ${data.city}, España`;
+
+          console.log('✅ Cover girl loaded:', data.alias);
+        } else {
+          console.log('ℹ️ No cover girl configured, using default');
+        }
+      } catch (error) {
+        console.error('Error loading cover girl:', error);
+        // Fallback to default is already in HTML
+      }
+    }
+
+    // Load when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadCoverGirl);
+    } else {
+      loadCoverGirl();
+    }
+  </script>
 
 </body>
 

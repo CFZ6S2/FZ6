@@ -254,14 +254,15 @@ function handleNetworkError(error) {
 function handleScriptError(message, source) {
   logger.error('Script error:', { message, source });
 
-  showToast('Error cargando recursos. Por favor, recarga la página.', 'error');
-
-  // Suggest page reload after 3 seconds
-  setTimeout(() => {
-    if (confirm('¿Deseas recargar la página para solucionar el problema?')) {
-      window.location.reload();
-    }
-  }, 3000);
+  // More descriptive message, less aggressive action
+  // Most "Script error" events are due to Drop-ins (Google Maps, reCAPTCHA)
+  // failing to load or blocked by extensions.
+  if (source && (source.includes('recaptcha') || source.includes('gstatic'))) {
+    showToast('Error cargando seguridad (reCAPTCHA). Verifica tu conexión o desactivar bloqueadores.', 'warning');
+  } else {
+    // Generic script error (usually CORS related when no source is available)
+    showToast('Algunos recursos no cargaron correctamente. Si algo falla, recarga la página.', 'warning');
+  }
 }
 
 /**

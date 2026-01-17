@@ -22,6 +22,7 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./css/chatbot.css">
 
   <style>
     body {
@@ -65,6 +66,9 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   </style>
+  <!-- Chatbot Widget -->
+  <link rel="stylesheet" href="./css/chatbot.css">
+  <script type="module" src="./js/chatbot.js"></script>
 </head>
 
 <body class="text-white">
@@ -495,6 +499,14 @@
         }, 1000);
 
       } catch (error) {
+        // UNWRAP HIDDEN ERRORS (e.g. invalid-credential hidden inside network-request-failed)
+        if (error.code === 'auth/network-request-failed' && error.customData && error.customData.message) {
+          const innerMessage = error.customData.message;
+          if (innerMessage.includes('auth/invalid-credential')) {
+            error = { ...error, code: 'auth/invalid-credential', message: 'Credenciales inválidas' };
+          }
+        }
+
         // IMPROVED DEBUGGING: Explicitly log strings
         console.error("❌ LOGIN FAILURE DEBUG INFO:");
         console.error("   Message:", error.message);
@@ -590,7 +602,7 @@
           // ✅ Log failed login
           SecurityLogger.logFailedLogin(email, errorMessage);
 
-          showToast(errorMessage, 'error');
+          showToast(`${errorMessage} (${error.code || 'NoCode'})`, 'error');
         }
 
         // Re-enable button
@@ -604,7 +616,10 @@
   </script>
 
   <!-- Auth Proxy Fallback -->
+  <!-- Auth Proxy Fallback -->
 
+  <!-- Chatbot Assistant -->
+  <script type="module" src="./js/chatbot.js"></script>
 </body>
 
 </html>

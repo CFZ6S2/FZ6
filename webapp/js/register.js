@@ -1,5 +1,6 @@
 
 import './firebase-appcheck.js';
+import './chatbot.js';
 import { verifyRecaptchaScore } from './recaptcha-enterprise.js';
 import { sanitizer } from './sanitizer.js';
 import { auth } from './firebase-config-env.js';

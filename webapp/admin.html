@@ -12,7 +12,8 @@
 
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="./css/output.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        media="print" onload="this.media='all'">
 
     <style>
         @keyframes fadeIn {
@@ -167,6 +168,10 @@
                         class="text-[10px] md:text-sm bg-green-500/10 hover:bg-green-500/20 px-2 md:px-3 py-2 rounded-lg transition-colors text-green-200 border border-green-500/30 flex items-center justify-center">
                         <i class="fas fa-bullhorn md:mr-2"></i><span class="hidden md:inline">Mensajes</span>
                     </button>
+                    <button onclick="toggleCoverGirlView()" id="coverGirlBtn"
+                        class="text-[10px] md:text-sm bg-pink-500/10 hover:bg-pink-500/20 px-2 md:px-3 py-2 rounded-lg transition-colors text-pink-200 border border-pink-500/30 flex items-center justify-center">
+                        <i class="fas fa-star md:mr-2"></i><span class="hidden md:inline">Portada</span>
+                    </button>
                     <button onclick="resetStats()" id="resetStatsBtn"
                         class="text-[10px] md:text-sm bg-yellow-500/10 hover:bg-yellow-500/20 px-2 md:px-3 py-2 rounded-lg transition-colors text-yellow-200 border border-yellow-500/30 flex items-center justify-center">
                         <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Reset</span>
@@ -301,6 +306,112 @@
                 </div>
             </div>
 
+            <!-- Cover Girl Management (Hidden by default) -->
+            <div id="coverGirlView" class="hidden fade-in space-y-6 mb-8">
+                <div class="glass-card rounded-2xl p-6 border border-pink-500/30">
+                    <h2 class="text-2xl font-bold flex items-center mb-6 text-pink-400">
+                        <i class="fas fa-star mr-3"></i>Chica de Portada
+                    </h2>
+
+                    <!-- Current Cover Girl Display -->
+                    <div id="currentCoverGirl" class="mb-6 p-4 bg-white/5 rounded-lg hidden">
+                        <h3 class="text-sm font-bold text-gray-400 mb-3">ACTUALMENTE EN PORTADA:</h3>
+                        <div class="flex items-center gap-4">
+                            <img id="currentCoverPhoto" src="" alt="Cover Girl"
+                                class="w-20 h-20 rounded-lg object-cover">
+                            <div class="flex-1">
+                                <p class="font-bold" id="currentCoverName"></p>
+                                <p class="text-sm text-gray-400" id="currentCoverDetails"></p>
+                                <p class="text-xs text-gray-500 mt-1" id="currentCoverUpdated"></p>
+                            </div>
+                            <button onclick="removeCoverGirl()"
+                                class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors">
+                                <i class="fas fa-times mr-2"></i>Remover
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Left Column: User Selection -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Buscar Usuaria</label>
+                                <input type="text" id="coverGirlSearch" placeholder="Buscar por email o alias..."
+                                    class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-2 !text-black placeholder-slate-500 focus:ring-2 focus:ring-pink-500">
+                            </div>
+
+                            <!-- Search Results -->
+                            <div id="coverGirlSearchResults" class="max-h-64 overflow-y-auto space-y-2">
+                                <!-- Results will be populated here -->
+                            </div>
+
+                            <!-- Selected User Info -->
+                            <div id="selectedUserInfo"
+                                class="hidden p-4 bg-pink-500/10 border border-pink-500/30 rounded-lg">
+                                <h4 class="text-sm font-bold text-pink-400 mb-2">USUARIA SELECCIONADA:</h4>
+                                <div class="flex items-center gap-3">
+                                    <img id="selectedUserPhoto" src="" alt="User"
+                                        class="w-12 h-12 rounded-full object-cover">
+                                    <div>
+                                        <p class="font-bold" id="selectedUserName"></p>
+                                        <p class="text-xs text-gray-400" id="selectedUserEmail"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Photo Upload & Data -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Foto Personalizada *</label>
+                                <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-pink-500 transition-colors cursor-pointer"
+                                    onclick="document.getElementById('coverPhotoInput').click()">
+                                    <input type="file" id="coverPhotoInput" accept="image/*" class="hidden"
+                                        onchange="previewCoverPhoto(event)">
+                                    <div id="photoUploadPlaceholder">
+                                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-2"></i>
+                                        <p class="text-sm text-gray-400">Click para subir foto</p>
+                                        <p class="text-xs text-gray-600 mt-1">JPG, PNG (máx 5MB)</p>
+                                    </div>
+                                    <div id="photoPreview" class="hidden">
+                                        <img id="photoPreviewImg" src="" alt="Preview"
+                                            class="w-full max-w-xs mx-auto rounded-lg">
+                                        <p class="text-xs text-green-400 mt-2">✓ Foto lista para subir</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Alias a Mostrar</label>
+                                <input type="text" id="coverGirlAlias" placeholder="Ej: Andrea"
+                                    class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-2 !text-black placeholder-slate-500 focus:ring-2 focus:ring-pink-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Edad</label>
+                                    <input type="number" id="coverGirlAge" min="18" max="99" placeholder="26"
+                                        class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-2 !text-black placeholder-slate-500 focus:ring-2 focus:ring-pink-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Ciudad</label>
+                                    <input type="text" id="coverGirlCity" placeholder="Madrid"
+                                        class="w-full bg-slate-100 border border-slate-300 rounded-lg px-4 py-2 !text-black placeholder-slate-500 focus:ring-2 focus:ring-pink-500">
+                                </div>
+                            </div>
+
+                            <button onclick="saveCoverGirl()" id="saveCoverGirlBtn"
+                                class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-lg shadow-lg hover:shadow-pink-500/20 transition-all transform hover:scale-[1.02]">
+                                <i class="fas fa-save mr-2"></i>Guardar Cover Girl
+                            </button>
+
+                            <p id="coverGirlStatus" class="text-center text-sm font-mono min-h-[20px]"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Search and Filters -->
             <div class="glass-card rounded-2xl p-6 mb-8 fade-in">
                 <div class="flex flex-col md:flex-row gap-4">
@@ -414,6 +525,15 @@
 
         // Initialize Firestore directly to ensure instance compatibility with 'collection'
         const db = getFirestore(app);
+
+        // MANUAL INIT: Defer App Check to improve FCP
+        // We import it dynamically or from the now-exported module
+        import { initAppCheck } from './js/firebase-appcheck.js';
+
+        // Start App Check non-blocking
+        initAppCheck().then(() => {
+            console.log('🛡️ App Check initialized for Admin Panel');
+        });
 
         let allUsers = [];
         let filteredUsers = [];
@@ -841,6 +961,262 @@
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         };
+
+        // ========== COVER GIRL MANAGEMENT ==========
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
+        const storage = getStorage(app);
+        let selectedUserId = null;
+        let selectedPhotoFile = null;
+
+        // Toggle Cover Girl View
+        window.toggleCoverGirlView = () => {
+            const view = document.getElementById('coverGirlView');
+            const btn = document.getElementById('coverGirlBtn');
+            const isHidden = view.classList.contains('hidden');
+
+            if (isHidden) {
+                view.classList.remove('hidden');
+                btn.classList.add('bg-pink-500/20', 'text-pink-400');
+                btn.classList.remove('bg-pink-500/10', 'text-pink-200');
+                loadCurrentCoverGirl();
+            } else {
+                view.classList.add('hidden');
+                btn.classList.remove('bg-pink-500/20', 'text-pink-400');
+                btn.classList.add('bg-pink-500/10', 'text-pink-200');
+            }
+        };
+
+        // Load current cover girl data
+        async function loadCurrentCoverGirl() {
+            try {
+                const coverGirlDoc = await getDocs(collection(db, 'config'));
+                let coverGirlData = null;
+
+                coverGirlDoc.forEach((doc) => {
+                    if (doc.id === 'coverGirl') {
+                        coverGirlData = doc.data();
+                    }
+                });
+
+                if (coverGirlData) {
+                    document.getElementById('currentCoverGirl').classList.remove('hidden');
+                    document.getElementById('currentCoverPhoto').src = coverGirlData.photoURL;
+                    document.getElementById('currentCoverName').textContent = coverGirlData.alias;
+                    document.getElementById('currentCoverDetails').textContent = `${coverGirlData.age} años • ${coverGirlData.city}`;
+
+                    const updatedAt = coverGirlData.updatedAt?.toDate?.() || new Date(coverGirlData.updatedAt);
+                    document.getElementById('currentCoverUpdated').textContent =
+                        `Actualizado: ${updatedAt.toLocaleDateString()} por ${coverGirlData.updatedBy || 'Admin'}`;
+                } else {
+                    document.getElementById('currentCoverGirl').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading current cover girl:', error);
+            }
+        }
+
+        // Search female users
+        document.getElementById('coverGirlSearch')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const resultsContainer = document.getElementById('coverGirlSearchResults');
+
+            if (searchTerm.length < 2) {
+                resultsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Escribe al menos 2 caracteres...</p>';
+                return;
+            }
+
+            const femaleUsers = allUsers.filter(user =>
+                user.gender === 'femenino' &&
+                ((user.email || '').toLowerCase().includes(searchTerm) ||
+                    (user.alias || '').toLowerCase().includes(searchTerm))
+            ).slice(0, 10);
+
+            if (femaleUsers.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No se encontraron usuarias</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = femaleUsers.map(user => `
+                <div class="p-3 bg-white/5 hover:bg-white/10 rounded-lg cursor-pointer transition-colors" 
+                     onclick="selectUser('${user.id}')">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 font-bold flex-shrink-0">
+                            ${(user.alias || user.email || 'U')[0].toUpperCase()}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-sm truncate">${user.alias || 'Sin alias'}</p>
+                            <p class="text-xs text-gray-400 truncate">${user.email}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        });
+
+        // Select user
+        window.selectUser = (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            selectedUserId = userId;
+
+            // Show selected user info
+            document.getElementById('selectedUserInfo').classList.remove('hidden');
+            document.getElementById('selectedUserPhoto').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + (user.alias || user.email);
+            document.getElementById('selectedUserName').textContent = user.alias || 'Sin alias';
+            document.getElementById('selectedUserEmail').textContent = user.email;
+
+            // Pre-fill form
+            document.getElementById('coverGirlAlias').value = user.alias || '';
+            document.getElementById('coverGirlAge').value = user.age || '';
+            document.getElementById('coverGirlCity').value = user.city || '';
+        };
+
+        // Preview photo
+        window.previewCoverPhoto = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('La foto es demasiado grande. Máximo 5MB.');
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Solo se permiten imágenes.');
+                return;
+            }
+
+            selectedPhotoFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('photoPreviewImg').src = e.target.result;
+                document.getElementById('photoUploadPlaceholder').classList.add('hidden');
+                document.getElementById('photoPreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Save cover girl
+        window.saveCoverGirl = async () => {
+            const statusEl = document.getElementById('coverGirlStatus');
+            const btn = document.getElementById('saveCoverGirlBtn');
+
+            // Validate
+            if (!selectedUserId) {
+                statusEl.textContent = '❌ Selecciona una usuaria';
+                statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-red-400';
+                return;
+            }
+
+            if (!selectedPhotoFile) {
+                statusEl.textContent = '❌ Sube una foto';
+                statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-red-400';
+                return;
+            }
+
+            const alias = document.getElementById('coverGirlAlias').value.trim();
+            const age = parseInt(document.getElementById('coverGirlAge').value);
+            const city = document.getElementById('coverGirlCity').value.trim();
+
+            if (!alias || !age || !city) {
+                statusEl.textContent = '❌ Completa todos los campos';
+                statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-red-400';
+                return;
+            }
+
+            // Confirm
+            if (!confirm(`¿Guardar a "${alias}" como Cover Girl?\n\nEsto actualizará la portada del landing page.`)) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo...';
+            statusEl.textContent = 'Subiendo foto... ⏳';
+            statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-blue-400';
+
+            try {
+                // Upload photo to Storage
+                const timestamp = Date.now();
+                const fileExtension = selectedPhotoFile.name.split('.').pop();
+                const photoRef = ref(storage, `cover-girl/cover-girl-${timestamp}.${fileExtension}`);
+
+                await uploadBytes(photoRef, selectedPhotoFile);
+                const photoURL = await getDownloadURL(photoRef);
+
+                statusEl.textContent = 'Guardando datos... ⏳';
+
+                // Save to Firestore
+                const coverGirlData = {
+                    userId: selectedUserId,
+                    alias,
+                    age,
+                    city,
+                    photoURL,
+                    updatedAt: new Date(),
+                    updatedBy: auth.currentUser.email
+                };
+
+                // Import setDoc and doc
+                const { setDoc, doc: firestoreDoc } = await import('firebase/firestore');
+                await setDoc(firestoreDoc(db, 'config', 'coverGirl'), coverGirlData);
+
+                statusEl.textContent = '✅ Cover Girl guardada exitosamente';
+                statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-green-400';
+
+                // Reload current cover girl display
+                setTimeout(() => {
+                    loadCurrentCoverGirl();
+                    resetCoverGirlForm();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error saving cover girl:', error);
+                statusEl.textContent = '❌ Error: ' + error.message;
+                statusEl.className = 'text-center text-sm font-mono min-h-[20px] text-red-400';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Cover Girl';
+            }
+        };
+
+        // Remove cover girl
+        window.removeCoverGirl = async () => {
+            if (!confirm('¿Estás seguro de remover la Cover Girl actual?\n\nEl landing page volverá a mostrar el placeholder genérico.')) {
+                return;
+            }
+
+            try {
+                const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
+                await deleteDoc(firestoreDoc(db, 'config', 'coverGirl'));
+
+                alert('✅ Cover Girl removida exitosamente');
+                loadCurrentCoverGirl();
+
+            } catch (error) {
+                console.error('Error removing cover girl:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        };
+
+        // Reset form
+        function resetCoverGirlForm() {
+            selectedUserId = null;
+            selectedPhotoFile = null;
+            document.getElementById('selectedUserInfo').classList.add('hidden');
+            document.getElementById('coverGirlSearch').value = '';
+            document.getElementById('coverGirlSearchResults').innerHTML = '';
+            document.getElementById('coverGirlAlias').value = '';
+            document.getElementById('coverGirlAge').value = '';
+            document.getElementById('coverGirlCity').value = '';
+            document.getElementById('photoUploadPlaceholder').classList.remove('hidden');
+            document.getElementById('photoPreview').classList.add('hidden');
+            document.getElementById('coverGirlStatus').textContent = '';
+        }
 
         // Event listeners
         document.getElementById('searchInput').addEventListener('input', applyFilters);

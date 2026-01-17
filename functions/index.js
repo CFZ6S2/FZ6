@@ -50,6 +50,18 @@ exports.apiUpload = apiEndpoints.apiUpload;
 exports.apiModerateMessage = apiEndpoints.apiModerateMessage;
 exports.apiOptional = apiEndpoints.apiOptional;
 
+// Chatbot Assistant
+exports.chatBot = require('./chatbot').chatBot;
+
+// Cover Girl Email Campaign
+exports.sendCoverGirlCampaign = require('./cover-girl-campaign').sendCoverGirlCampaign;
+
+// Gender Update Email Campaign
+exports.sendGenderUpdateCampaign = require('./gender-update-campaign').sendGenderUpdateCampaign;
+
+// Cover Girl Triggers (Notification on Update)
+exports.onCoverGirlUpdate = require('./cover-girl-triggers').onCoverGirlUpdate;
+
 exports.apiProxy = functions.https.onRequest(async (req, res) => {
   const timer = new PerformanceTimer(logger, 'apiProxy');
 

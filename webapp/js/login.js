@@ -2,6 +2,7 @@
 // Firebase configuration
 // Firebase configuration (AppCheck lazy loaded below)
 // import './firebase-appcheck.js';
+import './chatbot.js';
 import { auth } from './firebase-config-env.js';
 import { sanitizer } from './sanitizer.js';
 import { RateLimiters, showRateLimitError } from './rate-limiter.js';

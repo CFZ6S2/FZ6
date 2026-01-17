@@ -207,6 +207,12 @@ async function initAppCheck() {
     return;
   }
 
+  // Prevent double processing
+  if (appCheck) {
+    logger.info('🛡️ App Check already initialized.');
+    return appCheck;
+  }
+
   // AUTO-CLEAR THROTTLE if detected (User Friction Fix)
   const throttled = window.detectAppCheckThrottled && window.detectAppCheckThrottled();
   if (throttled) {
@@ -278,9 +284,13 @@ async function initAppCheck() {
 }
 
 // Initialize App Check
-// Initialize App Check immediately to prevent race conditions with data fetching
+// Initialize App Check immediately (except on Admin Panel to improve FCP)
 (async function bootstrap() {
   try {
+    if (location.pathname.includes('admin')) {
+      console.log('🛡️ Deferring App Check for Admin Panel (Performance Optimization)');
+      return;
+    }
     console.log('🛡️ Initializing App Check (Immediate)...');
     await initAppCheck();
   } catch (e) {
@@ -320,4 +330,4 @@ if (typeof window !== 'undefined') {
   console.log('%c🔧 DEBUG: Para limpiar App Check escribe: clearThrottle()', 'background: #222; color: #bada55; font-size:12px; padding: 4px; border-radius: 4px;');
 }
 
-export { appCheck };
+export { appCheck, initAppCheck };

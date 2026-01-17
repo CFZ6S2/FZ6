@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import './firebase-appcheck.js'; // Ensure App Check initializes with the app
+// import './firebase-appcheck.js'; // REMOVED: Circular dependency causing init error
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';

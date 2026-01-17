@@ -28,6 +28,7 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./css/chatbot.css">
 
   <style>
     body {
@@ -72,6 +73,9 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   </style>
+  <!-- Chatbot Widget -->
+  <link rel="stylesheet" href="./css/chatbot.css">
+  <script type="module" src="./js/chatbot.js"></script>
 </head>
 
 <body class="text-white">
@@ -232,7 +236,16 @@
           Inicia sesión aquí
         </a>
       </p>
-      </p>
+
+      <!-- Assisted Registration Link -->
+      <div class="text-center mt-4 p-4 glass rounded-lg">
+        <p class="text-sm text-slate-300 mb-2">
+          <i class="fas fa-robot mr-2"></i>¿Te cuesta el formulario?
+        </p>
+        <a href="/registro-asistido.html" class="text-blue-300 hover:text-blue-200 font-semibold transition">
+          💘 Prueba el <strong>Registro Asistido</strong> con CupidIA
+        </a>
+      </div>
     </div>
 
     <!-- reCAPTCHA Legal Text -->
@@ -284,6 +297,9 @@
   <script type="module" src="./js/theme.js"></script>
   <script type="module" src="./js/i18n.js"></script>
   <script type="module" src="./js/language-selector.js"></script>
+
+  <!-- Chatbot Assistant -->
+  <script type="module" src="./js/chatbot.js"></script>
 </body>
 
 </html>

@@ -907,7 +907,8 @@ import { sanitizer } from './sanitizer.js';
             if (!currentUserData || !currentUserData.gender) {
                 console.error('Error loading users: perfil no disponible');
                 hideLoading();
-                showToast('Tu perfil no está disponible. Revisa permisos o completa tu perfil.', 'warning');
+                showToast('Tu perfil está incompleto. Redirigiendo al asistente...', 'warning');
+                setTimeout(() => window.location.href = '/perfil-asistido.html', 1500);
                 return;
             }
 

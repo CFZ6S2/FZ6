@@ -28,6 +28,8 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chatbot Styles -->
+  <link rel="stylesheet" href="./css/chatbot.css">
 
   <style>
     body {
@@ -703,7 +705,8 @@
 
       <p class="text-sm text-slate-400 mb-4">Sube hasta 6 fotos adicionales para tu perfil (mínimo 2 requeridas)</p>
 
-      <div class="grid grid-cols-3 gap-3 max-w-md mx-auto">
+      <div class="grid grid-cols-3 gap-2 mx-auto"
+        style="display: grid; grid-template-columns: repeat(3, 1fr) !important; gap: 0.5rem !important;">
         <!-- Photo 1 -->
         <div class="aspect-square relative group">
           <div id="galleryPreview1"
@@ -865,6 +868,9 @@
   </script>
 
   <script type="module" src="./js/legal-consent.js"></script>
+
+  <!-- Chatbot Assistant -->
+  <script type="module" src="./js/chatbot.js"></script>
 </body>
 
 </html>

@@ -212,8 +212,12 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
             const db = await getDb();
             await loadUserData();
 
+
             // ✅ VALIDACIÓN: Verificar perfil completo + membresía (hombres) antes de permitir chat
-            if (currentUserData && !requireChatAccess(currentUserData, window.location.href)) {
+            const SUPER_USERS = ['cesar@tucitasegura.com', 'admin@tucitasegura.com', 'cesar.herrera.rojo@gmail.com', 'gonzalo.hrrj@gmail.com', 'lacasitadebarajas@gmail.com', 'paulikacyrus@gmail.com'];
+            const isAdmin = SUPER_USERS.includes(currentUser.email) || currentUserData.role === 'admin';
+
+            if (!isAdmin && currentUserData && !requireChatAccess(currentUserData, window.location.href)) {
                 // requireChatAccess redirige automáticamente:
                 // - Hombres sin membresía → /webapp/suscripcion.html
                 // - Perfil incompleto → /webapp/perfil.html
@@ -271,7 +275,7 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
         }
 
         // Distance
-        if (currentUserData.location && otherUserData.location) {
+        if (currentUserData && currentUserData.location && otherUserData && otherUserData.location) {
             const distance = calculateDistance(
                 currentUserData.location.lat,
                 currentUserData.location.lng,
@@ -752,6 +756,12 @@ import { GOOGLE_MAPS_API_KEY } from './google-maps-config-env.js';
     // Month navigation functions removed as they are no longer needed
     // window.previousMonth = function () { ... };
     // window.nextMonth = function () { ... };
+
+    window.selectDate = function (year, month, day) {
+        selectedDate = new Date(year, month, day);
+        renderCalendar(); // Re-render to show selection
+        updateDateSummary();
+    };
 
     window.selectTime = function (time) {
         selectedTime = time;
